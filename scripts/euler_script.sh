@@ -7,4 +7,4 @@ module load cuda/12.1.1
 cmake -B build
 make -C build
 
-./build/satt
+./build/main
