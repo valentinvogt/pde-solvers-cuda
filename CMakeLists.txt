@@ -31,6 +31,9 @@ find_package(ZisaCore REQUIRED)
 find_package(ZisaMemory REQUIRED)
 find_package(googletest REQUIRED)
 
-add_executable(main src/main.cpp src/generic_pde/*.hpp src/generic_pde/*.cpp)
+
+file(GLOB_RECURSE GENERIC_PDE_FILES src/generic_pde/*.hpp src/generic_pde/*.cpp) 
+
+add_executable(main src/main.cpp ${GENERIC_PDE_FILES})
 target_include_directories(main PUBLIC include)
 target_link_libraries(main Zisa::core Zisa::memory)
