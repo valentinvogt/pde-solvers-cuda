@@ -27,7 +27,7 @@ public:
 
   
 
-private:
+protected:
   unsigned int _x_dim;
   unsigned int _y_dim;
   bool _state_loaded = false;
