@@ -8,14 +8,14 @@ class GenericPDESolver {
 public:
   GenericPDESolver();
 
-  GenericPDESolver(PDE<T> pde);
+  GenericPDESolver(PDE<T> pde) : _pde(pde){}
 
-  void load_pde(PDE<T> pde);
+  void load_pde(PDE<T> pde) {}
 
-  void solve();
+  void solve() {}
 
 private:
-  PDE<T> pde;
+  PDE<T> _pde;
 };
 
 #endif //__GENERIC_PDE_HPP__
