@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 
-option(ENABLE_CUDA "Enable CUDA Acceleration" ON)
-option(HAVE_NETCDF "Compile with NetCDF support" OFF)
+option(ENABLE_CUDA "Enable CUDA Acceleration" OFF)
 
 if(ENABLE_CUDA)
   set(PROJECT_LANGUAGES C CXX CUDA)
@@ -14,7 +13,6 @@ endif()
 project(pde-solvers-cuda VERSION 0.1 LANGUAGES ${PROJECT_LANGUAGES})
 
 set(ZISA_HAS_CUDA ${ENABLE_CUDA})
-set(ZISA_HAS_NETCDF ${HAVE_NETCDF})
 
 include(FetchContent)
 
@@ -29,7 +27,7 @@ FetchContent_Declare(
   ZisaMemory
   GIT_REPOSITORY https://github.com/1uc/ZisaMemory.git
   GIT_TAG main
-  CMAKE_ARGS -DZISA_HAS_CUDA=${ZISA_HAS_CUDA} -DZISA_HAS_NETCDF=${ZISA_HAS_NETCDF} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+  CMAKE_ARGS -DZISA_HAS_CUDA=${ZISA_HAS_CUDA} -DZISA_HAS_NETCDF=1 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   OVERRIDE_FIND_PACKAGE
 )
 FetchContent_Declare(
