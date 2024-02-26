@@ -18,3 +18,15 @@ mkdir build
 cmake -B build -DENABLE_CUDA={0,1}
 ```
 Note that ENABLE_CUDA is set OFF by default
+
+
+### Running on Euler
+You can run the application on Euler as follows
+```
+git clone https://github.com/LouisHurschler/pde-solvers-cuda.git  
+cd pde-solvers-cuda
+mkdir build
+sbatch scripts/euler_script.sh
+```
+Note that the output will be stored in a slurm-file
+
