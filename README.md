@@ -15,6 +15,6 @@ You can build pds-solvers-cuda as follows
 git clone https://github.com/LouisHurschler/pde-solvers-cuda.git  
 cd pde-solvers-cuda
 mkdir build
-cmkae -B build -DENABLE_CUDA={0,1}
+cmake -B build -DENABLE_CUDA={0,1}
 ```
 Note that ENABLE_CUDA is set OFF by default
