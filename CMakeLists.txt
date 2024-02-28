@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
-
 option(ENABLE_CUDA "Enable CUDA Acceleration" OFF)
 
 if(ENABLE_CUDA)
@@ -11,6 +10,8 @@ endif()
   
    
 project(pde-solvers-cuda VERSION 0.1 LANGUAGES ${PROJECT_LANGUAGES})
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
 
