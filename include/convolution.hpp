@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <zisa/memory/array.hpp>
+#if ENABLE_CUDA
+#include <convolve_cuda.hpp>
+#endif
 
 template <typename Scalar>
 void convolve_cpu(zisa::array_view<Scalar, 2> dst,
@@ -29,18 +32,6 @@ void convolve_cpu(zisa::array_view<Scalar, 2> dst,
 
 
 template <typename Scalar>
-void convolve_cuda(zisa::array_view<Scalar, 2> dst,
-                   const zisa::array_const_view<Scalar, 2> &src,
-                   const zisa::array_const_view<Scalar, 2> &kernel) {
-  #if ENABLE_CUDA
-  const int thread_dims = 1024;
-  const int block_dims = std::ceil((src.shape(0) * src.shape(1)) / thread_dims);
-  convolve_cuda_kernel<<<block_dims, thread_dims>>>(dst, src, kernel);
-  cudaDeviceSynchronize();
-  #endif // ENABLE_CUDA
-}
-
-template <typename Scalar>
 void convolve(zisa::array_view<Scalar, 2> dst,
               const zisa::array_const_view<Scalar, 2> &src,
               const zisa::array_const_view<Scalar, 2> &kernel) {
@@ -60,9 +51,13 @@ void convolve(zisa::array_view<Scalar, 2> dst,
 
   if (memory_dst == zisa::device_type::cpu) {
     convolve_cpu(dst, src, kernel);
-  } else if (memory_dst == zisa::device_type::cuda) {
+  } 
+  #if ENABLE_CUDA
+   else if (memory_dst == zisa::device_type::cuda) {
     convolve_cuda(dst, src, kernel);
-  } else {
+  }
+  #endif // ENABLE_CUDA
+  else {
     std::cerr << "Convolution: Unknown device_type of inputs\n";
     exit(1);
   }

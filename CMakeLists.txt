@@ -1,15 +1,14 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
+project(PDE_SOLVERS_CUDA VERSION 0.1 LANGUAGES C CXX)
+
 option(ENABLE_CUDA "Enable CUDA Acceleration" OFF)
 
-if(ENABLE_CUDA)
-  set(PROJECT_LANGUAGES C CXX CUDA)
-else()
-  set(PROJECT_LANGUAGES C CXX)
+set(ZISA_HAS_CUDA ${ENABLE_CUDA})
+
+if(ZISA_HAS_CUDA)
+  enable_language(CUDA)
 endif()
-  
-   
-project(pde-solvers-cuda VERSION 0.1 LANGUAGES ${PROJECT_LANGUAGES})
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -44,7 +43,7 @@ find_package(googletest REQUIRED)
 
 
 add_executable(main)
-target_include_directories(main PUBLIC include)
+target_include_directories(main PUBLIC include/cuda include)
 target_link_libraries(main Zisa::core Zisa::memory)
 
 add_subdirectory(src)
