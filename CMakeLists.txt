@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 project(PDE_SOLVERS_CUDA VERSION 0.1 LANGUAGES C CXX)
 
+set(CMAKE_CXX_STANDARD 20)
+
 option(ENABLE_CUDA "Enable CUDA Acceleration" OFF)
 
 set(CUDA_AVAILABLE ${ENABLE_CUDA})
@@ -47,7 +49,7 @@ find_package(googletest REQUIRED)
 
 
 add_executable(main)
-target_include_directories(main PUBLIC include include/cuda)
+target_include_directories(main PUBLIC include include/cuda include/kernel)
 
 if (CUDA_AVAILABLE)
     find_package(CUDAToolkit REQUIRED)

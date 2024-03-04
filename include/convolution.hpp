@@ -1,21 +1,22 @@
 #ifndef CONVOLUTION_HPP_
 #define CONVOLUTION_HPP_
 
+#include <kernel_base.hpp>
 #include <iostream>
 #include <zisa/memory/array.hpp>
 #if CUDA_AVAILABLE
 #include <convolve_cuda.hpp>
 #endif
 
-template <typename Scalar>
+template <typename Scalar, int rows, int cols>
 void convolve_cpu(zisa::array_view<Scalar, 2> dst,
                   const zisa::array_const_view<Scalar, 2> &src,
-                  const zisa::array_const_view<Scalar, 2> &kernel) {
+                  const KernelBase<Scalar, rows, cols> &kernel) {
   std::cout << "hello from cpu" << std::endl;
   // TODO: Optimize
   // IDEA: recognize at compile time which kernel entries are 0 and only multiply if not
-  const int ghost_x = kernel.shape(0) / 2;
-  const int ghost_y = kernel.shape(1) / 2;
+  const int ghost_x = kernel.get_rows() / 2;
+  const int ghost_y = kernel.get_cols() / 2;
   const int Nx = src.shape(0) - 2 * ghost_x;
   const int Ny = src.shape(1) - 2 * ghost_y;
   for (int i = ghost_x; i < Nx + ghost_x; ++i) {
@@ -23,7 +24,9 @@ void convolve_cpu(zisa::array_view<Scalar, 2> dst,
       dst(i, j) = 0;
       for (int di = -ghost_x; di <= ghost_x; ++di) {
         for (int dj = -ghost_y; dj <= ghost_y; ++dj) {
-          dst(i, j) += kernel(ghost_x + di, ghost_y + dj) * src(i + di, j + dj);
+          if (kernel(ghost_x + di, ghost_y + dj) != 0) {
+            dst(i, j) += kernel(ghost_x + di, ghost_y + dj) * src(i + di, j + dj);
+          }
         }
       }
     }
@@ -31,10 +34,10 @@ void convolve_cpu(zisa::array_view<Scalar, 2> dst,
 }
 
 
-template <typename Scalar>
+template <typename Scalar, int rows, int cols>
 void convolve(zisa::array_view<Scalar, 2> dst,
               const zisa::array_const_view<Scalar, 2> &src,
-              const zisa::array_const_view<Scalar, 2> &kernel) {
+              const KernelBase<Scalar, rows, cols> &kernel) {
   const zisa::device_type memory_dst = dst.memory_location();
   const zisa::device_type memory_src = src.memory_location();
   const zisa::device_type memory_kernel = kernel.memory_location();
