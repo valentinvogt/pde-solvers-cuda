@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <zisa/memory/array.hpp>
-#if ENABLE_CUDA
+#if CUDA_AVAILABLE
 #include <convolve_cuda.hpp>
 #endif
 
@@ -52,11 +52,12 @@ void convolve(zisa::array_view<Scalar, 2> dst,
   if (memory_dst == zisa::device_type::cpu) {
     convolve_cpu(dst, src, kernel);
   } 
-  #if ENABLE_CUDA
+  #if CUDA_AVAILABLE
    else if (memory_dst == zisa::device_type::cuda) {
+    std::cout << "reached_cuda" << std::endl;
     convolve_cuda(dst, src, kernel);
   }
-  #endif // ENABLE_CUDA
+  #endif // CUDA_AVAILABLE
   else {
     std::cerr << "Convolution: Unknown device_type of inputs\n";
     exit(1);

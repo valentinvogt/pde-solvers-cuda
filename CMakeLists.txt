@@ -4,13 +4,17 @@ project(PDE_SOLVERS_CUDA VERSION 0.1 LANGUAGES C CXX)
 
 option(ENABLE_CUDA "Enable CUDA Acceleration" OFF)
 
+set(CUDA_AVAILABLE ${ENABLE_CUDA})
 set(ZISA_HAS_CUDA ${ENABLE_CUDA})
 
-if(ZISA_HAS_CUDA)
+message(${ENABLE_CUDA})
+
+if(CUDA_AVAILABLE)
   enable_language(CUDA)
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 
 include(FetchContent)
 
@@ -43,7 +47,18 @@ find_package(googletest REQUIRED)
 
 
 add_executable(main)
-target_include_directories(main PUBLIC include/cuda include)
+target_include_directories(main PUBLIC include include/cuda)
+
+if (CUDA_AVAILABLE)
+    find_package(CUDAToolkit REQUIRED)
+    add_library(cuda_lib OBJECT include/cuda/convolve_cuda_impl.cu include/cuda/convolve_cuda.hpp)
+    target_compile_definitions(cuda_lib PUBLIC ZISA_HAS_CUDA=1)
+    target_link_libraries(cuda_lib Zisa::memory Zisa::core)
+    set_target_properties(cuda_lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON) 
+    set_target_properties(cuda_lib PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    target_link_libraries(main cuda_lib)
+endif()
+
 target_link_libraries(main Zisa::core Zisa::memory)
 
 add_subdirectory(src)

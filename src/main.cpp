@@ -26,13 +26,15 @@ int main() {
 
   BoundaryCondition bc = BoundaryCondition::Dirichlet;
 
-  #if ENABLE_CUDA
+  #if CUDA_AVAILABLE
   zisa::array<float, 2> heat_kernel_gpu(zisa::shape_t<2>(3, 3), zisa::device_type::cuda);
   zisa::copy(heat_kernel_gpu, heat_kernel_cpu);
   // Construct a PDE based on the given kernel
+  std::cout << "case_gpu" << std::endl;
   PDEBase<float, BoundaryCondition> pde(128, 128, heat_kernel_gpu, bc);
-  # else
+  #else
   // Construct a PDE based on the given kernel
+  std::cout << "case_cpu" << std::endl;
   PDEBase<float, BoundaryCondition> pde(128, 128, heat_kernel_cpu, bc);
   #endif
   // TODO: apply initial conditions
