@@ -1,5 +1,5 @@
 target_sources(main
-  PRIVATE main.cpp
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
 if (ENABLE_CUDA)

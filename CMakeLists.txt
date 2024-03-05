@@ -2,10 +2,13 @@ cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 project(PDE_SOLVERS_CUDA VERSION 0.1 LANGUAGES C CXX)
 
+
 option(ENABLE_CUDA "Enable CUDA Acceleration" OFF)
 
 set(CUDA_AVAILABLE ${ENABLE_CUDA})
 set(ZISA_HAS_CUDA ${ENABLE_CUDA})
+set(ZISA_HAS_NETCDF ON)
+set(ZISA_HAS_HDF5 ON)
 
 message(${ENABLE_CUDA})
 
@@ -59,7 +62,7 @@ if (CUDA_AVAILABLE)
   target_compile_options(main PUBLIC $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>>)
 endif()
 
-target_include_directories(main PUBLIC include)
+target_include_directories(main PUBLIC include include/kernel include/io include/cuda)
 
 target_link_libraries(main Zisa::core Zisa::memory)
 
