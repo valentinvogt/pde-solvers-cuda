@@ -11,7 +11,7 @@ public:
   using scalar_t = Scalar;
 
   PDEBase(unsigned Nx, unsigned Ny,
-          KernelBase<Scalar, rows, cols> kernel, BoundaryCondition BC)
+          const KernelBase<Scalar, rows, cols> &kernel, BoundaryCondition BC)
       : data_(zisa::shape_t<2>(Nx + 2 * (rows / 2),
                                Ny + 2 * (cols / 2)),
               kernel.memory_location()),
@@ -29,7 +29,7 @@ public:
   unsigned num_ghost_cells_y() { return num_ghost_cells(1); }
 
   // TODO
-  void read_initial_conditions(/* datatype */) {
+  void read_initial_conditions(std::ifstream &input) {
     // where do i have to be able to read initial conditions from?
     // a file? in which format?
   }

@@ -8,6 +8,8 @@ option(ENABLE_CUDA "Enable CUDA Acceleration" OFF)
 
 set(CUDA_AVAILABLE ${ENABLE_CUDA})
 set(ZISA_HAS_CUDA ${ENABLE_CUDA})
+set(ZISA_HAS_NETCDF ON)
+set(ZISA_HAS_HDF5 ON)
 
 message(${ENABLE_CUDA})
 
@@ -49,7 +51,7 @@ find_package(googletest REQUIRED)
 
 
 add_executable(main)
-target_include_directories(main PUBLIC include include/cuda include/kernel)
+target_include_directories(main PUBLIC include include/kernel include/io include/cuda)
 
 if (CUDA_AVAILABLE)
     find_package(CUDAToolkit REQUIRED)
