@@ -1,18 +1,15 @@
-#include <zisa/memory/device_type.hpp>
 #include <iostream>
 #include <pde_base.hpp>
 #include <zisa/memory/array.hpp>
+#include <zisa/memory/device_type.hpp>
 
-enum BoundaryCondition {
-  Dirichlet,
-  Neumann,
-  Periodic
-};
+enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 
 int main() {
   // Set up the finite difference kernel for the heat equation
   // heat_kernel_cpu -> zisa::copy
-  zisa::array<float, 2> heat_kernel_cpu(zisa::shape_t<2>(3, 3), zisa::device_type::cpu);
+  zisa::array<float, 2> heat_kernel_cpu(zisa::shape_t<2>(3, 3),
+                                        zisa::device_type::cpu);
   float scaling = 0.1; // k / dt^2
   heat_kernel_cpu(0, 0) = 0;
   heat_kernel_cpu(0, 1) = 1 * scaling;
@@ -26,17 +23,18 @@ int main() {
 
   BoundaryCondition bc = BoundaryCondition::Dirichlet;
 
-  #if CUDA_AVAILABLE
-  zisa::array<float, 2> heat_kernel_gpu(zisa::shape_t<2>(3, 3), zisa::device_type::cuda);
+#if CUDA_AVAILABLE
+  zisa::array<float, 2> heat_kernel_gpu(zisa::shape_t<2>(3, 3),
+                                        zisa::device_type::cuda);
   zisa::copy(heat_kernel_gpu, heat_kernel_cpu);
   // Construct a PDE based on the given kernel
   std::cout << "case_gpu" << std::endl;
   PDEBase<float, BoundaryCondition> pde(128, 128, heat_kernel_gpu, bc);
-  #else
+#else
   // Construct a PDE based on the given kernel
   std::cout << "case_cpu" << std::endl;
   PDEBase<float, BoundaryCondition> pde(128, 128, heat_kernel_cpu, bc);
-  #endif
+#endif
   // TODO: apply initial conditions
   // Do some things with it...
   pde.apply();

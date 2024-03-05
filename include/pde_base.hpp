@@ -9,7 +9,8 @@ public:
   using scalar_t = Scalar;
 
   PDEBase(unsigned Nx, unsigned Ny,
-          const zisa::array_const_view<scalar_t, 2> &kernel, BoundaryCondition BC)
+          const zisa::array_const_view<scalar_t, 2> &kernel,
+          BoundaryCondition BC)
       : data_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2),
                                Ny + 2 * (kernel.shape(1) / 2)),
               kernel.memory_location()),
@@ -33,7 +34,6 @@ public:
     // where do i have to be able to read initial conditions from?
     // a file? in which format?
   }
-  
 
 protected:
   zisa::array<scalar_t, 2> data_;
