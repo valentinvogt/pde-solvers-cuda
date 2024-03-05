@@ -19,6 +19,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include(FetchContent)
 
 FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG v2.13.7
+  OVERRIDE_FIND_PACKAGE
+)
+FetchContent_Declare(
   ZisaCore
   GIT_REPOSITORY https://github.com/1uc/ZisaCore.git
   GIT_TAG 9243c391b70f5b1ff8c0275905351158c4f59eab
@@ -39,13 +45,14 @@ FetchContent_Declare(
   OVERRIDE_FIND_PACKAGE
 )
 
-FetchContent_MakeAvailable(ZisaCore ZisaMemory googletest)
+FetchContent_MakeAvailable(Catch2 ZisaCore ZisaMemory googletest)
 
 find_package(ZisaCore REQUIRED)
 find_package(ZisaMemory REQUIRED)
 find_package(googletest REQUIRED)
 
 add_executable(main)
+set_target_properties(main PROPERTIES CXX_STANDARD 17)
 
 if (CUDA_AVAILABLE)
   target_compile_options(main PUBLIC -DCUDA_AVAILABLE=1)
