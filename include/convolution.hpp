@@ -22,9 +22,12 @@ void convolve_cpu(zisa::array_view<Scalar, 2> dst,
   for (int i = ghost_x; i < Nx + ghost_x; ++i) {
     for (int j = ghost_y; j < Ny + ghost_y; ++j) {
       dst(i, j) = 0;
+     std::cout << "reached" << std::endl;
       for (int di = -ghost_x; di <= ghost_x; ++di) {
         for (int dj = -ghost_y; dj <= ghost_y; ++dj) {
+          std::cout << "reached_1" << std::endl;
           if (kernel(ghost_x + di, ghost_y + dj) != 0) {
+            std::cout << "reached_2" << std::endl;
             dst(i, j) += kernel(ghost_x + di, ghost_y + dj) * src(i + di, j + dj);
           }
         }

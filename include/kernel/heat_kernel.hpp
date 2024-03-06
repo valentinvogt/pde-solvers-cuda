@@ -6,25 +6,13 @@
 template <typename Scalar> class HeatKernel : public KernelBase<Scalar, 3, 3> {
 public:
   constexpr HeatKernel(double k, double dt, zisa::device_type device_type)
-      : KernelBase<Scalar, 3, 3>(device_type), k_(k), dt_(dt) {}
+      : KernelBase<Scalar, 3, 3>(device_type), k_dt_dt_(k / (dt* dt)) {}
 
 private:
-  constexpr void initialize_kernel() {
-    const Scalar scaling = k_ / (dt_ * dt_);
-    // Initialize kernel_ values using constexpr logic
-    this->kernel_[0][0] = 0.0;
-    this->kernel_[0][1] = scaling;
-    this->kernel_[0][2] = 0.0;
-    this->kernel_[1][0] = scaling;
-    this->kernel_[1][1] = 1.0 - 4.0 * scaling;
-    this->kernel_[1][2] = scaling;
-    this->kernel_[2][0] = 0.0;
-    this->kernel_[2][1] = scaling;
-    this->kernel_[2][2] = 0.0;
-  }
-
-  const Scalar dt_;
-  const Scalar k_;
+  const Scalar k_dt_dt_;
+  const Scalar kernel_[3][3] = {0, k_dt_dt_, 0,
+                                k_dt_dt_,1 -  4. * k_dt_dt_, k_dt_dt_,
+                                0, k_dt_dt_, 0};
 };
 
 #endif // HEAT_KERNEL_HPP_
