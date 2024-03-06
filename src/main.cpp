@@ -4,7 +4,6 @@
 #include <pde_base.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/device_type.hpp>
-#include <heat_kernel.hpp>
 
 
 void add_initial_data_file(){
@@ -29,19 +28,30 @@ enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 
 int main() {
 
-  // add_initial_data_file();
+zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
+  float scalar = 0.1; // k / dt^2
+  heat_kernel(0, 0) = 0;
+  heat_kernel(0, 1) = scalar;
+  heat_kernel(0, 2) = 0;
+  heat_kernel(1, 0) = scalar;
+  heat_kernel(1, 1) = 1 - 4 * scalar;
+  heat_kernel(1, 2) = scalar;
+  heat_kernel(2, 0) = 0;
+  heat_kernel(2, 1) = scalar;
+  heat_kernel(2, 2) = 0;
+
   BoundaryCondition bc = BoundaryCondition::Neumann;
 
   //construct a pde of the heat equation with Dirichlet boundary conditions
   #if CUDA_AVAILABLE
-  const HeatKernel<float> heat_kernel_gpu(1., 0.1, ziza::device_type::cuda);
-  std::cout << "case_gpu" << std::endl;
-  PDEBase pde(8, 8, heat_kernel_gpu, bc);
+ zisa::array<float, 2> heat_kernel_gpu(zisa::shape_t<2>(3, 3),
+                                        zisa::device_type::cuda);
+  zisa::copy(heat_kernel_gpu, heat_kernel_cpu); std::cout << "case_gpu" << std::endl;
+
+  PDEBase<float, BoundaryCondition> pde(8, 8, heat_kernel_gpu, bc);
   #else
-  const HeatKernel<float> heat_kernel_cpu(1., 0.1, zisa::device_type::cpu);
   std::cout << "case_cpu" << std::endl;
-  heat_kernel_cpu.print();
-  PDEBase pde(8, 8, heat_kernel_cpu, bc);
+  PDEBase<float, BoundaryCondition> pde(8, 8, heat_kernel, bc);
   #endif
 
   pde.read_initial_data("data/data_8_8.nc", "group_1", "data_1");
@@ -49,5 +59,11 @@ int main() {
 
   pde.apply();
   pde.print();
+
+  for (int i = 0; i < 10000; i++) {
+    pde.apply();
+  }
+  pde.print();
+
   return 0;
 }

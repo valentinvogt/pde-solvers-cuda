@@ -2,23 +2,20 @@
 #define PDE_BASE_HPP_
 
 #include <convolution.hpp>
-#include <kernel_base.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/device_type.hpp>
 
-template <typename Scalar, typename BoundaryCondition, int rows, int cols>
+template <typename Scalar, typename BoundaryCondition>
 class PDEBase {
 public:
   using scalar_t = Scalar;
 
   PDEBase(unsigned Nx, unsigned Ny,
-          const KernelBase<Scalar, rows, cols> &kernel, BoundaryCondition bc)
-      : data_(zisa::shape_t<2>(Nx + 2 * (rows / 2), Ny + 2 * (cols / 2)),
+          const zisa::array_const_view<Scalar, 2> &kernel, BoundaryCondition bc)
+      : data_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2), Ny + 2 * (kernel.shape(1) / 2)),
               kernel.memory_location()),
-        kernel_(kernel), bc_(bc) {
-    kernel.print();
-  }
+        kernel_(kernel), bc_(bc) { }
 
   // make shure that the file exists with the right group name and tag,
   // otherwise this will crash Additionally, the data has to be stored as a
@@ -29,8 +26,8 @@ public:
     unsigned x_disp = num_ghost_cells_x();
     unsigned y_disp = num_ghost_cells_y();
 
-    unsigned Nx = data_.shape(0) - 2 * (rows / 2);
-    unsigned Ny = data_.shape(1) - 2 * (cols / 2);
+    unsigned Nx = data_.shape(0) - 2 * num_ghost_cells_x();
+    unsigned Ny = data_.shape(1) - 2 * num_ghost_cells_y();
 
     // read data from file
     Scalar return_data[Nx][Ny];
@@ -127,7 +124,6 @@ protected:
     //TODO: do it for other values, optimize it
     int x_length = data_.shape(0);
     int y_length = data_.shape(1);
-    std::cout << y_length << std::endl;
 
     int x_disp = num_ghost_cells_x();
     int y_disp = num_ghost_cells_y();
@@ -176,8 +172,8 @@ protected:
     }
   }
 
-  zisa::array<scalar_t, 2> data_;
-  const KernelBase<Scalar, rows, cols> kernel_;
+  zisa::array<Scalar, 2> data_;
+  const zisa::array_const_view<Scalar, 2> kernel_;
   const BoundaryCondition bc_;
 };
 
