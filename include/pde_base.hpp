@@ -1,21 +1,27 @@
 #ifndef PDE_BASE_HPP_
 #define PDE_BASE_HPP_
 
+#include "zisa/io/file_manipulation.hpp"
+#include "zisa/memory/memory_location.hpp"
+#include "zisa/memory/shape.hpp"
+#include <dirichlet_bc.hpp>
+#include <neumann_bc.hpp>
+#include <periodic_bc.hpp>
 #include <convolution.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/device_type.hpp>
 
-template <typename Scalar, typename BoundaryCondition>
-class PDEBase {
+template <typename Scalar, typename BoundaryCondition> class PDEBase {
 public:
   using scalar_t = Scalar;
 
   PDEBase(unsigned Nx, unsigned Ny,
           const zisa::array_const_view<Scalar, 2> &kernel, BoundaryCondition bc)
-      : data_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2), Ny + 2 * (kernel.shape(1) / 2)),
+      : data_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2),
+                               Ny + 2 * (kernel.shape(1) / 2)),
               kernel.memory_location()),
-        kernel_(kernel), bc_(bc) { }
+        kernel_(kernel), bc_(bc) {}
 
   // make shure that the file exists with the right group name and tag,
   // otherwise this will crash Additionally, the data has to be stored as a
@@ -37,10 +43,24 @@ public:
 
     // copy return_data to data_
     // TODO: Optimize
-    for (int i = 0; i < Nx; i++) {
-      for (int j = 0; j < Ny; j++) {
-        data_(x_disp + i, y_disp + j) = return_data[i][j];
+    if (kernel_.memory_location() == zisa::device_type::cpu) {
+      for (int i = 0; i < Nx; i++) {
+        for (int j = 0; j < Ny; j++) {
+          data_(x_disp + i, y_disp + j) = return_data[i][j];
+        }
       }
+    } else if (kernel_.memory_location() == zisa::device_type::cuda) {
+      zisa::array<Scalar, 2> tmp(
+          zisa::shape_t<2>(data_.shape(0), data_.shape(1)),
+          zisa::device_type::cpu);
+      for (int i = 0; i < Nx; i++) {
+        for (int j = 0; j < Ny; j++) {
+          tmp(x_disp + i, y_disp + j) = return_data[i][j];
+        }
+      }
+      zisa::copy(data_, tmp);
+    } else {
+      std::cout << "only data on cpu and cuda supported" << std::endl;
     }
     add_bc();
   }
@@ -74,103 +94,22 @@ public:
   }
 
 protected:
-
   void add_bc() {
     if (bc_ == BoundaryCondition::Dirichlet) {
-      add_dirichlet_bc();
+      // TODO: only do this when initialize data, or if boundary values change
+      dirichlet_bc<Scalar>(data_, num_ghost_cells_x(), num_ghost_cells_y(), 0.,
+                   kernel_.memory_location());
     } else if (bc_ == BoundaryCondition::Neumann) {
-      add_neumann_bc();
+      neumann_bc(data_, num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
       // TODO: add boundary conditions
     } else if (bc_ == BoundaryCondition::Periodic) {
+      periodic_bc(data_, num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
       // TODO: add boundary conditions
     } else {
       std::cout << "boundary condition not implemented yet!" << std::endl;
     }
   }
 
-  // adds dirichlet boundary conditions.
-  // Note that this only has to be done once at the beginning,
-  // the boundary data will not change during the algorithm
-  void add_dirichlet_bc() {
-    // assumption: f(x) = 0 at boundary
-    Scalar value = 0;
-    // TODO: add other values, optimize
-    int x_length = data_.shape(0);
-    int y_length = data_.shape(1);
-
-    int x_disp = num_ghost_cells_x();
-    int y_disp = num_ghost_cells_y();
-
-    // add boundary condition on left and right boundary
-    for (int x_idx = 0; x_idx < x_length; x_idx++) {
-      for (int y_idx = 0; y_idx < y_disp; y_idx++) {
-        data_(x_idx, y_idx) = value;
-        data_(x_idx, y_length - 1 - y_idx) = value;
-      }
-    }
-
-    // add boundary on top and botton without corners
-    for (int x_idx = 0; x_idx < x_disp; x_idx++) {
-      for (int y_idx = y_disp; y_idx < y_length - y_disp; y_idx++) {
-        data_(x_idx, y_idx) = value;
-        data_(x_length - 1 - x_idx, y_idx) = value;
-      }
-    }
-  }
-
-
-  void add_neumann_bc() {
-    // assumption: f'(x) = 0 at boundary
-    //TODO: do it for other values, optimize it
-    int x_length = data_.shape(0);
-    int y_length = data_.shape(1);
-
-    int x_disp = num_ghost_cells_x();
-    int y_disp = num_ghost_cells_y();
-    Scalar value;
-
-    for (int x_idx = x_disp; x_idx < x_length - x_disp; x_idx++) {
-      // left cols without corners
-      value = data_(x_idx, y_disp);
-      for (int y_idx = 0; y_idx < y_disp; y_idx++) {
-        data_(x_idx, y_idx) = value;
-      }
-      // right cols without corners
-      value = data_(x_idx, y_length - y_disp - 1);
-      for (int y_idx = 0; y_idx < y_disp; y_idx++) {
-        data_(x_idx, y_length - 1 - y_idx) = value;
-      }
-    }
-
-    for (int y_idx = y_disp; y_idx < y_length - y_disp; y_idx++) {
-      // top cols without corners
-      value = data_(x_disp, y_idx);
-      for (int x_idx = 0; x_idx < x_disp; x_idx++) {
-        data_(x_idx, y_idx) = value;
-      }
-
-      // bottom cols without corners
-      value = data_(x_length - 1 - x_disp, y_idx);
-      for (int x_idx = 0; x_idx < x_disp; x_idx++) {
-        data_(x_length - x_idx - 1, y_idx) = value;
-      }
-
-    }
-
-    // top left corners
-    Scalar value_tl = data_(x_disp, y_disp);
-    Scalar value_tr = data_(x_length - x_disp - 1, y_disp);
-    Scalar value_bl = data_(x_disp, y_length - y_disp - 1);
-    Scalar value_br = data_(x_length - x_disp - 1, y_length - y_disp - 1);
-    for (int x_idx = 0; x_idx < x_disp; x_idx++) {
-      for (int y_idx = 0; y_idx < y_disp; y_idx++) {
-        data_(x_idx, y_idx) = value_tl;
-        data_(x_length - x_idx - 1, y_idx) = value_tr;
-        data_(x_idx, y_length - y_idx - 1) = value_bl;
-        data_(x_length - x_idx - 1, y_length - y_idx - 1) = value_br;
-      }
-    }
-  }
 
   zisa::array<Scalar, 2> data_;
   const zisa::array_const_view<Scalar, 2> kernel_;

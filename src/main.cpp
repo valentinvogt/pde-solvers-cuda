@@ -46,7 +46,7 @@ zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   #if CUDA_AVAILABLE
  zisa::array<float, 2> heat_kernel_gpu(zisa::shape_t<2>(3, 3),
                                         zisa::device_type::cuda);
-  zisa::copy(heat_kernel_gpu, heat_kernel_cpu); std::cout << "case_gpu" << std::endl;
+  zisa::copy(heat_kernel_gpu, heat_kernel); std::cout << "case_gpu" << std::endl;
 
   PDEBase<float, BoundaryCondition> pde(8, 8, heat_kernel_gpu, bc);
   #else

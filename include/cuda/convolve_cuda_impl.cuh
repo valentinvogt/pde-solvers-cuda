@@ -1,5 +1,5 @@
-#ifndef CONVOLUTION_CUDA_H_
-#define CONVOLUTION_CUDA_H_
+#ifndef CONVOLVE_CUDA_IMPL_H_
+#define CONVOLVE_CUDA_IMPL_H_
 
 #include <zisa/memory/array.hpp>
 
@@ -23,4 +23,4 @@ void convolve_cuda(zisa::array_view<Scalar, 2> dst,
   cudaDeviceSynchronize();
 #endif // CUDA_AVAILABLE
 }
-#endif // CONVOLUTION_CUDA_H_
+#endif // CONVOLVE_CUDA_IMPL_H_

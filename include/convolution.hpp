@@ -11,7 +11,6 @@ template <typename Scalar>
 void convolve_cpu(zisa::array_view<Scalar, 2> dst,
                   const zisa::array_const_view<Scalar, 2> &src,
                   const zisa::array_const_view<Scalar, 2> &kernel) {
-  std::cout << "hello from cpu" << std::endl;
   // TODO: Optimize
   // IDEA: recognize at compile time which kernel entries are 0 and only multiply if not
   const int ghost_x = kernel.shape(0) / 2;
