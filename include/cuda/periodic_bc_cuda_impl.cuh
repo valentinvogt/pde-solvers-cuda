@@ -27,8 +27,17 @@ periodic_bc_cuda_kernel(zisa::array<Scalar, 2> &data,
       const unsigned idx_without_top = idx - n_ghost_cells_x * data.shape(1);
 
       const unsigned x_idx = (idx_without_top) / (2 * n_ghost_cells_y) + n_ghost_cells_x;
-      bool on_left_boundary = (idx_without_top - (x_idx - n_ghost_cells_x) * 2 * n_ghost_cells_y) < n_ghost_cells_y;
-      //TODO:
+      const unsigned y_shift_idx = idx_without_top - (x_idx - n_ghost_cells_x) * 2 * n_ghost_cells_y;
+      bool on_left_boundary = y_shift_idx < n_ghost_cells_y;
+      if (on_left_boundary) {
+        const unsigned y_idx = y_shift_idx;
+        const unsigned y_idx_to_copy = y_idx + data.shape(1) - 2 * n_ghost_cells_y;
+        data(x_idx, y_idx) = data(x_idx, y_idx_to_copy);
+      } else {
+        // TODO: on right boundary
+      }
+    } else {
+      // bottom boundary
     }
   }
 }
