@@ -16,7 +16,7 @@ dirichlet_bc_cuda_kernel(zisa::array_view<Scalar, 2> &data,
 template <typename Scalar>
 void dirichlet_bc_cuda(zisa::array<Scalar, 2> &data,
                    unsigned n_ghost_cells_x,
-                   unsigned n_ghost_cells_y
+                   unsigned n_ghost_cells_y,
                    Scalar value) {
 #if CUDA_AVAILABLE
   const int thread_dims = 1024;
