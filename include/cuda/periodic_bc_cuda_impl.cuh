@@ -22,7 +22,7 @@ periodic_bc_cuda_kernel(zisa::array<Scalar, 2> &data,
       data(x_idx, y_idx) = data(x_idx_to_copy, y_idx);
       return;
     }
-    else if (id < n_ghost_cells_x * data.shape(1) + n_ghost_cells_y * (data.shape(0) - 2 * n_ghost_cells_y) * 2) {
+    else if (idx < n_ghost_cells_x * data.shape(1) + n_ghost_cells_y * (data.shape(0) - 2 * n_ghost_cells_y) * 2) {
       // left or right boundary
     }
   }
