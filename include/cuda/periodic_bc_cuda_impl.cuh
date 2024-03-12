@@ -5,7 +5,7 @@
 
 template <typename Scalar>
 __global__ void
-periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> &data,
+periodic_bc_cuda_kernel(zisa::array<Scalar, 2> &data,
                      unsigned n_ghost_cells_x,
                      unsigned n_ghost_cells_y) {
   // TODO
