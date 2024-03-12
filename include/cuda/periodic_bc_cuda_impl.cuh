@@ -24,7 +24,10 @@ periodic_bc_cuda_kernel(zisa::array<Scalar, 2> &data,
     }
     else if (idx < n_ghost_cells_x * data.shape(1) + n_ghost_cells_y * (data.shape(0) - 2 * n_ghost_cells_y) * 2) {
       // left or right boundary
-      const unsigned x_idx = (idx - n_ghost_cells_x * data.shape(1)) / (2 * n_ghost_cells_y) + n_ghost_cells_x;
+      const unsigned idx_without_top = idx - n_ghost_cells_x * data.shape(1);
+
+      const unsigned x_idx = (idx_without_top) / (2 * n_ghost_cells_y) + n_ghost_cells_x;
+      bool on_left_boundary = (idx_without_top - (x_idx - n_ghost_cells_x) * 2 * n_ghost_cells_y) < n_ghost_cells_y;
       //TODO:
     }
   }
@@ -38,7 +41,7 @@ void periodic_bc_cuda(zisa::array<Scalar, 2> &data,
   const unsigned thread_dims = THREAD_DIMS;
   // size of whole boundary where periodic bc has to be applied
   const unsigned data_size = data.shape(1) * n_ghost_cells_x * 2 + (data.shape(0) - 2 * n_ghost_cells_x) * n_ghost_cells_y * 2;
-  const unsigned block_dims = std::ceil(data_size) / thread_dims);
+  const unsigned block_dims = std::ceil(data_size/thread_dims);
   periodic_bc_cuda_kernel<<<block_dims, thread_dims>>>(data, n_ghost_cells_x, n_ghost_cells_y, data_size);
   cudaDeviceSynchronize();
 #endif // CUDA_AVAILABLE
