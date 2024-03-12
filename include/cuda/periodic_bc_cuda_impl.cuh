@@ -73,6 +73,7 @@ void periodic_bc_cuda(zisa::array<Scalar, 2> &data, unsigned n_ghost_cells_x,
       data.shape(1) * n_ghost_cells_x * 2 +
       (data.shape(0) - 2 * n_ghost_cells_x) * n_ghost_cells_y * 2;
   const unsigned block_dims = std::ceil(data_size / thread_dims);
+    std::cout << "should reach cuda " << block_dims << " " << "thread_dims" << std::endl;
   periodic_bc_cuda_kernel<<<block_dims, thread_dims>>>(
       data, n_ghost_cells_x, n_ghost_cells_y, data_size);
   cudaDeviceSynchronize();
