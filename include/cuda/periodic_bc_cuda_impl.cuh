@@ -12,6 +12,7 @@ __global__ void
 periodic_bc_cuda_kernel(zisa::array<Scalar, 2> &data, unsigned n_ghost_cells_x,
                         unsigned n_ghost_cells_y, unsigned data_size) {
   const unsigned idx = blockIdx.x * THREAD_DIMS + threadIdx.x;
+  printf("idx: &u\n", idx);
     std::cout << "idx: " << idx << std::endl;
   if (idx < data_size) {
     if (idx < n_ghost_cells_x * data.shape(1)) {
