@@ -17,6 +17,8 @@
         nativeBuildInputs = with pkgs; [
         cmake
         clang-tools
+        netcdf
+        hdf5
         ];
         buildInputs = with pkgs; [ 
         ];

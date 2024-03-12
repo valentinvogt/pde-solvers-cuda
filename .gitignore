@@ -39,3 +39,7 @@ slurm*
 
 # Flake files
 .direnv
+
+.cache
+
+.txt
