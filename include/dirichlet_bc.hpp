@@ -1,6 +1,9 @@
 #ifndef DIRICHLET_BC_HPP_
 #define DIRICHLET_BC_HPP_
 #include <zisa/memory/array.hpp>
+#if CUDA_AVAILABLE
+#include <cuda/dirichlet_bc_cuda.hpp>
+#endif
 
 template <typename Scalar>
 void dirichlet_bc_cpu(zisa::array<Scalar, 2> &data,

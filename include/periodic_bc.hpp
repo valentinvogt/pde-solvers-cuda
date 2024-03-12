@@ -1,6 +1,9 @@
 #ifndef PERIODIC_BC_HPP_
 #define PERIODIC_BC_HPP_
 #include <zisa/memory/array.hpp>
+#if CUDA_AVAILABLE
+#include <cuda/periodic_bc_cuda.hpp>
+#endif
 
 template <typename Scalar>
 void periodic_bc_cpu(zisa::array<Scalar, 2> &data,unsigned n_ghost_cells_x,
