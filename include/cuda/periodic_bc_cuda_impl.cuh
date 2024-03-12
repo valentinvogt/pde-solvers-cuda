@@ -33,11 +33,21 @@ periodic_bc_cuda_kernel(zisa::array<Scalar, 2> &data,
         const unsigned y_idx = y_shift_idx;
         const unsigned y_idx_to_copy = y_idx + data.shape(1) - 2 * n_ghost_cells_y;
         data(x_idx, y_idx) = data(x_idx, y_idx_to_copy);
+        return;
       } else {
-        // TODO: on right boundary
+        const unsigned y_idx = y_shift_idx + data.shape(1) - 2 * n_ghost_cells_y;
+        const unsigned y_idx_to_copy = y_shift_idx;
+        data(x_idx, y_idx) = data(x_idx, y_idx_to_copy);
+        return;
       }
     } else {
       // bottom boundary
+      const unsigned idx_without_top_and_boundaries = idx - n_ghost_cells_x * data.shape(1) - n_ghost_cells_y * 2 * (data.shape(0) - 2 * n_ghost_cells_x);
+      const unsigned x_idx = data.shape(0) - n_ghost_cells_x + idx_without_top_and_boundaries / data.shape(1);
+      const unsigned y_idx = idx_without_top_and_boundaries - x_idx * data.shape(1);
+      const unsigned x_idx_to_copy = x_idx + 2 * n_ghost_cellx_x - data.shape(0);
+      data(x_idx, y_idx) = data(x_idx_to_copy, y_idx);
+      return
     }
   }
 }

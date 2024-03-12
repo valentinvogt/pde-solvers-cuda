@@ -11,4 +11,4 @@ module load netcdf/4.9.2
 cmake -B build -DENABLE_CUDA=1 
 make -C build
 
---gpus=1 ./build/main
+./build/main
