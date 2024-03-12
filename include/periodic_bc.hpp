@@ -58,7 +58,7 @@ void periodic_bc(zisa::array<Scalar, 2> &data, unsigned n_ghost_cells_x,
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
     // TODO
-    periodic_bc_gpu(data, n_ghost_cells_x, n_ghost_cells_y);
+    periodic_bc_cuda(data, n_ghost_cells_x, n_ghost_cells_y);
   }
 #endif // CUDA_AVAILABLE
   else {
