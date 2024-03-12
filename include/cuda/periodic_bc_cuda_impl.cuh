@@ -58,7 +58,7 @@ periodic_bc_cuda_kernel(zisa::array<Scalar, 2> &data, unsigned n_ghost_cells_x,
       const unsigned x_idx_to_copy =
           x_idx + 2 * n_ghost_cells_x - data.shape(0);
       data(x_idx, y_idx) = data(x_idx_to_copy, y_idx);
-      return
+      return;
     }
   }
 }
