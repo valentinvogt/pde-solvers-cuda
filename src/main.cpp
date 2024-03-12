@@ -40,7 +40,7 @@ zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   heat_kernel(2, 1) = scalar;
   heat_kernel(2, 2) = 0;
 
-  BoundaryCondition bc = BoundaryCondition::Neumann;
+  BoundaryCondition bc = BoundaryCondition::Periodic;
 
   //construct a pde of the heat equation with Dirichlet boundary conditions
   #if CUDA_AVAILABLE

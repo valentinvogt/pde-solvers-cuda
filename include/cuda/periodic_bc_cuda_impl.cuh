@@ -5,6 +5,7 @@
 
 #ifndef THREAD_DIMS
 #define THREAD_DIMS 1024
+#endif
 
 template <typename Scalar>
 __global__ void
@@ -19,6 +20,10 @@ periodic_bc_cuda_kernel(zisa::array<Scalar, 2> &data,
       const unsigned y_idx = idx - data.shape(1) * x_idx;
       const unsigned x_idx_to_copy = data.shape(0) - 2 * n_ghost_cells_x + x_idx;
       data(x_idx, y_idx) = data(x_idx_to_copy, y_idx);
+      return;
+    }
+    else if (id < n_ghost_cells_x * data.shape(1) + n_ghost_cells_y * (data.shape(0) - 2 * n_ghost_cells_y) * 2) {
+      // left or right boundary
     }
   }
 }
