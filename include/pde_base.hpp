@@ -82,8 +82,22 @@ public:
     int y_size = data_.shape(1);
     std::cout << "data has size x: " << x_size << ", y: " << y_size
               << std::endl;
-    std::cout << " border sizes are x: " << num_ghost_cells_x()
+    std::cout << "border sizes are x: " << num_ghost_cells_x()
               << ", y: " << num_ghost_cells_y() << std::endl;
+    // weird segmentation fault if using cuda
+    // how is it possible to print an array on gpus?
+    #if CUDA_AVAILABLE
+      zisa::array<float, 2> cpu_data(zisa::shape_t<2>(x_size, y_size));
+      zisa::copy(cpu_data, data_);
+    for (int i = 0; i < x_size; i++) {
+      for (int j = 0; j < y_size; j++) {
+        std::cout << cpu_data(i, j) << "\t";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+      return;
+    #endif
     for (int i = 0; i < x_size; i++) {
       for (int j = 0; j < y_size; j++) {
         std::cout << data_(i, j) << "\t";
