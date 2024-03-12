@@ -53,11 +53,13 @@ template <typename Scalar>
 void periodic_bc(zisa::array<Scalar, 2> &data, unsigned n_ghost_cells_x,
                 unsigned n_ghost_cells_y, zisa::device_type memory_location) {
   if (memory_location == zisa::device_type::cpu) {
+    std::cout << "periodic bc cpu reached" << std::endl;
     periodic_bc_cpu(data, n_ghost_cells_x, n_ghost_cells_y);
   }
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
     // TODO
+    std::cout << "periodic bc cuda reached" << std::endl;
     periodic_bc_cuda(data, n_ghost_cells_x, n_ghost_cells_y);
   }
 #endif // CUDA_AVAILABLE
