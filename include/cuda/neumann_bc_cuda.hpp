@@ -3,6 +3,10 @@
 
 #include <zisa/memory/array.hpp>
 
+#ifndef THREAD_DIMS
+#define THREAD_DIMS 1024
+#endif
+
 template <typename Scalar>
 void neumann_bc_cuda(zisa::array<Scalar, 2> &data, unsigned n_ghost_cells_x,
                      unsigned n_ghost_cells_y);

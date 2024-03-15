@@ -13,6 +13,8 @@ periodic_bc_cuda_kernel(zisa::array<Scalar, 2> &data, unsigned n_ghost_cells_x,
                         unsigned n_ghost_cells_y, unsigned data_size) {
   const unsigned idx = blockIdx.x * THREAD_DIMS + threadIdx.x;
   printf("idx: %u\n", idx);
+    return;
+    //access not working properly now
   if (idx < data_size) {
     if (idx < n_ghost_cells_x * data.shape(1)) {
       // upper boundary
@@ -72,11 +74,14 @@ void periodic_bc_cuda(zisa::array<Scalar, 2> &data, unsigned n_ghost_cells_x,
   const unsigned data_size =
       data.shape(1) * n_ghost_cells_x * 2 +
       (data.shape(0) - 2 * n_ghost_cells_x) * n_ghost_cells_y * 2;
-  const unsigned block_dims = std::ceil(data_size / thread_dims);
+  const unsigned block_dims = std::ceil((double)data_size / thread_dims);
   std::cout << "should reach cuda " << block_dims << " " << "thread_dims" << std::endl;
   periodic_bc_cuda_kernel<<<block_dims, thread_dims>>>(
       data, n_ghost_cells_x, n_ghost_cells_y, data_size);
-  cudaDeviceSynchronize();
+  const auto error = cudaDeviceSynchronize();
+  if (error != cudaSuccess) {
+    std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error) << std::endl;
+  }
 #endif // CUDA_AVAILABLE
 }
 #endif // PERIODIC_BC_CUDA_H_

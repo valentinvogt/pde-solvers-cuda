@@ -1,14 +1,13 @@
 #!/bin/bash
 
-
-module load gcc/11.4.0
+module load gcc/9.3.0
 module load cmake/3.26.3
-module load cuda/12.1.1
-module load hdf5/1.10.9
-module load netcdf/4.9.2
+module load cuda/11.8.0
+module load hdf5/1.10.1
+module load netcdf/4.6.0
 
 
-cmake -B build -DENABLE_CUDA=1 
+cmake -B build -DENABLE_CUDA=ON
 make -C build
 
-./build/main
+compute-sanitizer ./build/main
