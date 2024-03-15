@@ -2,7 +2,7 @@
 #define DIRICHLET_BC_HPP_
 #include <zisa/memory/array.hpp>
 #if CUDA_AVAILABLE
-#include <cuda/dirichlet_bc_cuda.cuh>
+#include <cuda/dirichlet_bc_cuda.hpp>
 #endif
 
 template <typename Scalar>
