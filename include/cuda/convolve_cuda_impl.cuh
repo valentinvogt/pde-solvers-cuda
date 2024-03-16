@@ -26,6 +26,8 @@ convolve_cuda_kernel(zisa::array_view<Scalar, 2> dst,
   }
   const int x_idx = ghost_x +  linear_idx / Ny;
   const int y_idx = ghost_y + linear_idx % Ny;
+  printf("convolve_cuda_kernel reached with x_idx = %u, y_idx = %u\n", x_idx, y_idx);
+  return;
   dst(x_idx, y_idx) = 0.;
   for (int di = -ghost_x; di <= ghost_x; di++) {
     for (int dj = -ghost_y; dj <= ghost_y; dj++) {

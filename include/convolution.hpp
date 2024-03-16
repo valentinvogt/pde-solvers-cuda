@@ -19,7 +19,7 @@ void convolve_cpu(zisa::array_view<Scalar, 2> dst,
   const int Ny = src.shape(1) - 2 * ghost_y;
   for (int i = ghost_x; i < Nx + ghost_x; ++i) {
     for (int j = ghost_y; j < Ny + ghost_y; ++j) {
-      dst(i, j) = 0;
+      dst(i, j) = 0.;
       for (int di = -ghost_x; di <= ghost_x; ++di) {
         for (int dj = -ghost_y; dj <= ghost_y; ++dj) {
           if (kernel(ghost_x + di, ghost_y + dj) != 0) {
