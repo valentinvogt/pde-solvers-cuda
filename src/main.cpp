@@ -78,9 +78,14 @@ zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   pde.apply();
   pde.print();
 
-  for (int i = 0; i < 10; i++) {
+  pde.apply();
+  pde.print();
+
+  pde.apply();
+  pde.print();
+
+  for (int i = 0; i < 1000; i++) {
     pde.apply();
-    pde.print();
   }
   pde.print();
 
