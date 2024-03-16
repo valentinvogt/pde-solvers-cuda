@@ -77,7 +77,7 @@ void periodic_bc_cuda(zisa::array_view<Scalar, 2> data,
   const unsigned block_dims = std::ceil((double)data_size / thread_dims);
   std::cout << "should reach cuda " << block_dims << " " << "thread_dims" << std::endl;
   periodic_bc_cuda_kernel<<<block_dims, thread_dims>>>(
-      data, bc, n_ghost_cells_x, n_ghost_cells_y, data_size);
+      data, n_ghost_cells_x, n_ghost_cells_y, data_size);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
     std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error) << std::endl;
