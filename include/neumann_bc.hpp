@@ -6,7 +6,9 @@
 #endif
 
 template <typename Scalar>
-void neumann_bc_cpu(zisa::array<Scalar, 2> &data,unsigned n_ghost_cells_x,
+void neumann_bc_cpu(zisa::array_view<Scalar, 2> data,
+                    const zisa::array_const_view<Scalar, 2> &bc,
+                    unsigned n_ghost_cells_x,
                     unsigned n_ghost_cells_y) {
   unsigned x_length = data.shape(0);
   unsigned y_length = data.shape(1);
@@ -56,15 +58,17 @@ void neumann_bc_cpu(zisa::array<Scalar, 2> &data,unsigned n_ghost_cells_x,
 
 // only implemented for f'(x) = 0 so far
 template <typename Scalar>
-void neumann_bc(zisa::array<Scalar, 2> &data, unsigned n_ghost_cells_x,
+void neumann_bc(zisa::array_view<Scalar, 2> data,
+                const zisa::array_const_view<Scalar, 2> &bc,
+                unsigned n_ghost_cells_x,
                 unsigned n_ghost_cells_y, zisa::device_type memory_location) {
   if (memory_location == zisa::device_type::cpu) {
-    neumann_bc_cpu(data, n_ghost_cells_x, n_ghost_cells_y);
+    neumann_bc_cpu(data, bc, n_ghost_cells_x, n_ghost_cells_y);
   }
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
     // TODO
-    neumann_bc_cuda(data, n_ghost_cells_x, n_ghost_cells_y);
+    neumann_bc_cuda(data, bc, n_ghost_cells_x, n_ghost_cells_y);
   }
 #endif // CUDA_AVAILABLE
   else {

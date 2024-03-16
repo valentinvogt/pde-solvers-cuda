@@ -21,6 +21,9 @@ public:
       : data_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2),
                                Ny + 2 * (kernel.shape(1) / 2)),
               kernel.memory_location()),
+        bc_values_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2),
+                                    Ny + 2 * (kernel.shape(1) / 2)),
+              kernel.memory_location()),
         kernel_(kernel), bc_(bc) {}
 
   // make shure that the file exists with the right group name and tag,
@@ -62,7 +65,47 @@ public:
     } else {
       std::cout << "only data on cpu and cuda supported" << std::endl;
     }
+  }
+
+  // make shure that the file exists with the right group name and tag,
+  // otherwise this will crash Additionally, the data has to be stored as a
+  // 2-dimensional array with the right amount of entries
+  void read_bc_values(const std::string &filename,
+                      const std::string &group_name,
+                      const std::string &tag) {
+
+    unsigned Nx = bc_values_.shape(0);
+    unsigned Ny = bc_values_.shape(1);
+
+    // read data from file
+    Scalar return_data[Nx][Ny];
+    zisa::HDF5SerialReader serial_reader(filename);
+    serial_reader.open_group(group_name);
+    serial_reader.read_array(return_data, zisa::erase_data_type<Scalar>(), tag);
+
+    // copy return_data to data_
+    // TODO: Optimize
+    if (kernel_.memory_location() == zisa::device_type::cpu) {
+      for (int i = 0; i < Nx; i++) {
+        for (int j = 0; j < Ny; j++) {
+          bc_values_(i, j) = return_data[i][j];
+        }
+      }
+    } else if (kernel_.memory_location() == zisa::device_type::cuda) {
+      zisa::array<Scalar, 2> tmp(
+          zisa::shape_t<2>(bc_values_.shape(0), bc_values_.shape(1)),
+          zisa::device_type::cpu);
+      for (int i = 0; i < Nx; i++) {
+        for (int j = 0; j < Ny; j++) {
+          tmp(i, j) = return_data[i][j];
+        }
+      }
+      zisa::copy(bc_values_, tmp);
+    } else {
+      std::cout << "only data on cpu and cuda supported" << std::endl;
+    }
     add_bc();
+
   }
 
   void apply() {
@@ -111,13 +154,13 @@ protected:
   void add_bc() {
     if (bc_ == BoundaryCondition::Dirichlet) {
       // TODO: only do this when initialize data, or if boundary values change
-      dirichlet_bc<Scalar>(data_, num_ghost_cells_x(), num_ghost_cells_y(), 0.,
+      dirichlet_bc<Scalar>(data_.view(),bc_values_.const_view(), num_ghost_cells_x(), num_ghost_cells_y(),
                    kernel_.memory_location());
     } else if (bc_ == BoundaryCondition::Neumann) {
-      neumann_bc(data_, num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
+      neumann_bc(data_.view(), bc_values_.const_view(), num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
       // TODO: add boundary conditions
     } else if (bc_ == BoundaryCondition::Periodic) {
-      periodic_bc(data_, num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
+      periodic_bc(data_.view(), num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
       // TODO: add boundary conditions
     } else {
       std::cout << "boundary condition not implemented yet!" << std::endl;
@@ -128,6 +171,7 @@ protected:
   zisa::array<Scalar, 2> data_;
   const zisa::array_const_view<Scalar, 2> kernel_;
   const BoundaryCondition bc_;
+  zisa::array<Scalar, 2> bc_values_;
 };
 
 #endif // PDE_BASE_HPP_
