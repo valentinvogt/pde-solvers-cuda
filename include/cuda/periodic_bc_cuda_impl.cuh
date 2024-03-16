@@ -13,7 +13,6 @@ periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data, unsigned n_ghost_cells
                         unsigned n_ghost_cells_y, unsigned data_size) {
   const unsigned idx = blockIdx.x * THREAD_DIMS + threadIdx.x;
   printf("idx: %u\n", idx);
-    return;
     //access not working properly now
   if (idx < data_size) {
     if (idx < n_ghost_cells_x * data.shape(1)) {

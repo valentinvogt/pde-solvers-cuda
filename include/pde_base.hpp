@@ -148,14 +148,14 @@ public:
       std::cout << std::endl;
     }
     std::cout << std::endl;
-    std::cout << "boundary conditions are: " << std::endl;
-    for (int i = 0; i < x_size; i++) {
-      for (int j = 0; j < x_size; j++) {
-        std::cout << bc_values_.const_view()(i, j) << "\t";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
+    // std::cout << "boundary conditions are: " << std::endl;
+    // for (int i = 0; i < x_size; i++) {
+    //   for (int j = 0; j < x_size; j++) {
+    //     std::cout << bc_values_.const_view()(i, j) << "\t";
+    //   }
+    //   std::cout << std::endl;
+    // }
+    // std::cout << std::endl;
   }
 
 protected:

@@ -15,7 +15,7 @@ void neumann_bc_cuda(zisa::array_view<Scalar, 2> data,
 
 #define PDE_SOLVERS_CUDA_INSTANCIATE_NEUMANN_BC_CUDA(TYPE)  \
   extern template void neumann_bc_cuda<TYPE>(                 \
-    zisa::array_view<TYPE, 2> , const zisa::array_const_view<TYPE, 2>, unsigned, unsigned);            \
+    zisa::array_view<TYPE, 2>, const zisa::array_const_view<TYPE, 2> &, unsigned, unsigned);            \
 
 PDE_SOLVERS_CUDA_INSTANCIATE_NEUMANN_BC_CUDA(float)
 PDE_SOLVERS_CUDA_INSTANCIATE_NEUMANN_BC_CUDA(double)
