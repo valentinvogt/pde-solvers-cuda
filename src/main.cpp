@@ -11,7 +11,7 @@ void add_bc_values_file() {
   float data[10][10];
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
-      data[i][j] = i * j + j;
+      data[i][j] = 0.;
     }
   }
   std::size_t dims[2] = {10, 10};
@@ -23,13 +23,13 @@ void add_bc_values_file() {
 void add_initial_data_file(){
   zisa::HDF5SerialWriter serial_writer("data/data_8_8.nc");
   serial_writer.open_group("group_1");
-  float data[8][8];
-  for (int i = 0; i < 8; i++) {
-    for (int j = 0; j < 8; j++) {
+  float data[10][10];
+  for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 10; j++) {
       data[i][j] = i * j + j;
     }
   }
-  std::size_t dims[2] = {8, 8};
+  std::size_t dims[2] = {10, 10};
   serial_writer.write_array(data, zisa::erase_data_type<float>(), "data_1", 2, dims);
   serial_writer.close_group();
 }
@@ -72,7 +72,7 @@ zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   #endif
 
   pde.read_initial_data("data/data_8_8.nc", "group_1", "data_1");
-  pde.read_neumann_bc_values("data/bc_8_8.nc", "group_1", "data_1");
+  pde.read_bc_values("data/bc_8_8.nc", "group_1", "data_1");
   pde.print();
 
   pde.apply();

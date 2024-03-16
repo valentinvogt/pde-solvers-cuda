@@ -21,7 +21,7 @@ public:
       : data_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2),
                                Ny + 2 * (kernel.shape(1) / 2)),
               kernel.memory_location()),
-        neumann_bc_values_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2),
+        bc_values_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2),
                                     Ny + 2 * (kernel.shape(1) / 2)),
               kernel.memory_location()),
         kernel_(kernel), bc_(bc) {}
@@ -72,12 +72,12 @@ public:
   // otherwise this will crash Additionally, the data has to be stored as a
   // 2-dimensional array with the right amount of entries
   // this is only necessairy for neumann boundary conditions
-  void read_neumann_bc_values(const std::string &filename,
+  void read_bc_values(const std::string &filename,
                       const std::string &group_name,
                       const std::string &tag) {
 
-    unsigned Nx = neumann_bc_values_.shape(0);
-    unsigned Ny = neumann_bc_values_.shape(1);
+    unsigned Nx = bc_values_.shape(0);
+    unsigned Ny = bc_values_.shape(1);
 
     // read data from file
     Scalar return_data[Nx][Ny];
@@ -90,19 +90,19 @@ public:
     if (kernel_.memory_location() == zisa::device_type::cpu) {
       for (int i = 0; i < Nx; i++) {
         for (int j = 0; j < Ny; j++) {
-          neumann_bc_values_(i, j) = return_data[i][j];
+          bc_values_(i, j) = return_data[i][j];
         }
       }
     } else if (kernel_.memory_location() == zisa::device_type::cuda) {
       zisa::array<Scalar, 2> tmp(
-          zisa::shape_t<2>(neumann_bc_values_.shape(0), neumann_bc_values_.shape(1)),
+          zisa::shape_t<2>(bc_values_.shape(0), bc_values_.shape(1)),
           zisa::device_type::cpu);
       for (int i = 0; i < Nx; i++) {
         for (int j = 0; j < Ny; j++) {
           tmp(i, j) = return_data[i][j];
         }
       }
-      zisa::copy(neumann_bc_values_, tmp);
+      zisa::copy(bc_values_, tmp);
     } else {
       std::cout << "only data on cpu and cuda supported" << std::endl;
     }
@@ -153,7 +153,7 @@ public:
     // std::cout << "boundary conditions are: " << std::endl;
     // for (int i = 0; i < x_size; i++) {
     //   for (int j = 0; j < x_size; j++) {
-    //     std::cout << neumann_bc_values_.const_view()(i, j) << "\t";
+    //     std::cout << bc_values_.const_view()(i, j) << "\t";
     //   }
     //   std::cout << std::endl;
     // }
@@ -163,11 +163,10 @@ public:
 protected:
   void add_bc() {
     if (bc_ == BoundaryCondition::Dirichlet) {
-      // dirichlet_bc are already implicitely applied
-      // dirichlet_bc<Scalar>(data_.view(),neumann_bc_values_.const_view(), num_ghost_cells_x(), num_ghost_cells_y(),
-                   // kernel_.memory_location());
+      dirichlet_bc<Scalar>(data_.view(),bc_values_.const_view(), num_ghost_cells_x(), num_ghost_cells_y(),
+                kernel_.memory_location());
     } else if (bc_ == BoundaryCondition::Neumann) {
-      neumann_bc(data_.view(), neumann_bc_values_.const_view(), num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
+      neumann_bc(data_.view(), bc_values_.const_view(), num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
     } else if (bc_ == BoundaryCondition::Periodic) {
       periodic_bc(data_.view(), num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
     } else {
@@ -179,7 +178,7 @@ protected:
   zisa::array<Scalar, 2> data_;
   const zisa::array_const_view<Scalar, 2> kernel_;
   const BoundaryCondition bc_;
-  zisa::array<Scalar, 2> neumann_bc_values_;
+  zisa::array<Scalar, 2> bc_values_;
 };
 
 #endif // PDE_BASE_HPP_
