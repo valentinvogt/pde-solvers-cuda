@@ -11,7 +11,7 @@ void add_bc_values_file() {
   float data[10][10];
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
-      data[i][j] = 0.;
+      data[i][j] = 1.;
     }
   }
   std::size_t dims[2] = {10, 10};
@@ -43,7 +43,7 @@ enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 int main() {
 
   // add_initial_data_file();
-  // add_bc_values_file();
+  add_bc_values_file();
 
 zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   float scalar = 0.1; // k / dt^2

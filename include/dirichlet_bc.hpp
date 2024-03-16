@@ -8,7 +8,7 @@
 
 template <typename Scalar>
 void dirichlet_bc_cpu(zisa::array_view<Scalar, 2> data,
-                      const zisa::array_const_view<Scalar, 2> &bc,
+                      zisa::array_const_view<Scalar, 2> bc,
                       unsigned n_ghost_cells_x, unsigned n_ghost_cells_y) {
 
   // add boundary condition on left and right boundary
@@ -36,7 +36,7 @@ void dirichlet_bc_cpu(zisa::array_view<Scalar, 2> data,
 // the boundary data will not change during the algorithm
 template <typename Scalar>
 void dirichlet_bc(zisa::array_view<Scalar, 2> data,
-                  const zisa::array_const_view<Scalar, 2>& bc, 
+                  zisa::array_const_view<Scalar, 2> bc, 
                   unsigned n_ghost_cells_x,
                   unsigned n_ghost_cells_y,
                   zisa::device_type memory_location) {
