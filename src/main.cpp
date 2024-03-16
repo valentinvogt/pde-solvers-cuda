@@ -43,7 +43,7 @@ enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 int main() {
 
   // add_initial_data_file();
-  add_bc_values_file();
+  // add_bc_values_file();
 
 zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   float scalar = 0.1; // k / dt^2
