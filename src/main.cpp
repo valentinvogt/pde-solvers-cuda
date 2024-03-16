@@ -14,7 +14,7 @@ void add_bc_values_file() {
       data[i][j] = i * j + j;
     }
   }
-  std::size_t dims[2] = {8, 8};
+  std::size_t dims[2] = {10, 10};
   serial_writer.write_array(data, zisa::erase_data_type<float>(), "data_1", 2, dims);
   serial_writer.close_group();
   
@@ -57,7 +57,7 @@ zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   heat_kernel(2, 1) = scalar;
   heat_kernel(2, 2) = 0;
 
-  BoundaryCondition bc = BoundaryCondition::Periodic;
+  BoundaryCondition bc = BoundaryCondition::Dirichlet;
 
   //construct a pde of the heat equation with Dirichlet boundary conditions
   #if CUDA_AVAILABLE

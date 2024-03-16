@@ -18,7 +18,7 @@ void dirichlet_bc_cpu(zisa::array_view<Scalar, 2> data,
   for (int x_idx = 0; x_idx < x_length; x_idx++) {
     for (int y_idx = 0; y_idx < n_ghost_cells_y; y_idx++) {
       data(x_idx, y_idx) = bc(x_idx, y_idx);
-      data(x_idx, y_length - 1 - y_idx) = bc(x_idx, y_idx);
+      data(x_idx, y_length - 1 - y_idx) = bc(x_idx, y_length - 1 - y_idx);
     }
   }
 

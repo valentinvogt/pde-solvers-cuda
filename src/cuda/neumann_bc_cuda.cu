@@ -2,7 +2,7 @@
 #include <cuda/neumann_bc_cuda_impl.cuh>
 
 template <typename Scalar>
-void neumann_bc_cuda(zisa::array_view<Scalar, 2> &data, 
+void neumann_bc_cuda(zisa::array_view<Scalar, 2> data, 
                      zisa::array_const_view<Scalar, 2> &bc, unsigned n_ghost_cells_x,
                      unsigned n_ghost_cells_y);
 
