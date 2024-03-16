@@ -132,11 +132,8 @@ public:
     // weird segmentation fault if using cuda
     // how is it possible to print an array on gpus?
     #if CUDA_AVAILABLE
-    std::cout << "reached1" << std::endl;
       zisa::array<float, 2> cpu_data(zisa::shape_t<2>(x_size, y_size));
-    std::cout << "reached2" << std::endl;
       zisa::copy(cpu_data, data_);
-    std::cout << "reached3" << std::endl;
     for (int i = 0; i < x_size; i++) {
       for (int j = 0; j < y_size; j++) {
         std::cout << cpu_data(i, j) << "\t";

@@ -54,7 +54,6 @@ void convolve(zisa::array_view<Scalar, 2> dst,
   }
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
-    std::cout << "reached_cuda" << std::endl;
     convolve_cuda(dst, src, kernel);
   }
 #endif // CUDA_AVAILABLE

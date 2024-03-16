@@ -44,7 +44,8 @@ void convolve_cuda(zisa::array_view<Scalar, 2> dst,
                    zisa::array_const_view<Scalar, 2> kernel) {
 #if CUDA_AVAILABLE
   const int thread_dims = THREAD_DIMS;
-  const int block_dims = std::ceil((double)((src.shape(0) - 2 * (kernel.shape(0) / 2)) * (src.shape(1) - 2 * (kernel.shape(1) / 2)) / thread_dims);
+  const int block_dims = std::ceil(
+    (double) ((src.shape(0) - 2 * (kernel.shape(0) / 2)) * (src.shape(1) - 2 * (kernel.shape(1) / 2))) / thread_dims);
   convolve_cuda_kernel<<<block_dims, thread_dims>>>(dst, src, kernel);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
