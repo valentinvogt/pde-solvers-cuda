@@ -14,6 +14,11 @@ __global__ void
 convolve_cuda_kernel(zisa::array_view<Scalar, 2> dst,
                      zisa::array_const_view<Scalar, 2> src,
                      zisa::array_const_view<Scalar, 2> kernel) {
+  const int linear_idx = threadIdx.x + blockIdx.x * THREAD_DIMS; 
+  if (linear_idx < src.shape(0) * src.shape(1)) { 
+        dst[linear_idx] = src[linear_idx]; 
+  } 
+  return;
   const int ghost_x = kernel.shape(0) / 2;
   const int ghost_y = kernel.shape(1) / 2;
 
@@ -41,8 +46,8 @@ convolve_cuda_kernel(zisa::array_view<Scalar, 2> dst,
 
 template <typename Scalar>
 void convolve_cuda(zisa::array_view<Scalar, 2> dst,
-                   const zisa::array_const_view<Scalar, 2> &src,
-                   const zisa::array_const_view<Scalar, 2> &kernel) {
+                   zisa::array_const_view<Scalar, 2> src,
+                   zisa::array_const_view<Scalar, 2> kernel) {
 #if CUDA_AVAILABLE
   const int thread_dims = THREAD_DIMS;
   const int block_dims = std::ceil((double)(src.shape(0) * src.shape(1)) / thread_dims);
