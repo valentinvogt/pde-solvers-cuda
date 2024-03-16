@@ -9,8 +9,8 @@
 
 template <typename Scalar>
 void convolve_cpu(zisa::array_view<Scalar, 2> dst,
-                  const zisa::array_const_view<Scalar, 2> &src,
-                  const zisa::array_const_view<Scalar, 2> &kernel) {
+                  zisa::array_const_view<Scalar, 2> src,
+                  zisa::array_const_view<Scalar, 2> kernel) {
   // TODO: Optimize
   // IDEA: recognize at compile time which kernel entries are 0 and only multiply if not
   const int ghost_x = kernel.shape(0) / 2;
@@ -33,8 +33,8 @@ void convolve_cpu(zisa::array_view<Scalar, 2> dst,
 
 template <typename Scalar>
 void convolve(zisa::array_view<Scalar, 2> dst,
-              const zisa::array_const_view<Scalar, 2> &src,
-              const zisa::array_const_view<Scalar, 2> &kernel) {
+              zisa::array_const_view<Scalar, 2> src,
+              zisa::array_const_view<Scalar, 2> kernel) {
   const zisa::device_type memory_dst = dst.memory_location();
   const zisa::device_type memory_src = src.memory_location();
   const zisa::device_type memory_kernel = kernel.memory_location();

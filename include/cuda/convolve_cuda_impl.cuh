@@ -12,8 +12,8 @@
 template <typename Scalar>
 __global__ void
 convolve_cuda_kernel(zisa::array_view<Scalar, 2> dst,
-                     const zisa::array_const_view<Scalar, 2> &src,
-                     const zisa::array_const_view<Scalar, 2> &kernel) {
+                     zisa::array_const_view<Scalar, 2> src,
+                     zisa::array_const_view<Scalar, 2> kernel) {
   const int ghost_x = kernel.shape(0) / 2;
   const int ghost_y = kernel.shape(1) / 2;
 
