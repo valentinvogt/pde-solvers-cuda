@@ -131,18 +131,18 @@ public:
               << ", y: " << num_ghost_cells_y() << std::endl;
     // weird segmentation fault if using cuda
     // how is it possible to print an array on gpus?
-    // #if CUDA_AVAILABLE
-    //   zisa::array<float, 2> cpu_data(zisa::shape_t<2>(x_size, y_size));
-    //   zisa::copy(cpu_data, data_);
-    // for (int i = 0; i < x_size; i++) {
-    //   for (int j = 0; j < y_size; j++) {
-    //     std::cout << data(i, j) << "\t";
-    //   }
-    //   std::cout << std::endl;
-    // }
-    // std::cout << std::endl;
-    //   return;
-    // #endif
+    #if CUDA_AVAILABLE
+      zisa::array<float, 2> cpu_data(zisa::shape_t<2>(x_size, y_size));
+      zisa::copy(cpu_data, data_);
+    for (int i = 0; i < x_size; i++) {
+      for (int j = 0; j < y_size; j++) {
+        std::cout << data(i, j) << "\t";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+      return;
+    #endif
     for (int i = 0; i < x_size; i++) {
       for (int j = 0; j < y_size; j++) {
         std::cout << data_.const_view()(i, j) << "\t";

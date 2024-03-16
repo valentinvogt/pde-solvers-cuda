@@ -14,7 +14,7 @@ dirichlet_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
                          unsigned n_ghost_cells_x,
                          unsigned n_ghost_cells_y) {
   // TODO
-  printf("Hello from GPU\n");
+  printf("Hello from GPU dirichlet bc\n");
 }
 
 template <typename Scalar>
