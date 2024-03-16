@@ -72,7 +72,7 @@ zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   #endif
 
   pde.read_initial_data("data/data_8_8.nc", "group_1", "data_1");
-  pde.read_bc_values("data/bc_8_8.nc", "group_1", "data_1");
+  pde.read_neumann_bc_values("data/bc_8_8.nc", "group_1", "data_1");
   pde.print();
 
   pde.apply();
