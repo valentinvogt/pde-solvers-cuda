@@ -18,7 +18,7 @@ dirichlet_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
 }
 
 template <typename Scalar>
-void dirichlet_bc_cuda(zisa::array<Scalar, 2> data,
+void dirichlet_bc_cuda(zisa::array_view<Scalar, 2> data,
                        const zisa::array_const_view<Scalar, 2> &bc,
                        unsigned n_ghost_cells_x,
                        unsigned n_ghost_cells_y) {
