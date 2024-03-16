@@ -13,7 +13,7 @@ dirichlet_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
                          zisa::array_const_view<Scalar, 2> bc,
                          unsigned n_ghost_cells_x,
                          unsigned n_ghost_cells_y) {
-  const int linear_idx = threadIdx.X + THREAD_DIMS * blockIdx.x;
+  const int linear_idx = threadIdx.x + THREAD_DIMS * blockIdx.x;
   const int Nx = data.shape(0);
   const int Ny = data.shape(1);
   if (linear_idx < 2 * (Nx + Ny) - 4) {
