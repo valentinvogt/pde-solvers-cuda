@@ -16,6 +16,7 @@ dirichlet_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
   const int linear_idx = threadIdx.x + THREAD_DIMS * blockIdx.x;
   const int Nx = data.shape(0);
   const int Ny = data.shape(1);
+  return;
   if (linear_idx < 2 * (Nx + Ny) - 4) {
     if (linear_idx < Nx) {
       data(linear_idx, 0) = bc(linear_idx, 0);
