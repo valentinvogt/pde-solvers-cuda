@@ -42,4 +42,6 @@ slurm*
 
 .cache
 
-.txt
+*.txt
+
+
