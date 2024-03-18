@@ -65,7 +65,9 @@ public:
     // neumann and dirichlet bc are already added
     if (bc_ == BoundaryCondition::Periodic) {
       periodic_bc(data_.view(), num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
+      bc_loaded_ = true;
     }
+    data_loaded_ = true;
   }
 
   // make shure that the file exists with the right group name and tag,
@@ -108,11 +110,16 @@ public:
     }
     add_bc();
 
+    bc_loaded_ = true;
   }
 
   void apply() {
     zisa::array<scalar_t, 2> tmp(data_.shape(), data_.device());
     convolve(tmp.view(), data_.const_view(), this->kernel_);
+    if (bc_ == BoundaryCondition::Neumann) {
+      // make shure that boundary values stay constant to later apply boundary conditions (they where not copied in convolve)
+      dirichlet_bc(tmp.view(), data_.const_view(), num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
+    }
     zisa::copy(data_, tmp);
     add_bc();
   }
@@ -166,7 +173,8 @@ protected:
       dirichlet_bc<Scalar>(data_.view(),bc_values_.const_view(), num_ghost_cells_x(), num_ghost_cells_y(),
                 kernel_.memory_location());
     } else if (bc_ == BoundaryCondition::Neumann) {
-      neumann_bc(data_.view(), bc_values_.const_view(), num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
+      // TODO: change dt
+      neumann_bc(data_.view(), bc_values_.const_view(), num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location(), 0.1);
     } else if (bc_ == BoundaryCondition::Periodic) {
       periodic_bc(data_.view(), num_ghost_cells_x(), num_ghost_cells_y(), kernel_.memory_location());
     } else {
@@ -179,6 +187,8 @@ protected:
   const zisa::array_const_view<Scalar, 2> kernel_;
   const BoundaryCondition bc_;
   zisa::array<Scalar, 2> bc_values_;
+  bool data_loaded_ = false;
+  bool bc_loaded_ = false;
 };
 
 #endif // PDE_BASE_HPP_

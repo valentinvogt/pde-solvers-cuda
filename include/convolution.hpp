@@ -31,6 +31,10 @@ void convolve_cpu(zisa::array_view<Scalar, 2> dst,
   }
 }
 
+// This function folds the src with the kernel and stores it in dst.
+// note that it only folds the values inside the ghost cells, therefore the outermost border
+// stays 0. Therefore, you always have to add boundary conditions, even if the outermost values
+// should not change
 template <typename Scalar>
 void convolve(zisa::array_view<Scalar, 2> dst,
               zisa::array_const_view<Scalar, 2> src,

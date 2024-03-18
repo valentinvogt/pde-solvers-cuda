@@ -49,7 +49,6 @@ void periodic_bc_cpu(zisa::array_view<Scalar, 2> data,
   }
 }
 
-// only implemented for f'(x) = 0 so far
 template <typename Scalar>
 void periodic_bc(zisa::array_view<Scalar, 2> data, 
                  unsigned n_ghost_cells_x,

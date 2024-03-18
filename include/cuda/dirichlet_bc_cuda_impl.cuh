@@ -2,6 +2,7 @@
 #define DIRICHLET_BC_CUDA_IMPL_H_
 
 #include <zisa/memory/array.hpp>
+#include <cassert>
 
 #ifndef THREAD_DIMS
 #define THREAD_DIMS 1024
@@ -13,6 +14,10 @@ dirichlet_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
                          zisa::array_const_view<Scalar, 2> bc,
                          unsigned n_ghost_cells_x,
                          unsigned n_ghost_cells_y) {
+
+  // implemented only for n_ghost_cells_x == 1 and n_ghost_cells_y == 1 yet
+  assert(n_ghost_cells_x == 1 && n_ghost_cells_y == 1); 
+
   const int linear_idx = threadIdx.x + THREAD_DIMS * blockIdx.x;
   const int Nx = data.shape(0);
   const int Ny = data.shape(1);
