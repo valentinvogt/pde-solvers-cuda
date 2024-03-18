@@ -8,7 +8,7 @@ void convolve_cuda(zisa::array_view<Scalar, 2> dst,
 
 #define PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_CUDA(TYPE)                       \
   template void convolve_cuda<TYPE>(zisa::array_view<TYPE, 2>,                 \
-                                    zisa::array_const_view<TYPE, 2>,   \
+                                    zisa::array_const_view<TYPE, 2>,           \
                                     zisa::array_const_view<TYPE, 2>);
 
 PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_CUDA(float)

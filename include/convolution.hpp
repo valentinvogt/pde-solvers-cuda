@@ -12,7 +12,8 @@ void convolve_cpu(zisa::array_view<Scalar, 2> dst,
                   zisa::array_const_view<Scalar, 2> src,
                   zisa::array_const_view<Scalar, 2> kernel) {
   // TODO: Optimize
-  // IDEA: recognize at compile time which kernel entries are 0 and only multiply if not
+  // IDEA: recognize at compile time which kernel entries are 0 and only
+  // multiply if not
   const int ghost_x = kernel.shape(0) / 2;
   const int ghost_y = kernel.shape(1) / 2;
   const int Nx = src.shape(0) - 2 * ghost_x;
@@ -23,7 +24,8 @@ void convolve_cpu(zisa::array_view<Scalar, 2> dst,
       for (int di = -ghost_x; di <= ghost_x; ++di) {
         for (int dj = -ghost_y; dj <= ghost_y; ++dj) {
           if (kernel(ghost_x + di, ghost_y + dj) != 0) {
-            dst(i, j) += kernel(ghost_x + di, ghost_y + dj) * src(i + di, j + dj);
+            dst(i, j) +=
+                kernel(ghost_x + di, ghost_y + dj) * src(i + di, j + dj);
           }
         }
       }
@@ -32,9 +34,9 @@ void convolve_cpu(zisa::array_view<Scalar, 2> dst,
 }
 
 // This function folds the src with the kernel and stores it in dst.
-// note that it only folds the values inside the ghost cells, therefore the outermost border
-// stays 0. Therefore, you always have to add boundary conditions, even if the outermost values
-// should not change
+// note that it only folds the values inside the ghost cells, therefore the
+// outermost border stays 0. Therefore, you always have to add boundary
+// conditions, even if the outermost values should not change
 template <typename Scalar>
 void convolve(zisa::array_view<Scalar, 2> dst,
               zisa::array_const_view<Scalar, 2> src,

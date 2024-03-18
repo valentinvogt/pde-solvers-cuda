@@ -36,23 +36,21 @@ void dirichlet_bc_cpu(zisa::array_view<Scalar, 2> data,
 // the boundary data will not change during the algorithm
 template <typename Scalar>
 void dirichlet_bc(zisa::array_view<Scalar, 2> data,
-                  zisa::array_const_view<Scalar, 2> bc, 
-                  unsigned n_ghost_cells_x,
-                  unsigned n_ghost_cells_y,
+                  zisa::array_const_view<Scalar, 2> bc,
+                  unsigned n_ghost_cells_x, unsigned n_ghost_cells_y,
                   zisa::device_type memory_location) {
   if (memory_location == zisa::device_type::cpu) {
     dirichlet_bc_cpu(data, bc, n_ghost_cells_x, n_ghost_cells_y);
   }
-  #if CUDA_AVAILABLE
+#if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
     // TODO
     dirichlet_bc_cuda(data, bc, n_ghost_cells_x, n_ghost_cells_y);
   }
-  #endif // CUDA_AVAILABLE
+#endif // CUDA_AVAILABLE
   else {
     std::cerr << "dirichlet bc unknown device_type of inputs\n";
   }
-
 }
 
 #endif // DIRICHLET_BC_HPP_
