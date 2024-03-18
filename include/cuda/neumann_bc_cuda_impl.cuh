@@ -18,7 +18,7 @@ __global__ void neumann_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
   const int Ny = data.shape(1);
   if (linear_idx < 2 * (Nx + Ny) - 4) {
     if (linear_idx < Nx) {
-      data(linear_idx, 0) = dt * bc(linear_idx, 0);
+      data(linear_idx, 0) += dt * bc(linear_idx, 0);
     } else if (linear_idx < Nx + 2 * Ny - 4) {
       const int y_idx = 1 + (linear_idx - Nx) / 2;
       if (linear_idx % 2) {
