@@ -1,50 +1,50 @@
 #include "zisa/io/hdf5_serial_writer.hpp"
 #include "zisa/io/hierarchical_file.hpp"
+#include "zisa/io/hierarchical_writer.hpp"
 #include <iostream>
 #include <pde_base.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/device_type.hpp>
 
-void add_bc_values_file() {
-  zisa::HDF5SerialWriter serial_writer("data/bc_8_8.nc");
-  serial_writer.open_group("group_1");
-  float data[10][10];
+void add_bc_values_file(zisa::HierarchicalWriter &writer) {
+  zisa::array<float, 2> data(zisa::shape_t<2>(10, 10));
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
-      data[i][j] = 1.;
+      data(i, j) = 1.;
     }
   }
-  std::size_t dims[2] = {10, 10};
-  serial_writer.write_array(data, zisa::erase_data_type<float>(), "data_1", 2,
-                            dims);
-  serial_writer.close_group();
+  zisa::save(writer, data, "bc");
 }
 
-void add_initial_data_file() {
-  zisa::HDF5SerialWriter serial_writer("data/data_8_8.nc");
-  serial_writer.open_group("group_1");
-  float data[10][10];
+void add_initial_data_file(zisa::HierarchicalWriter &writer) {
+  zisa::array<float, 2> data(zisa::shape_t<2>(10, 10));
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
-      data[i][j] = i * j + j;
+      data(i, j) = i * j + j;
     }
   }
-  std::size_t dims[2] = {10, 10};
-  serial_writer.write_array(data, zisa::erase_data_type<float>(), "data_1", 2,
-                            dims);
-  serial_writer.close_group();
+  zisa::save(writer, data, "initial_data");
 }
 
-// Dirichlet BC means currently that f(x) = 0 forall x on boundary
-// Neumann BC means currently that f'(x) = 0 forall x on boundary
+void add_sigma_file(zisa::HierarchicalWriter &writer) {
+  zisa::array<float, 2> data(zisa::shape_t<2>(10, 10));
+  for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 10; j++) {
+      data(i, j) = 0.2 * (i % 3) + 0.3 * (j % 2);
+    }
+  }
+  zisa::save(writer, data, "sigma");
+}
+
 // => f(x) = f(x + dt)
-// TODO: add Dirichlet and Neumann BC for different values or functions
 enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 
 int main() {
 
-  // add_initial_data_file();
-  // add_bc_values_file();
+  // zisa::HDF5SerialWriter serial_writer("data/simple_data.nc");
+  // add_initial_data_file(serial_writer);
+  // add_bc_values_file(serial_writer);
+  // add_sigma_file(serial_writer);
 
   zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   float scalar = 0.1; // k / dt^2
@@ -73,8 +73,9 @@ int main() {
   PDEBase<float, BoundaryCondition> pde(8, 8, heat_kernel, bc);
 #endif
 
-  pde.read_initial_data("data/data_8_8.nc", "group_1", "data_1");
-  pde.read_bc_values("data/bc_8_8.nc", "group_1", "data_1");
+  pde.read_values("data/simple_data.nc");
+  // pde.read_initial_data("data/data_8_8.nc", "group_1", "data_1");
+  // pde.read_bc_values("data/bc_8_8.nc", "group_1", "data_1");
   pde.print();
 
   pde.apply();
