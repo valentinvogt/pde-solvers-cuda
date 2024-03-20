@@ -2,6 +2,7 @@
 #define PDE_BASE_HPP_
 
 #include "zisa/io/file_manipulation.hpp"
+#include "zisa/io/hierarchical_reader.hpp"
 #include "zisa/memory/array_traits.hpp"
 #include "zisa/memory/memory_location.hpp"
 #include "zisa/memory/shape.hpp"
@@ -25,24 +26,28 @@ public:
         bc_values_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2),
                                     Ny + 2 * (kernel.shape(1) / 2)),
                    kernel.memory_location()),
-        sigma_values_(zisa::shape_t<2>(Nx + 1, Ny + 1), kernel.memory_location()),
+        sigma_values_(zisa::shape_t<2>(Nx + 1, Ny + 1),
+                      kernel.memory_location()),
         kernel_(kernel), bc_(bc) {}
 
-
-  void read_values(const std::string &filename) {
+  void read_values(const std::string &filename,
+                   const std::string &tag_data = "initial_data",
+                   const std::string &tag_sigma = "sigma",
+                   const std::string &tag_bc = "bc") {
     zisa::HDF5SerialReader reader(filename);
-    zisa::load_impl<Scalar, 2>(reader, data_, "initial_data", zisa::default_dispatch_tag{});
+    read_data(reader, data_, tag_data);
+    read_data(reader, sigma_values_, tag_sigma);
+
     if (bc_ == BoundaryCondition::Neumann) {
-      zisa::load_impl(reader, bc_values_, "bc", zisa::bool_dispatch_tag{});
+      read_data(reader, bc_values_, tag_bc);
     } else if (bc_ == BoundaryCondition::Dirichlet) {
       zisa::copy(bc_values_, data_);
     } else if (bc_ == BoundaryCondition::Periodic) {
       add_bc();
     }
-    zisa::load_impl(reader, sigma_values_, "sigma", zisa::bool_dispatch_tag{});
     ready_ = true;
-    std::cout << "initial data, sigma and boundary conditions read!" << std::endl;
-    print();
+    std::cout << "initial data, sigma and boundary conditions read!"
+              << std::endl;
   }
 
   void apply() {
@@ -70,73 +75,13 @@ public:
               << std::endl;
     std::cout << "border sizes are x: " << num_ghost_cells_x()
               << ", y: " << num_ghost_cells_y() << std::endl;
-// weird segmentation fault if using cuda
-// how is it possible to print an array on gpus?
-#if CUDA_AVAILABLE
-    zisa::array<float, 2> cpu_data(zisa::shape_t<2>(x_size, y_size));
-    zisa::copy(cpu_data, data_);
-    for (int i = 0; i < x_size; i++) {
-      for (int j = 0; j < y_size; j++) {
-        std::cout << cpu_data(i, j) << "\t";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
-    return;
-#endif
-    for (int i = 0; i < x_size; i++) {
-      for (int j = 0; j < y_size; j++) {
-        std::cout << data_(i, j) << "\t";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
 
-    
-// weird segmentation fault if using cuda
-// how is it possible to print an array on gpus?
-#if CUDA_AVAILABLE
-    zisa::array<float, 2> cpu_bc(zisa::shape_t<2>(x_size, y_size));
-    zisa::copy(cpu_bc, bc_values_);
-    for (int i = 0; i < x_size; i++) {
-      for (int j = 0; j < y_size; j++) {
-        std::cout << cpu_bc(i, j) << "\t";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
-    return;
-#endif
-    for (int i = 0; i < x_size; i++) {
-      for (int j = 0; j < y_size; j++) {
-        std::cout << bc_values_(i, j) << "\t";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
-  
-
-// weird segmentation fault if using cuda
-// how is it possible to print an array on gpus?
-#if CUDA_AVAILABLE
-    zisa::array<float, 2> cpu_sigma(zisa::shape_t<2>(x_size - 1, y_size - 1));
-    zisa::copy(cpu_sigma, sigma_values_);
-    for (int i = 0; i < x_size - 1; i++) {
-      for (int j = 0; j < y_size - 1; j++) {
-        std::cout << cpu_sigma(i, j) << "\t";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
-    return;
-#endif
-    for (int i = 0; i < x_size - 1; i++) {
-      for (int j = 0; j < y_size - 1; j++) {
-        std::cout << sigma_values_(i, j) << "\t";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
+    std::cout << "data:" << std::endl;
+    print_matrix(data_);
+    std::cout << "bc values:" << std::endl;
+    print_matrix(bc_values_);
+    std::cout << "sigma values:" << std::endl;
+    print_matrix(sigma_values_);
   }
 
 protected:
@@ -157,40 +102,39 @@ protected:
     }
   }
 
-  // void read_and_store_file(const std::string &filename,
-  //                          const std::string &group_name,
-  //                          const std::string &tag,
-  //                          zisa::array<Scalar, 2> data_location, unsigned Nx,
-  //                          unsigned Ny) {
-  //   zisa::HDF5SerialReader serial_reader(filename);
-  //   // zisa::load_impl(serial_reader, data_location, tag, zisa::default_dispatch_tag{});
-  //   Scalar return_data[Nx][Ny];
+  inline void read_data(zisa::HierarchicalReader &reader,
+                        zisa::array<Scalar, 2> &data, const std::string &tag) {
+#if CUDA_AVAILABLE
+    zisa::array<float, 2> cpu_data(data.shape());
+    zisa::load_impl<Scalar, 2>(reader, cpu_data, tag,
+                               zisa::default_dispatch_tag{});
+    zisa::copy(data, cpu_data);
+#else
+    zisa::load_impl(reader, data, tag, zisa::bool_dispatch_tag{});
+#endif // CUDA_AVAILABLE
+  }
 
-  //   serial_reader.open_group(group_name);
-  //   serial_reader.read_array(return_data, zisa::erase_data_type<Scalar>(), tag);
-
-  //   // TODO: Optimize
-  //   if (kernel_.memory_location() == zisa::device_type::cpu) {
-  //     for (int i = 0; i < Nx; i++) {
-  //       for (int j = 0; j < Ny; j++) {
-  //         data_location(i, j) = return_data[i][j];
-  //       }
-  //     }
-  //   } else if (kernel_.memory_location() == zisa::device_type::cuda) {
-  //     zisa::array<Scalar, 2> tmp(
-  //         zisa::shape_t<2>(Nx, Ny),
-  //         zisa::device_type::cpu);
-  //     for (int i = 0; i < Nx; i++) {
-  //       for (int j = 0; j < Ny; j++) {
-  //         tmp(i, j) = return_data[i][j];
-  //       }
-  //     }
-  //     zisa::copy(data_location, tmp);
-  //   } else {
-  //     std::cout << "only data on cpu and cuda supported" << std::endl;
-  //   }
-  //   add_bc();
-  // }
+  inline void print_matrix(const zisa::array_const_view<Scalar, 2> &array) {
+#if CUDA_AVAILABLE
+    zisa::array<float, 2> cpu_data(array.shape());
+    zisa::copy(cpu_data, array);
+    for (int i = 0; i < x_size; i++) {
+      for (int j = 0; j < y_size; j++) {
+        std::cout << cpu_data(i, j) << "\t";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+#else
+    for (int i = 0; i < array.shape(0); i++) {
+      for (int j = 0; j < array.shape(1); j++) {
+        std::cout << array(i, j) << "\t";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+#endif
+  }
 
   zisa::array<Scalar, 2> data_;
   const zisa::array_const_view<Scalar, 2> kernel_;
