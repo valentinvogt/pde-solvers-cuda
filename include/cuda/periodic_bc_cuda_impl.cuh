@@ -48,7 +48,7 @@ __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
         // lower right corner
         data(x_length - 1, y_length - 1) = data(1, 1);
       } else {
-        const int loc_y_idx = data_length - idx;
+        const int loc_y_idx = data_size - idx;
         data(x_length - 1, loc_y_idx) = data(1, loc_y_idx);
       }
       return;
