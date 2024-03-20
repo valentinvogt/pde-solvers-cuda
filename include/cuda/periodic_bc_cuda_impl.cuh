@@ -41,7 +41,7 @@ __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
       }
       return;
     } else {
-      if (idx == data_size - y_length - 1) {
+      if (idx == data_size - y_length) {
         // lower left corner
         data(x_length - 1, 0) = data(1, y_length - 2);
       } else if (idx == data_size - 1) {
