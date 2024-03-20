@@ -75,7 +75,7 @@ int main() {
   zisa::copy(heat_kernel_gpu, heat_kernel);
   std::cout << "case_gpu" << std::endl;
 
-  PDEHeat<float, BoundaryCondition, decltype> pde(8, 8, zisa::device_type::cuda, bc, func);
+  PDEHeat<float, BoundaryCondition, decltype(func)> pde(8, 8, zisa::device_type::cuda, bc, func);
 #else
   std::cout << "case_cpu" << std::endl;
   PDEHeat<float, BoundaryCondition, decltype(func)> pde(8, 8, zisa::device_type::cpu, bc, func);
