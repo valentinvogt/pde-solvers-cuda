@@ -79,9 +79,9 @@ public:
               << ", y: " << num_ghost_cells_y() << std::endl;
 
     std::cout << "data:" << std::endl;
-    print_matrix(data_);
+    // print_matrix(data_);
     std::cout << "bc values:" << std::endl;
-    print_matrix(bc_values_);
+    // print_matrix(bc_values_);
     std::cout << "sigma values vertical:" << std::endl;
     // print_matrix(sigma_values_vertical_);
     std::cout << "sigma values horizontal:" << std::endl;
