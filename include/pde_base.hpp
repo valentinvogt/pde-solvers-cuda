@@ -38,7 +38,7 @@ public:
                    const std::string &tag_bc = "bc") {
     zisa::HDF5SerialReader reader(filename);
     read_data(reader, data_, tag_data);
-    zisa::array<Scalar, 2> sigma_tmp(data_.shape(), kernel_.memory_location());
+    zisa::array<Scalar, 2> sigma_tmp(data_.shape());
     read_data(reader, sigma_tmp, tag_sigma);
     construct_sigmas(sigma_tmp);
 
