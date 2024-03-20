@@ -120,7 +120,7 @@ protected:
 
   inline void print_matrix(const zisa::array_const_view<Scalar, 2> &array) {
 #if CUDA_AVAILABLE
-    zisa::array<float, 2> cpu_data(zisa::shape_t<2>(array.shape(0), array.shape(1)));
+    zisa::array<float, 2> cpu_data(array.shape());
     zisa::copy(cpu_data, array);
     for (int i = 0; i < array.shape(0); i++) {
       for (int j = 0; j < array.shape(1); j++) {
