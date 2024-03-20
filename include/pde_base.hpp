@@ -1,18 +1,18 @@
 #ifndef PDE_BASE_HPP_
 #define PDE_BASE_HPP_
 
-#include "zisa/io/file_manipulation.hpp"
-#include "zisa/io/hierarchical_reader.hpp"
-#include "zisa/memory/array_traits.hpp"
-#include "zisa/memory/memory_location.hpp"
-#include "zisa/memory/shape.hpp"
 #include <convolution.hpp>
 #include <dirichlet_bc.hpp>
 #include <neumann_bc.hpp>
 #include <periodic_bc.hpp>
+#include <zisa/io/file_manipulation.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
+#include <zisa/io/hierarchical_reader.hpp>
 #include <zisa/memory/array.hpp>
+#include <zisa/memory/array_traits.hpp>
 #include <zisa/memory/device_type.hpp>
+#include <zisa/memory/memory_location.hpp>
+#include <zisa/memory/shape.hpp>
 
 template <typename Scalar, typename BoundaryCondition> class PDEBase {
 public:
@@ -137,7 +137,7 @@ protected:
       std::cout << std::endl;
     }
     std::cout << std::endl;
-#endif
+#endif // CUDA_AVAILABLE
   }
 
   void construct_sigmas(zisa::array<Scalar, 2> &sigma_tmp) {
@@ -154,7 +154,8 @@ protected:
         }
         if (x_idx < sigma_tmp.shape(0) - 2) {
           horizontal_tmp(x_idx, y_idx) =
-              (sigma_tmp(x_idx + 1, y_idx) + sigma_tmp(x_idx + 1, y_idx + 1)) * .5;
+              (sigma_tmp(x_idx + 1, y_idx) + sigma_tmp(x_idx + 1, y_idx + 1)) *
+              .5;
         }
       }
     }
@@ -175,8 +176,7 @@ protected:
         }
       }
     }
-
-#endif
+#endif // CUDA_AVAILABLE
   }
 
   zisa::array<Scalar, 2> data_;
