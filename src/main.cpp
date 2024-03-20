@@ -36,15 +36,18 @@ void add_sigma_file(zisa::HierarchicalWriter &writer) {
   zisa::save(writer, data, "sigma");
 }
 
+void add_simple_nc_file() {
+  zisa::HDF5SerialWriter serial_writer("data/simple_data.nc");
+  add_initial_data_file(serial_writer);
+  add_bc_values_file(serial_writer);
+  add_sigma_file(serial_writer);
+}
+
 // => f(x) = f(x + dt)
 enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 
 int main() {
-
-  // zisa::HDF5SerialWriter serial_writer("data/simple_data.nc");
-  // add_initial_data_file(serial_writer);
-  // add_bc_values_file(serial_writer);
-  // add_sigma_file(serial_writer);
+  // add_simple_nc_file();
 
   zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   float scalar = 0.1; // k / dt^2
