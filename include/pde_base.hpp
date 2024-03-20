@@ -79,13 +79,13 @@ public:
               << ", y: " << num_ghost_cells_y() << std::endl;
 
     std::cout << "data:" << std::endl;
-    // print_matrix(data_);
+    print_matrix(data_);
     std::cout << "bc values:" << std::endl;
-    // print_matrix(bc_values_);
+    print_matrix(bc_values_);
     std::cout << "sigma values vertical:" << std::endl;
-    // print_matrix(sigma_values_vertical_);
+    print_matrix(sigma_values_vertical_);
     std::cout << "sigma values horizontal:" << std::endl;
-    // print_matrix(sigma_values_horizontal_);
+    print_matrix(sigma_values_horizontal_);
   }
 
 protected:
@@ -120,7 +120,7 @@ protected:
 
   inline void print_matrix(const zisa::array_const_view<Scalar, 2> &array) {
 #if CUDA_AVAILABLE
-    zisa::array<float, 2> cpu_data(array.shape());
+    zisa::array<float, 2> cpu_data(zisa::shape_t<2>(array.shape(0), array.shape(1)));
     zisa::copy(cpu_data, array);
     for (int i = 0; i < array.shape(0); i++) {
       for (int j = 0; j < array.shape(1); j++) {
