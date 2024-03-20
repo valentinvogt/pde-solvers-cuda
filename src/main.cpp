@@ -27,9 +27,9 @@ void add_initial_data_file(zisa::HierarchicalWriter &writer) {
 }
 
 void add_sigma_file(zisa::HierarchicalWriter &writer) {
-  zisa::array<float, 2> data(zisa::shape_t<2>(10, 10));
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 10; j++) {
+  zisa::array<float, 2> data(zisa::shape_t<2>(9, 9));
+  for (int i = 0; i < 9; i++) {
+    for (int j = 0; j < 9; j++) {
       data(i, j) = 0.2 * (i % 3) + 0.3 * (j % 2);
     }
   }

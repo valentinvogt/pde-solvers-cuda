@@ -45,46 +45,6 @@ public:
     print();
   }
 
-  
-  // make shure that the file exists with the right group name and tag,
-  // otherwise this will crash Additionally, the data has to be stored as a
-  // 2-dimensional array with the right amount of entries
-  // void read_initial_data(const std::string &filename,
-  //                        const std::string &group_name,
-  //                        const std::string &tag) {
-  //   read_and_store_file(filename, group_name, tag, data_, data_.shape(0), data_.shape(1));
-  //   // neumann and dirichlet bc are implicitely added
-  //   if (bc_ == BoundaryCondition::Periodic) {
-  //     periodic_bc(data_.view(), num_ghost_cells_x(), num_ghost_cells_y(),
-  //                 kernel_.memory_location());
-  //     bc_loaded_ = true;
-  //   } else if(bc_ == BoundaryCondition::Dirichlet) {
-  //     zisa::copy(bc_values_, data_);
-  //     bc_loaded_ = true;
-  //   }
-  
-  //   data_loaded_ = true;
-  // }
-
-  // make shure that the file exists with the right group name and tag,
-  // otherwise this will crash Additionally, the data has to be stored as a
-  // 2-dimensional array with the right amount of entries
-  // this is only necessairy for neumann boundary conditions
-  // void read_bc_values(const std::string &filename,
-  //                     const std::string &group_name, const std::string &tag) {
-  //   read_and_store_file(filename, group_name, tag, bc_values_, bc_values_.shape(0), bc_values_.shape(1));
-  //   add_bc();
-  //   bc_loaded_ = true;
-  // }
-
-  // void read_sigma_values(const std::string &filename,
-  //                     const std::string &group_name, const std::string &tag) {
-    
-  //   read_and_store_file(filename, group_name, tag, sigma_values_, sigma_values_.shape(0), sigma_values_.shape(1));
-  //   sigma_loaded_ = true;
-  // }
-
-
   void apply() {
     zisa::array<scalar_t, 2> tmp(data_.shape(), data_.device());
     convolve(tmp.view(), data_.const_view(), this->kernel_);
@@ -126,7 +86,7 @@ public:
 #endif
     for (int i = 0; i < x_size; i++) {
       for (int j = 0; j < y_size; j++) {
-        std::cout << data_.const_view()(i, j) << "\t";
+        std::cout << data_(i, j) << "\t";
       }
       std::cout << std::endl;
     }
@@ -149,7 +109,7 @@ public:
 #endif
     for (int i = 0; i < x_size; i++) {
       for (int j = 0; j < y_size; j++) {
-        std::cout << bc_values_.const_view()(i, j) << "\t";
+        std::cout << bc_values_(i, j) << "\t";
       }
       std::cout << std::endl;
     }
@@ -172,7 +132,7 @@ public:
 #endif
     for (int i = 0; i < x_size - 1; i++) {
       for (int j = 0; j < y_size - 1; j++) {
-        std::cout << sigma_values_.const_view()(i, j) << "\t";
+        std::cout << sigma_values_(i, j) << "\t";
       }
       std::cout << std::endl;
     }
