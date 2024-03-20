@@ -69,9 +69,7 @@ public:
 
   // for testing/debugging
   void print() {
-    int x_size = data_.shape(0);
-    int y_size = data_.shape(1);
-    std::cout << "data has size x: " << x_size << ", y: " << y_size
+    std::cout << "data has size x: " << data_.shape(0) << ", y: " << data_.shape(1)
               << std::endl;
     std::cout << "border sizes are x: " << num_ghost_cells_x()
               << ", y: " << num_ghost_cells_y() << std::endl;
@@ -118,8 +116,8 @@ protected:
 #if CUDA_AVAILABLE
     zisa::array<float, 2> cpu_data(array.shape());
     zisa::copy(cpu_data, array);
-    for (int i = 0; i < x_size; i++) {
-      for (int j = 0; j < y_size; j++) {
+    for (int i = 0; i < arra.shape(0); i++) {
+      for (int j = 0; j < array.shape(1); j++) {
         std::cout << cpu_data(i, j) << "\t";
       }
       std::cout << std::endl;
