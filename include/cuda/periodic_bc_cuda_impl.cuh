@@ -9,76 +9,62 @@
 
 template <typename Scalar>
 __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
-                                        unsigned n_ghost_cells_x,
-                                        unsigned n_ghost_cells_y,
                                         unsigned data_size) {
   const unsigned idx = blockIdx.x * THREAD_DIMS + threadIdx.x;
+  const unsigend x_length = data.shape(0);
+  const unsigned y_length = data.shape(1);
   printf("idx: %u\n", idx);
   // access not working properly now
   if (idx < data_size) {
-    if (idx < n_ghost_cells_x * data.shape(1)) {
-      // upper boundary
-      const unsigned x_idx = idx / data.shape(1);
-      const unsigned y_idx = idx - data.shape(1) * x_idx;
-      const unsigned x_idx_to_copy =
-          data.shape(0) - 2 * n_ghost_cells_x + x_idx;
-      data(x_idx, y_idx) = data(x_idx_to_copy, y_idx);
-      return;
-    } else if (idx < n_ghost_cells_x * data.shape(1) +
-                         n_ghost_cells_y *
-                             (data.shape(0) - 2 * n_ghost_cells_y) * 2) {
-      // left or right boundary
-      const unsigned idx_without_top = idx - n_ghost_cells_x * data.shape(1);
-
-      const unsigned x_idx =
-          (idx_without_top) / (2 * n_ghost_cells_y) + n_ghost_cells_x;
-      const unsigned y_shift_idx =
-          idx_without_top - (x_idx - n_ghost_cells_x) * 2 * n_ghost_cells_y;
-      bool on_left_boundary = y_shift_idx < n_ghost_cells_y;
-      if (on_left_boundary) {
-        const unsigned y_idx = y_shift_idx;
-        const unsigned y_idx_to_copy =
-            y_idx + data.shape(1) - 2 * n_ghost_cells_y;
-        data(x_idx, y_idx) = data(x_idx, y_idx_to_copy);
-        return;
+    if (idx < y_length) {
+      if (idx == 0) {
+        // upper left corner
+        data(0, 0) = data(x_length - 2, y_length - 2);
+      } else if (idx == y_length - 1) {
+        // upper right corner
+        data(0, idx) = data(x_length - 2, 1);
       } else {
-        const unsigned y_idx =
-            y_shift_idx + data.shape(1) - 2 * n_ghost_cells_y;
-        const unsigned y_idx_to_copy = y_shift_idx;
-        data(x_idx, y_idx) = data(x_idx, y_idx_to_copy);
-        return;
+        // upper boundary without corners
+        data(0, idx) = data(x_length - 2, idx);
       }
-    } else {
-      // bottom boundary
-      const unsigned idx_without_top_and_boundaries =
-          idx - n_ghost_cells_x * data.shape(1) -
-          n_ghost_cells_y * 2 * (data.shape(0) - 2 * n_ghost_cells_x);
-      const unsigned x_idx = data.shape(0) - n_ghost_cells_x +
-                             idx_without_top_and_boundaries / data.shape(1);
-      const unsigned y_idx =
-          idx_without_top_and_boundaries - x_idx * data.shape(1);
-      const unsigned x_idx_to_copy =
-          x_idx + 2 * n_ghost_cells_x - data.shape(0);
-      data(x_idx, y_idx) = data(x_idx_to_copy, y_idx);
       return;
+    } else if (idx < y_length + (x_length - 2) * 2) {
+      const int loc_idx = idx - y_length;
+      // left or right boundary
+      if (idx % 2 == 0) {
+        // left boundary
+        const int x_idx = (loc_idx) / 2 + 1;
+        data(x_idx, 0) = data(x_idx, y_length - 2);
+      } else {
+        const int x_idx = (loc_idx + 1) / 2;
+        data(x_idx, y_length - 1) = data(x_idx, 1);
+      }
+    return;
+   } else {
+    if (idx == data_size - y_length - 1) {
+      // lower left corner
+      data(x_length - 1, 0) = data(1, y_length - 2);
+    } else if (idx == data_size - 1){
+      // lower right corner
+      data(x_length - 1, y_length - 1) = data(1, 1);
+    } else {
+      const int loc_y_idx = data_length - idx;
+      data(x_length - 1, loc_y_idx) = data(1, loc_y_idx);
     }
+    return;
   }
 }
 
 template <typename Scalar>
-void periodic_bc_cuda(zisa::array_view<Scalar, 2> data,
-                      unsigned n_ghost_cells_x, unsigned n_ghost_cells_y) {
+void periodic_bc_cuda(zisa::array_view<Scalar, 2> data) {
 #if CUDA_AVAILABLE
   const unsigned thread_dims = THREAD_DIMS;
   // size of whole boundary where periodic bc has to be applied
-  const unsigned data_size =
-      data.shape(1) * n_ghost_cells_x * 2 +
-      (data.shape(0) - 2 * n_ghost_cells_x) * n_ghost_cells_y * 2;
+  const unsigned data_size = (data.shape(0) + data.shape(1)) * 2 - 4;
   const unsigned block_dims = std::ceil((double)data_size / thread_dims);
   std::cout << "should reach cuda " << block_dims << " "
             << "thread_dims" << std::endl;
-  periodic_bc_cuda_kernel<<<block_dims, thread_dims>>>(
-      data, n_ghost_cells_x, n_ghost_cells_y, data_size);
+  periodic_bc_cuda_kernel<<<block_dims, thread_dims>>>(data, data_size);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
     std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)

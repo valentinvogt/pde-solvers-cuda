@@ -13,24 +13,20 @@
 #include <zisa/memory/device_type.hpp>
 #include <zisa/memory/memory_location.hpp>
 #include <zisa/memory/shape.hpp>
+#include <convolve_sigma_add_f.hpp>
+#include <helpers.hpp>
 
 template <typename Scalar, typename BoundaryCondition> class PDEBase {
 public:
-  using scalar_t = Scalar;
 
   PDEBase(unsigned Nx, unsigned Ny,
-          const zisa::array_const_view<Scalar, 2> &kernel, BoundaryCondition bc)
-      : data_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2),
-                               Ny + 2 * (kernel.shape(1) / 2)),
-              kernel.memory_location()),
-        bc_values_(zisa::shape_t<2>(Nx + 2 * (kernel.shape(0) / 2),
-                                    Ny + 2 * (kernel.shape(1) / 2)),
-                   kernel.memory_location()),
-        sigma_values_vertical_(zisa::shape_t<2>(Nx + 1, Ny),
-                               kernel.memory_location()),
-        sigma_values_horizontal_(zisa::shape_t<2>(Nx, Ny + 1),
-                                 kernel.memory_location()),
-        kernel_(kernel), bc_(bc) {}
+          const zisa::device_type memory_location, BoundaryCondition bc)
+      : data_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location),
+        bc_values_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location),
+        sigma_values_vertical_(zisa::shape_t<2>(Nx + 1, Ny), memory_location),
+        sigma_values_horizontal_(zisa::shape_t<2>(Nx, Ny + 1), memory_location),
+        memory_location_(memory_location),
+        bc_(bc) {}
 
   void read_values(const std::string &filename,
                    const std::string &tag_data = "initial_data",
@@ -54,97 +50,50 @@ public:
               << std::endl;
   }
 
-  void apply() {
-    zisa::array<scalar_t, 2> tmp(data_.shape(), data_.device());
-    convolve(tmp.view(), data_.const_view(), this->kernel_);
-    if (bc_ == BoundaryCondition::Neumann) {
-      // make shure that boundary values stay constant to later apply boundary
-      // conditions (they where not copied in convolve)
-      dirichlet_bc(tmp.view(), data_.const_view(), num_ghost_cells_x(),
-                   num_ghost_cells_y(), kernel_.memory_location());
-    }
-    zisa::copy(data_, tmp);
-    add_bc();
-  }
+  virtual void apply() = 0;
 
-  unsigned num_ghost_cells(unsigned dir) { return kernel_.shape(dir) / 2; }
-  unsigned num_ghost_cells_x() { return num_ghost_cells(0); }
-  unsigned num_ghost_cells_y() { return num_ghost_cells(1); }
+  // remove those later
+  unsigned num_ghost_cells(unsigned dir) { return 1; }
+  unsigned num_ghost_cells_x() { return 1; }
+  unsigned num_ghost_cells_y() { return 1; }
 
   // for testing/debugging
   void print() {
     std::cout << "data has size x: " << data_.shape(0)
               << ", y: " << data_.shape(1) << std::endl;
-    std::cout << "border sizes are x: " << num_ghost_cells_x()
-              << ", y: " << num_ghost_cells_y() << std::endl;
 
     std::cout << "data:" << std::endl;
-    print_matrix(data_);
+    print_matrix(data_.const_view());
     std::cout << "bc values:" << std::endl;
-    print_matrix(bc_values_);
+    print_matrix(bc_values_.const_view());
     std::cout << "sigma values vertical:" << std::endl;
-    print_matrix(sigma_values_vertical_);
+    print_matrix(sigma_values_vertical_.const_view());
     std::cout << "sigma values horizontal:" << std::endl;
-    print_matrix(sigma_values_horizontal_);
+    print_matrix(sigma_values_horizontal_.const_view());
   }
 
 protected:
   void add_bc() {
     if (bc_ == BoundaryCondition::Dirichlet) {
-      dirichlet_bc<Scalar>(data_.view(), bc_values_.const_view(),
-                           num_ghost_cells_x(), num_ghost_cells_y(),
-                           kernel_.memory_location());
+      dirichlet_bc<Scalar>(data_.view(), bc_values_.const_view());
     } else if (bc_ == BoundaryCondition::Neumann) {
       // TODO: change dt
-      neumann_bc(data_.view(), bc_values_.const_view(), num_ghost_cells_x(),
-                 num_ghost_cells_y(), kernel_.memory_location(), 0.1);
+      Scalar dt = 0.1;
+      neumann_bc(data_.view(), bc_values_.const_view(), dt);
     } else if (bc_ == BoundaryCondition::Periodic) {
-      periodic_bc(data_.view(), num_ghost_cells_x(), num_ghost_cells_y(),
-                  kernel_.memory_location());
+      periodic_bc(data_.view());
     } else {
       std::cout << "boundary condition not implemented yet!" << std::endl;
     }
   }
 
-  inline void read_data(zisa::HierarchicalReader &reader,
-                        zisa::array<Scalar, 2> &data, const std::string &tag) {
-#if CUDA_AVAILABLE
-    zisa::array<float, 2> cpu_data(data.shape());
-    zisa::load_impl<Scalar, 2>(reader, cpu_data, tag,
-                               zisa::default_dispatch_tag{});
-    zisa::copy(data, cpu_data);
-#else
-    zisa::load_impl(reader, data, tag, zisa::bool_dispatch_tag{});
-#endif // CUDA_AVAILABLE
-  }
-
-  inline void print_matrix(const zisa::array_const_view<Scalar, 2> &array) {
-#if CUDA_AVAILABLE
-    zisa::array<float, 2> cpu_data(array.shape());
-    zisa::copy(cpu_data, array);
-    for (int i = 0; i < array.shape(0); i++) {
-      for (int j = 0; j < array.shape(1); j++) {
-        std::cout << cpu_data(i, j) << "\t";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
-#else
-    for (int i = 0; i < array.shape(0); i++) {
-      for (int j = 0; j < array.shape(1); j++) {
-        std::cout << array(i, j) << "\t";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
-#endif // CUDA_AVAILABLE
-  }
 
   void construct_sigmas(zisa::array<Scalar, 2> &sigma_tmp) {
     // TODO: optimize
 #if CUDA_AVAILABLE
     zisa::array<Scalar, 2> vertical_tmp(sigma_values_vertical_.shape());
     zisa::array<Scalar, 2> horizontal_tmp(sigma_values_horizontal_.shape());
+    zisa::array<Scalar, 2> tmp(data_.shape(), data_.device());
     for (int x_idx = 0; x_idx < sigma_tmp.shape(0) - 1; x_idx++) {
       for (int y_idx = 0; y_idx < sigma_tmp.shape(1) - 1; y_idx++) {
         if (y_idx < sigma_tmp.shape(1) - 2) {
@@ -180,11 +129,12 @@ protected:
   }
 
   zisa::array<Scalar, 2> data_;
-  const zisa::array_const_view<Scalar, 2> kernel_;
-  const BoundaryCondition bc_;
   zisa::array<Scalar, 2> bc_values_;
   zisa::array<Scalar, 2> sigma_values_vertical_;
   zisa::array<Scalar, 2> sigma_values_horizontal_;
+
+  const BoundaryCondition bc_;
+  const zisa::device_type memory_location_;
   bool ready_ = false;
 };
 

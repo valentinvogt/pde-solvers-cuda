@@ -3,7 +3,7 @@
 #include "zisa/io/hierarchical_writer.hpp"
 #include <filesystem>
 #include <iostream>
-#include <pde_base.hpp>
+#include <pde_heat.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/device_type.hpp>
 
@@ -65,8 +65,9 @@ int main() {
   heat_kernel(2, 1) = scalar;
   heat_kernel(2, 2) = 0;
 
-  BoundaryCondition bc = BoundaryCondition::Neumann;
+  BoundaryCondition bc = BoundaryCondition::Periodic;
 
+  auto func = [](double x) -> double { return x; };
 // construct a pde of the heat equation with Dirichlet boundary conditions
 #if CUDA_AVAILABLE
   zisa::array<float, 2> heat_kernel_gpu(zisa::shape_t<2>(3, 3),
@@ -74,10 +75,10 @@ int main() {
   zisa::copy(heat_kernel_gpu, heat_kernel);
   std::cout << "case_gpu" << std::endl;
 
-  PDEBase<float, BoundaryCondition> pde(8, 8, heat_kernel_gpu, bc);
+  PDEHeat<float, BoundaryCondition, decltype> pde(8, 8, zisa::device_type::cuda, bc, func);
 #else
   std::cout << "case_cpu" << std::endl;
-  PDEBase<float, BoundaryCondition> pde(8, 8, heat_kernel, bc);
+  PDEHeat<float, BoundaryCondition, decltype(func)> pde(8, 8, zisa::device_type::cpu, bc, func);
 #endif
 
   pde.read_values("data/simple_data.nc");
@@ -85,13 +86,6 @@ int main() {
 
   pde.apply();
   pde.print();
-
-  pde.apply();
-  pde.print();
-
-  pde.apply();
-  pde.print();
-
   for (int i = 0; i < 1000; i++) {
     pde.apply();
   }

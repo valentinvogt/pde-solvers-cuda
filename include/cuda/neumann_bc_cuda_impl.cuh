@@ -7,11 +7,8 @@
 template <typename Scalar>
 __global__ void neumann_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
                                        zisa::array_const_view<Scalar, 2> bc,
-                                       unsigned n_ghost_cells_x,
-                                       unsigned n_ghost_cells_y, double dt) {
+                                       Scalar dt) {
 
-  // implemented only for n_ghost_cells_x == 1 and n_ghost_cells_y == 1 yet
-  assert(n_ghost_cells_x == 1 && n_ghost_cells_y == 1);
 
   const int linear_idx = threadIdx.x + THREAD_DIMS * blockIdx.x;
   const int Nx = data.shape(0);
@@ -36,14 +33,12 @@ __global__ void neumann_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
 template <typename Scalar>
 void neumann_bc_cuda(zisa::array_view<Scalar, 2> data,
                      zisa::array_const_view<Scalar, 2> bc,
-                     unsigned n_ghost_cells_x, unsigned n_ghost_cells_y,
-                     double dt) {
+                     Scalar dt) {
 #if CUDA_AVAILABLE
   const int thread_dims = THREAD_DIMS;
   const int block_dims =
       std::ceil((double)(data.shape(0) * data.shape(1)) / thread_dims);
-  neumann_bc_cuda_kernel<<<block_dims, thread_dims>>>(data, bc, n_ghost_cells_x,
-                                                      n_ghost_cells_y, dt);
+  neumann_bc_cuda_kernel<<<block_dims, thread_dims>>>(data, bc, dt);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
     std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)
