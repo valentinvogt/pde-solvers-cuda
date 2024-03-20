@@ -153,8 +153,8 @@ protected:
               .5;
         }
         if (x_idx < sigma_tmp.shape(0) - 2) {
-          vertical_tmp(x_idx, y_idx) =
-              (sigma_tmp(x_idx + 1, y_idx) + sigma_tmp(x_idx + 1, y_idx)) * .5;
+          horizontal_tmp(x_idx, y_idx) =
+              (sigma_tmp(x_idx + 1, y_idx) + sigma_tmp(x_idx + 1, y_idx + 1)) * .5;
         }
       }
     }
