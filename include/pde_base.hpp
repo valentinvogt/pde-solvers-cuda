@@ -170,7 +170,8 @@ protected:
         }
         if (x_idx < sigma_tmp.shape(0) - 2) {
           sigma_values_horizontal_(x_idx, y_idx) =
-              (sigma_tmp(x_idx + 1, y_idx) + sigma_tmp(x_idx + 1, y_idx + 1)) * .5;
+              (sigma_tmp(x_idx + 1, y_idx) + sigma_tmp(x_idx + 1, y_idx + 1)) *
+              .5;
         }
       }
     }

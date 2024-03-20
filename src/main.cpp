@@ -40,14 +40,14 @@ void add_sigma_file(zisa::HierarchicalWriter &writer) {
 void add_simple_nc_file() {
 
   // check if it has already been created
-  if (std::filesystem::exists("data/simple_data.nc")) return;
+  if (std::filesystem::exists("data/simple_data.nc"))
+    return;
   zisa::HDF5SerialWriter serial_writer("data/simple_data.nc");
   add_initial_data_file(serial_writer);
   add_bc_values_file(serial_writer);
   add_sigma_file(serial_writer);
 }
 
-// => f(x) = f(x + dt)
 enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 
 int main() {
@@ -81,8 +81,6 @@ int main() {
 #endif
 
   pde.read_values("data/simple_data.nc");
-  // pde.read_initial_data("data/data_8_8.nc", "group_1", "data_1");
-  // pde.read_bc_values("data/bc_8_8.nc", "group_1", "data_1");
   pde.print();
 
   pde.apply();
