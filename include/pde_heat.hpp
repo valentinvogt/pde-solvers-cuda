@@ -15,7 +15,7 @@ public:
 
 
   void apply() override {
-    if (!this->ready) {
+    if (!this->ready_) {
       std::cerr << "Heat solver is not ready yet! Read data first" << std::endl;
       return;
     }
