@@ -1,6 +1,7 @@
 #include "zisa/io/hdf5_serial_writer.hpp"
 #include "zisa/io/hierarchical_file.hpp"
 #include "zisa/io/hierarchical_writer.hpp"
+#include <filesystem>
 #include <iostream>
 #include <pde_base.hpp>
 #include <zisa/memory/array.hpp>
@@ -27,9 +28,9 @@ void add_initial_data_file(zisa::HierarchicalWriter &writer) {
 }
 
 void add_sigma_file(zisa::HierarchicalWriter &writer) {
-  zisa::array<float, 2> data(zisa::shape_t<2>(9, 9));
-  for (int i = 0; i < 9; i++) {
-    for (int j = 0; j < 9; j++) {
+  zisa::array<float, 2> data(zisa::shape_t<2>(10, 10));
+  for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 10; j++) {
       data(i, j) = 0.2 * (i % 3) + 0.3 * (j % 2);
     }
   }
@@ -37,6 +38,9 @@ void add_sigma_file(zisa::HierarchicalWriter &writer) {
 }
 
 void add_simple_nc_file() {
+
+  // check if it has already been created
+  if (std::filesystem::exists("data/simple_data.nc")) return;
   zisa::HDF5SerialWriter serial_writer("data/simple_data.nc");
   add_initial_data_file(serial_writer);
   add_bc_values_file(serial_writer);
@@ -47,7 +51,7 @@ void add_simple_nc_file() {
 enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 
 int main() {
-  // add_simple_nc_file();
+  add_simple_nc_file();
 
   zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
   float scalar = 0.1; // k / dt^2
