@@ -2,29 +2,22 @@
 #include "zisa/io/hierarchical_file.hpp"
 #include "zisa/io/hierarchical_writer.hpp"
 #include <filesystem>
+#include <generic_function.hpp>
 #include <iostream>
 #include <pde_heat.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/device_type.hpp>
-#include <generic_function.hpp>
 
-template <typename Scalar>
-class MyFunConst: public GenericFunction<float> {
+template <typename Scalar> class MyFunConst : public GenericFunction<float> {
 public:
-  MyFunConst(Scalar x): x_(x) {}
+  MyFunConst(Scalar x) : x_(x) {}
 #if CUDA_AVAILABLE
-  inline __host__ __device__ Scalar operator()(Scalar x) {
-    return x_;
-  }
+  inline __host__ __device__ Scalar operator()(Scalar x) { return x_; }
 
 #else
-  inline Scalar operator()(Scalar x){
-    return x_;
-  }
+  inline Scalar operator()(Scalar x) { return x_; }
 #endif
 
-
-  
 private:
   Scalar x_;
 };
@@ -100,7 +93,7 @@ int main() {
   BoundaryCondition bc = BoundaryCondition::Periodic;
 
   auto func_cpu = [](float /*x*/) -> float { return 0; };
-// construct a pde of the heat equation with Dirichlet boundary conditions
+  // construct a pde of the heat equation with Dirichlet boundary conditions
   MyFunConst<float> func(0.);
 #if CUDA_AVAILABLE
   std::cout << "case_gpu" << std::endl;

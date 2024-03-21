@@ -5,21 +5,19 @@
 #define THREAD_DIMS 1024
 #endif
 
-
-
-templaate <typename Scalar, typename Function>
-__global__ void convolve_sigma_add_f_cuda_kernel(zisa::array_view<Scalar, 2> dst,
-                   zisa::array_const_view<Scalar, 2> src,
-                   zisa::array_const_view<Scalar, 2> sigma, Scalar del_x_2, Function f) {
-  //TODO:
+templaate<typename Scalar, typename Function> __global__ void
+convolve_sigma_add_f_cuda_kernel(zisa::array_view<Scalar, 2> dst,
+                                 zisa::array_const_view<Scalar, 2> src,
+                                 zisa::array_const_view<Scalar, 2> sigma,
+                                 Scalar del_x_2, Function f) {
+  // TODO:
 }
 
 template <typename Scalar, typename Function>
 void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
-                   zisa::array_const_view<Scalar, 2> src,
-                   zisa::array_const_view<Scalar, 2> sigma, 
-                   Scalar del_x_2,
-                   Function f) {
+                               zisa::array_const_view<Scalar, 2> src,
+                               zisa::array_const_view<Scalar, 2> sigma,
+                               Scalar del_x_2, Function f) {
 #if CUDA_AVAILABLE
   const int thread_dims = THREAD_DIMS;
   const int block_dims =
@@ -27,7 +25,8 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
                          (src.shape(1) - 2 * (kernel.shape(1) / 2))) /
                 thread_dims);
   std::cout << "conv_sigma on cuda not implemented yet" << std::endl;
-  convolve_sigma_add_f_cuda_kernel<<<block_dims, thread_dims>>>(dst, src, sigma, del_x_2, f);
+  convolve_sigma_add_f_cuda_kernel<<<block_dims, thread_dims>>>(dst, src, sigma,
+                                                                del_x_2, f);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
     std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)
@@ -36,4 +35,3 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
 #endif // CUDA_AVAILABLE
 }
 #endif // CONVOLVE_SIGMA_ADD_F_CUDA_IMPL_H_
-

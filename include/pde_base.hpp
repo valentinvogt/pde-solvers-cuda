@@ -17,7 +17,8 @@
 
 template <typename Scalar, typename BoundaryCondition> class PDEBase {
 public:
-  // note here that Nx and Ny denote the size INSIDE the boundary WITHOUT the boundary
+  // note here that Nx and Ny denote the size INSIDE the boundary WITHOUT the
+  // boundary
   PDEBase(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc)
       : data_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location),

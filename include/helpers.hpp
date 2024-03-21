@@ -6,8 +6,7 @@
 
 template <typename Scalar>
 void add_arrays_cpu(zisa::array_view<Scalar, 2> dst,
-                    zisa::array_const_view<Scalar, 2> src,
-                    Scalar scaling) {
+                    zisa::array_const_view<Scalar, 2> src, Scalar scaling) {
   // TODO: Optimize
   for (int i = 0; i < dst.shape(0); i++) {
     for (int j = 0; j < dst.shape(1); j++) {
