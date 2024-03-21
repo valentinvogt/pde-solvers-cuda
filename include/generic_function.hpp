@@ -14,7 +14,7 @@ public:
   inline Scalar operator()(Scalar x) { return 1000; }
 #endif
 
-  //TODO: setters
+  // TODO: setters
 private:
   // functions returns f(x) = const_val_ + lin_val_ * x + quad_val_ * x^2 +
   // exp_scale_val_ * exp(exp_pot_val_ * x)
