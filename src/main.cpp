@@ -77,17 +77,19 @@ int main() {
 
   BoundaryCondition bc = BoundaryCondition::Periodic;
 
-  auto func = [](double x) -> double { return 0; };
+  auto func_cpu = [](float /*x*/) -> float { return 0; };
 // construct a pde of the heat equation with Dirichlet boundary conditions
 #if CUDA_AVAILABLE
+  auto func_cuda = []__device__ (float /*x*/) -> float { return 0.; };
+  std::cout << decltype(func_cuda) << std::endl;
   std::cout << "case_gpu" << std::endl;
 
-  PDEHeat<float, BoundaryCondition, decltype(func)> pde(
-      8, 8, zisa::device_type::cuda, bc, func);
+  PDEHeat<float, BoundaryCondition, decltype(func_cuda)> pde(
+      8, 8, zisa::device_type::cuda, bc, func_cuda);
 #else
   std::cout << "case_cpu" << std::endl;
-  PDEHeat<float, BoundaryCondition, decltype(func)> pde(
-      8, 8, zisa::device_type::cpu, bc, func);
+  PDEHeat<float, BoundaryCondition, decltype(func_cpu)> pde(
+      8, 8, zisa::device_type::cpu, bc, func_cpu);
 #endif
 
   pde.read_values("data/simple_data.nc");

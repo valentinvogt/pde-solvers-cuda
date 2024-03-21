@@ -1,8 +1,11 @@
 #ifndef CONVOLVE_SIGMA_ADD_F_HPP_
 #define CONVOLVE_SIGMA_ADD_F_HPP_
 
-#include "zisa/memory/device_type.hpp"
+#include <zisa/memory/device_type.hpp>
 #include <zisa/memory/array.hpp>
+#if CUDA_AVAILABLE
+#include <cuda/convolve_sigma_add_f_cuda.hpp>
+#endif
 
 template <typename Scalar, typename Function>
 void convolve_sigma_add_f_cpu(
@@ -21,8 +24,8 @@ void convolve_sigma_add_f_cpu(
            sigma(2 * x, y - 1) * src(x + 1, y) -
                (sigma(2 * x - 1, y - 1) + sigma(2 * x - 1, y) +
                 sigma(2 * x - 2, y - 1) + sigma(2 * x, y - 1)) *
-               src(x, y) +
-           f(src(x, y)));
+               src(x, y)) +
+           f(src(x, y));
     }
   }
 }
@@ -56,7 +59,7 @@ void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
     // TODO
-    // convolve_sigma_add_f_cuda(dst, src, sigma, del_x_2, f);
+    convolve_sigma_add_f_cuda(dst, src, sigma, del_x_2, f);
   }
 #endif // CUDA_AVAILABLE
   else {
