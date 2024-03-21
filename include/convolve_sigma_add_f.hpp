@@ -11,7 +11,7 @@ template <typename Scalar, typename Function>
 void convolve_sigma_add_f_cpu(
     zisa::array_view<Scalar, 2> dst, zisa::array_const_view<Scalar, 2> src,
     zisa::array_const_view<Scalar, 2> sigma,
-    double del_x_2 /* 1/(dx^2)*/, Function f) {
+    Scalar del_x_2 /* 1/(dx^2)*/, Function f) {
   const unsigned Nx = src.shape(0);
   const unsigned Ny = src.shape(1);
   for (int x = 1; x < Nx - 1; x++) {
@@ -35,7 +35,7 @@ template <typename Scalar, typename Function>
 void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
                           zisa::array_const_view<Scalar, 2> src,
                           zisa::array_const_view<Scalar, 2> sigma,
-                          double del_x_2 /* 1/(dx^2)*/, Function f) {
+                          Scalar del_x_2 /* 1/(dx^2)*/, Function f) {
 
   const zisa::device_type memory_dst = dst.memory_location();
   const zisa::device_type memory_src = src.memory_location();

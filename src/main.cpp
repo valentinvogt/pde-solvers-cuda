@@ -81,7 +81,6 @@ int main() {
 // construct a pde of the heat equation with Dirichlet boundary conditions
 #if CUDA_AVAILABLE
   auto func_cuda = []__device__ (float /*x*/) -> float { return 0.; };
-  std::cout << decltype(func_cuda) << std::endl;
   std::cout << "case_gpu" << std::endl;
 
   PDEHeat<float, BoundaryCondition, decltype(func_cuda)> pde(
