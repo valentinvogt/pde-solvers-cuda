@@ -7,8 +7,7 @@
 template <typename Scalar, typename Function>
 void convolve_sigma_add_f_cpu(
     zisa::array_view<Scalar, 2> dst, zisa::array_const_view<Scalar, 2> src,
-    zisa::array_const_view<Scalar, 2> sigma_vertical,
-    zisa::array_const_view<Scalar, 2> sigma_horizontal,
+    zisa::array_const_view<Scalar, 2> sigma,
     double del_x_2 /* 1/(dx^2)*/, Function f) {
   const unsigned Nx = src.shape(0);
   const unsigned Ny = src.shape(1);
@@ -16,13 +15,12 @@ void convolve_sigma_add_f_cpu(
     for (int y = 1; y < Ny - 1; y++) {
       dst(x, y) =
           del_x_2 *
-          (sigma_horizontal(x - 1, y - 1) * src(x, y - 1) +
-           sigma_horizontal(x - 1, y) * src(x, y + 1) +
-           sigma_vertical(x - 1, y - 1) * src(x - 1, y) +
-           sigma_vertical(x, y - 1) * src(x + 1, y) -
-           4. *
-               (sigma_horizontal(x - 1, y - 1) + sigma_horizontal(x - 1, y) +
-                sigma_vertical(x - 1, y - 1) + sigma_vertical(x, y - 1)) *
+          (sigma(2 * x - 1, y - 1) * src(x, y - 1) +
+           sigma(2 * x - 1, y) * src(x, y + 1) +
+           sigma(2 * x - 2, y - 1) * src(x - 1, y) +
+           sigma(2 * x, y - 1) * src(x + 1, y) -
+               (sigma(2 * x - 1, y - 1) + sigma(2 * x - 1, y) +
+                sigma(2 * x - 2, y - 1) + sigma(2 * x, y - 1)) *
                src(x, y) +
            f(src(x, y)));
     }
@@ -33,17 +31,14 @@ void convolve_sigma_add_f_cpu(
 template <typename Scalar, typename Function>
 void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
                           zisa::array_const_view<Scalar, 2> src,
-                          zisa::array_const_view<Scalar, 2> sigma_vertical,
-                          zisa::array_const_view<Scalar, 2> sigma_horizontal,
+                          zisa::array_const_view<Scalar, 2> sigma,
                           double del_x_2 /* 1/(dx^2)*/, Function f) {
 
   const zisa::device_type memory_dst = dst.memory_location();
   const zisa::device_type memory_src = src.memory_location();
-  const zisa::device_type memory_sigma_v = sigma_vertical.memory_location();
-  const zisa::device_type memory_sigma_h = sigma_horizontal.memory_location();
+  const zisa::device_type memory_sigma = sigma.memory_location();
 
-  if (!(memory_dst == memory_src && memory_src == memory_sigma_h &&
-        memory_src == memory_sigma_v)) {
+  if (!(memory_dst == memory_src && memory_src == memory_sigma)) {
     std::cerr << "Convolve sigma add f: Inputs must be located on the same "
                  "hardware\n";
     exit(1);
@@ -55,7 +50,7 @@ void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
   }
 
   if (memory_dst == zisa::device_type::cpu) {
-    convolve_sigma_add_f_cpu(dst, src, sigma_vertical, sigma_horizontal,
+    convolve_sigma_add_f_cpu(dst, src, sigma, 
                              del_x_2, f);
   }
 #if CUDA_AVAILABLE

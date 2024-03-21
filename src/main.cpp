@@ -27,11 +27,33 @@ void add_initial_data_file(zisa::HierarchicalWriter &writer) {
   zisa::save(writer, data, "initial_data");
 }
 
+/* add sigma values already stored on half gridpoint.
+   Store them in an array of size 2n-3 x m-1
+
+   x_00              x_01              x_02              x_03
+                       |                 |
+                     sigma_00          sigma_01
+                       |                 |
+   x_10 - sigma_10 - x_11 - sigma_11 - x_12 - sigma_12 - x_13
+                       |                 |
+                     sigma_20          sigma_21
+                       |                 |
+   x_20              x_21              x_22              x_23
+
+                                ||
+                                \/
+
+                sigma_00, sigma_01, 0
+                sigma_10, sigma_11, sigma_12
+                sigma_20, sigma_21, 0
+
+    note that in this toy example only x_11 and x_12 are not on the boundary
+*/
 void add_sigma_file(zisa::HierarchicalWriter &writer) {
-  zisa::array<float, 2> data(zisa::shape_t<2>(10, 10));
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 10; j++) {
-      data(i, j) = 0.2 * (i % 3) + 0.3 * (j % 2);
+  zisa::array<float, 2> data(zisa::shape_t<2>(17, 9));
+  for (int i = 0; i < 17; i++) {
+    for (int j = 0; j < 9; j++) {
+      data(i, j) = 1.;
     }
   }
   zisa::save(writer, data, "sigma");
@@ -53,26 +75,11 @@ enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 int main() {
   add_simple_nc_file();
 
-  zisa::array<float, 2> heat_kernel(zisa::shape_t<2>(3, 3));
-  float scalar = 0.1; // k / dt^2
-  heat_kernel(0, 0) = 0;
-  heat_kernel(0, 1) = scalar;
-  heat_kernel(0, 2) = 0;
-  heat_kernel(1, 0) = scalar;
-  heat_kernel(1, 1) = 1 - 4 * scalar;
-  heat_kernel(1, 2) = scalar;
-  heat_kernel(2, 0) = 0;
-  heat_kernel(2, 1) = scalar;
-  heat_kernel(2, 2) = 0;
-
   BoundaryCondition bc = BoundaryCondition::Periodic;
 
-  auto func = [](double x) -> double { return x; };
+  auto func = [](double x) -> double { return 0; };
 // construct a pde of the heat equation with Dirichlet boundary conditions
 #if CUDA_AVAILABLE
-  zisa::array<float, 2> heat_kernel_gpu(zisa::shape_t<2>(3, 3),
-                                        zisa::device_type::cuda);
-  zisa::copy(heat_kernel_gpu, heat_kernel);
   std::cout << "case_gpu" << std::endl;
 
   PDEHeat<float, BoundaryCondition, decltype(func)> pde(
@@ -86,10 +93,10 @@ int main() {
   pde.read_values("data/simple_data.nc");
   pde.print();
 
-  pde.apply();
+  pde.apply(0.1);
   pde.print();
   for (int i = 0; i < 1000; i++) {
-    pde.apply();
+    pde.apply(0.1);
   }
   pde.print();
 

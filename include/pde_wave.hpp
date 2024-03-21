@@ -14,13 +14,12 @@ public:
       : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc),
         func_(f) {}
 
-  void apply() override {
+  void apply(Scalar dt) override {
 
     zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
     // TODO: add cuda implementation, handle 1/dx^2, add f
     convolve_sigma_add_f(tmp.view(), this->data_.const_view(),
-                         this->sigma_values_vertical_.const_view(),
-                         this->sigma_values_horizontal_.const_view(), 0.01,
+                         this->sigma_values_.const_view(), 0.01,
                          func_);
     // TODO: add
     add_arrays(this->data_.view(), tmp.const_view());
