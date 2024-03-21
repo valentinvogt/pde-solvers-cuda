@@ -5,7 +5,7 @@
 #define THREAD_DIMS 1024
 #endif
 
-templaate<typename Scalar, typename Function> __global__ void
+template<typename Scalar, typename Function> __global__ void
 convolve_sigma_add_f_cuda_kernel(zisa::array_view<Scalar, 2> dst,
                                  zisa::array_const_view<Scalar, 2> src,
                                  zisa::array_const_view<Scalar, 2> sigma,
