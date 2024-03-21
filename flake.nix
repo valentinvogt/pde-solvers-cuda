@@ -19,6 +19,7 @@
         clang-tools
         netcdf
         hdf5
+        gdb
         ];
         buildInputs = with pkgs; [ 
         ];
