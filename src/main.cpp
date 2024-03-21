@@ -8,20 +8,6 @@
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/device_type.hpp>
 
-template <typename Scalar> class MyFunConst : public GenericFunction<float> {
-public:
-  MyFunConst(Scalar x) : x_(x) {}
-#if CUDA_AVAILABLE
-  inline __host__ __device__ Scalar operator()(Scalar x) { return x_; }
-
-#else
-  inline Scalar operator()(Scalar x) { return x_; }
-#endif
-
-private:
-  Scalar x_;
-};
-
 void add_bc_values_file(zisa::HierarchicalWriter &writer) {
   zisa::array<float, 2> data(zisa::shape_t<2>(10, 10));
   for (int i = 0; i < 10; i++) {
@@ -94,15 +80,15 @@ int main() {
 
   auto func_cpu = [](float /*x*/) -> float { return 0; };
   // construct a pde of the heat equation with Dirichlet boundary conditions
-  MyFunConst<float> func(0.);
+  GenericFunction<float> func;
 #if CUDA_AVAILABLE
   std::cout << "case_gpu" << std::endl;
 
-  PDEHeat<float, BoundaryCondition, MyFunConst<float>> pde(
+  PDEHeat<float, BoundaryCondition, GenericFunction<float>> pde(
       8, 8, zisa::device_type::cuda, bc, func);
 #else
   std::cout << "case_cpu" << std::endl;
-  PDEHeat<float, BoundaryCondition, MyFunConst<float>> pde(
+  PDEHeat<float, BoundaryCondition, GenericFunction<float>> pde(
       8, 8, zisa::device_type::cpu, bc, func);
 #endif
 
