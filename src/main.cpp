@@ -106,7 +106,7 @@ int main() {
   std::cout << "case_gpu" << std::endl;
 
   PDEHeat<float, BoundaryCondition, MyFunConst<float>> pde(
-      8, 8, zisa::device_type::cuda, bc, func_cuda);
+      8, 8, zisa::device_type::cuda, bc, func);
 #else
   std::cout << "case_cpu" << std::endl;
   PDEHeat<float, BoundaryCondition, MyFunConst<float>> pde(
