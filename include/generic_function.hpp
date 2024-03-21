@@ -4,9 +4,13 @@
 template <typename Scalar>
 class GenericFunction {
 #if CUDA_AVAILABLE
-  virtual inline __host__ __device__ Scalar operator()(Scalar x) = 0;
+  inline __host__ __device__ Scalar operator()(Scalar x) {
+  return 0;
+  }
 #else
-  virtual inline Scalar operator()(Scalar x) = 0;
+  inline Scalar operator()(Scalar x) {
+    return 0;
+  }
 #endif
 };
 

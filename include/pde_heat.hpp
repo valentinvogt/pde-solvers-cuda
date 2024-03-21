@@ -20,11 +20,12 @@ public:
 
     zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
     // TODO: add cuda implementation, handle 1/dx^2, add f
+    Scalar del_x_2 = 1 / (0.01);
     convolve_sigma_add_f(tmp.view(), this->data_.const_view(),
-                         this->sigma_values_.const_view(), dt,
+                         this->sigma_values_.const_view(), del_x_2,
                          func_);
     // TODO:
-    add_arrays(this->data_.view(), tmp.const_view());
+    add_arrays(this->data_.view(), tmp.const_view(), dt);
     PDEBase<Scalar, BoundaryCondition>::add_bc();
   }
 

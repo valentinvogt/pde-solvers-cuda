@@ -6,20 +6,21 @@
 
 template <typename Scalar>
 void add_arrays_cpu(zisa::array_view<Scalar, 2> dst,
-                    zisa::array_const_view<Scalar, 2> src) {
+                    zisa::array_const_view<Scalar, 2> src,
+                    Scalar scaling) {
   // TODO: Optimize
   for (int i = 0; i < dst.shape(0); i++) {
     for (int j = 0; j < dst.shape(1); j++) {
-      dst(i, j) += src(i, j);
+      dst(i, j) += scaling * src(i, j);
     }
   }
 }
 
 // PRE: dimensions of src and dst match, both are stored on same device type
-// POST: adds the entries of the src matrix to the dst matrix
+// POST: dst(i, j) = dst(i, j) + scaling * src(i, j)
 template <typename Scalar>
 void add_arrays(zisa::array_view<Scalar, 2> dst,
-                zisa::array_const_view<Scalar, 2> src) {
+                zisa::array_const_view<Scalar, 2> src, Scalar scaling) {
   const zisa::device_type memory_dst = dst.memory_location();
   if (memory_dst != src.memory_location()) {
     std::cerr << "Error in add_arrays: dst and src have to have the same "
@@ -33,7 +34,7 @@ void add_arrays(zisa::array_view<Scalar, 2> dst,
     exit(1);
   }
   if (memory_dst == zisa::device_type::cpu) {
-    add_arrays_cpu(dst, src);
+    add_arrays_cpu(dst, src, scaling);
   }
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
