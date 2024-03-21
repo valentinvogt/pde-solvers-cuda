@@ -9,7 +9,6 @@ __global__ void neumann_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
                                        zisa::array_const_view<Scalar, 2> bc,
                                        Scalar dt) {
 
-
   const int linear_idx = threadIdx.x + THREAD_DIMS * blockIdx.x;
   const int Nx = data.shape(0);
   const int Ny = data.shape(1);
@@ -32,8 +31,7 @@ __global__ void neumann_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
 
 template <typename Scalar>
 void neumann_bc_cuda(zisa::array_view<Scalar, 2> data,
-                     zisa::array_const_view<Scalar, 2> bc,
-                     Scalar dt) {
+                     zisa::array_const_view<Scalar, 2> bc, Scalar dt) {
 #if CUDA_AVAILABLE
   const int thread_dims = THREAD_DIMS;
   const int block_dims =

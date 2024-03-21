@@ -4,11 +4,10 @@
 #include "zisa/memory/device_type.hpp"
 #include <zisa/memory/array.hpp>
 
-
 template <typename Scalar>
 void add_arrays_cpu(zisa::array_view<Scalar, 2> dst,
-                zisa::array_const_view<Scalar, 2> src) {
-  //TODO: Optimize
+                    zisa::array_const_view<Scalar, 2> src) {
+  // TODO: Optimize
   for (int i = 0; i < dst.shape(0); i++) {
     for (int j = 0; j < dst.shape(1); j++) {
       dst(i, j) += src(i, j);
@@ -23,7 +22,8 @@ void add_arrays(zisa::array_view<Scalar, 2> dst,
                 zisa::array_const_view<Scalar, 2> src) {
   const zisa::device_type memory_dst = dst.memory_location();
   if (memory_dst != src.memory_location()) {
-    std::cerr << "Error in add_arrays: dst and src have to have the same memory location"
+    std::cerr << "Error in add_arrays: dst and src have to have the same "
+                 "memory location"
               << std::endl;
     exit(1);
   }

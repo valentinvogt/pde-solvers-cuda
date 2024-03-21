@@ -1,4 +1,4 @@
-#ifndef CONVOLVE_SIGMA_ADD_F_HPP_ 
+#ifndef CONVOLVE_SIGMA_ADD_F_HPP_
 #define CONVOLVE_SIGMA_ADD_F_HPP_
 
 #include "zisa/memory/device_type.hpp"

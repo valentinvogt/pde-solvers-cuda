@@ -2,7 +2,8 @@
 #define PDE_BASE_HPP_
 
 #include <convolution.hpp>
-#include <dirichlet_bc.hpp>
+#include <convolve_sigma_add_f.hpp>
+#include <helpers.hpp>
 #include <neumann_bc.hpp>
 #include <periodic_bc.hpp>
 #include <zisa/io/file_manipulation.hpp>
@@ -13,20 +14,16 @@
 #include <zisa/memory/device_type.hpp>
 #include <zisa/memory/memory_location.hpp>
 #include <zisa/memory/shape.hpp>
-#include <convolve_sigma_add_f.hpp>
-#include <helpers.hpp>
 
 template <typename Scalar, typename BoundaryCondition> class PDEBase {
 public:
-
-  PDEBase(unsigned Nx, unsigned Ny,
-          const zisa::device_type memory_location, BoundaryCondition bc)
+  PDEBase(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
+          BoundaryCondition bc)
       : data_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location),
         bc_values_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location),
         sigma_values_vertical_(zisa::shape_t<2>(Nx + 1, Ny), memory_location),
         sigma_values_horizontal_(zisa::shape_t<2>(Nx, Ny + 1), memory_location),
-        memory_location_(memory_location),
-        bc_(bc) {}
+        memory_location_(memory_location), bc_(bc) {}
 
   void read_values(const std::string &filename,
                    const std::string &tag_data = "initial_data",
@@ -41,7 +38,8 @@ public:
     if (bc_ == BoundaryCondition::Neumann) {
       read_data(reader, bc_values_, tag_bc);
     } else if (bc_ == BoundaryCondition::Dirichlet) {
-      zisa::copy(bc_values_, data_);
+      // do noching as long as data on boundary does not change
+      // zisa::copy(bc_values_, data_);
     } else if (bc_ == BoundaryCondition::Periodic) {
       add_bc();
     }
@@ -75,7 +73,8 @@ public:
 protected:
   void add_bc() {
     if (bc_ == BoundaryCondition::Dirichlet) {
-      dirichlet_bc<Scalar>(data_.view(), bc_values_.const_view());
+      // do nothing as long as data on boundary does not change
+      // dirichlet_bc(data_.view(), bc_values_.const_view());
     } else if (bc_ == BoundaryCondition::Neumann) {
       // TODO: change dt
       Scalar dt = 0.1;
@@ -86,7 +85,6 @@ protected:
       std::cout << "boundary condition not implemented yet!" << std::endl;
     }
   }
-
 
   void construct_sigmas(zisa::array<Scalar, 2> &sigma_tmp) {
     // TODO: optimize

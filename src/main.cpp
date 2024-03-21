@@ -38,10 +38,10 @@ void add_sigma_file(zisa::HierarchicalWriter &writer) {
 }
 
 void add_simple_nc_file() {
-
   // check if it has already been created
   if (std::filesystem::exists("data/simple_data.nc"))
     return;
+  // TODO:
   zisa::HDF5SerialWriter serial_writer("data/simple_data.nc");
   add_initial_data_file(serial_writer);
   add_bc_values_file(serial_writer);
@@ -75,10 +75,12 @@ int main() {
   zisa::copy(heat_kernel_gpu, heat_kernel);
   std::cout << "case_gpu" << std::endl;
 
-  PDEHeat<float, BoundaryCondition, decltype(func)> pde(8, 8, zisa::device_type::cuda, bc, func);
+  PDEHeat<float, BoundaryCondition, decltype(func)> pde(
+      8, 8, zisa::device_type::cuda, bc, func);
 #else
   std::cout << "case_cpu" << std::endl;
-  PDEHeat<float, BoundaryCondition, decltype(func)> pde(8, 8, zisa::device_type::cpu, bc, func);
+  PDEHeat<float, BoundaryCondition, decltype(func)> pde(
+      8, 8, zisa::device_type::cpu, bc, func);
 #endif
 
   pde.read_values("data/simple_data.nc");

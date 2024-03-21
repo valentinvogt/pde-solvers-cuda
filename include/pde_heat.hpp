@@ -7,12 +7,10 @@
 template <typename Scalar, typename BoundaryCondition, typename Function>
 class PDEHeat : public virtual PDEBase<Scalar, BoundaryCondition> {
 public:
-  PDEHeat(unsigned Nx, unsigned Ny,
-          const zisa::device_type memory_location, BoundaryCondition bc,
-          Function f)
-      : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc), func_(f) {}
-
-
+  PDEHeat(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
+          BoundaryCondition bc, Function f)
+      : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc),
+        func_(f) {}
 
   void apply() override {
     if (!this->ready_) {

@@ -3,13 +3,11 @@
 
 template <typename Scalar>
 void neumann_bc_cuda(zisa::array_view<Scalar, 2> data,
-                     zisa::array_const_view<Scalar, 2> bc, 
-                     Scalar dt);
+                     zisa::array_const_view<Scalar, 2> bc, Scalar dt);
 
 #define PDE_SOLVERS_CUDA_INSTANCIATE_NEUMANN_BC_CUDA(TYPE)                     \
   template void neumann_bc_cuda<TYPE>(zisa::array_view<TYPE, 2>,               \
-                                      zisa::array_const_view<TYPE, 2>,         \
-                                      TYPE);
+                                      zisa::array_const_view<TYPE, 2>, TYPE);
 
 PDE_SOLVERS_CUDA_INSTANCIATE_NEUMANN_BC_CUDA(float)
 PDE_SOLVERS_CUDA_INSTANCIATE_NEUMANN_BC_CUDA(double)

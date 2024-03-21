@@ -1,20 +1,18 @@
 #ifndef PDE_WAVE_HPP_
 #define PDE_WAVE_HPP_
 
-
 // TODO: add initial derivative data, correct apply function
-
 
 #include <pde_base.hpp>
 
 template <typename Scalar, typename BoundaryCondition, typename Function>
 class PDEWave : public virtual PDEBase<Scalar, BoundaryCondition> {
 public:
-  PDEWave
-(unsigned Nx, unsigned Ny,
-          const zisa::array_const_view<Scalar, 2> &kernel, BoundaryCondition bc,
-          Function f)
-      : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, kernel, bc), func_(f) {}
+  // TODO: add derivative
+  PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
+          BoundaryCondition bc, Function f)
+      : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc),
+        func_(f) {}
 
   void apply() override {
 
@@ -24,13 +22,15 @@ public:
                          this->sigma_values_vertical_.const_view(),
                          this->sigma_values_horizontal_.const_view(), 0.01,
                          func_);
-    // TODO
+    // TODO: add
     add_arrays(this->data_.view(), tmp.const_view());
     PDEBase<Scalar, BoundaryCondition>::add_bc();
   }
 
 protected:
   Function func_;
+  // add
+  zisa::array<Scalar, 2> deriv;
 };
 
 #endif // PDE_WAVE_HPP_

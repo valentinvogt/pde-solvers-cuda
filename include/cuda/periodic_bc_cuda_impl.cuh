@@ -56,21 +56,21 @@ __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
   }
 }
 
-  template <typename Scalar>
-  void periodic_bc_cuda(zisa::array_view<Scalar, 2> data) {
+template <typename Scalar>
+void periodic_bc_cuda(zisa::array_view<Scalar, 2> data) {
 #if CUDA_AVAILABLE
-    const unsigned thread_dims = THREAD_DIMS;
-    // size of whole boundary where periodic bc has to be applied
-    const unsigned data_size = (data.shape(0) + data.shape(1)) * 2 - 4;
-    const unsigned block_dims = std::ceil((double)data_size / thread_dims);
-    std::cout << "should reach cuda " << block_dims << " "
-              << "thread_dims" << std::endl;
-    periodic_bc_cuda_kernel<<<block_dims, thread_dims>>>(data, data_size);
-    const auto error = cudaDeviceSynchronize();
-    if (error != cudaSuccess) {
-      std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)
-                << std::endl;
-    }
-#endif // CUDA_AVAILABLE
+  const unsigned thread_dims = THREAD_DIMS;
+  // size of whole boundary where periodic bc has to be applied
+  const unsigned data_size = (data.shape(0) + data.shape(1)) * 2 - 4;
+  const unsigned block_dims = std::ceil((double)data_size / thread_dims);
+  std::cout << "should reach cuda " << block_dims << " "
+            << "thread_dims" << std::endl;
+  periodic_bc_cuda_kernel<<<block_dims, thread_dims>>>(data, data_size);
+  const auto error = cudaDeviceSynchronize();
+  if (error != cudaSuccess) {
+    std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)
+              << std::endl;
   }
+#endif // CUDA_AVAILABLE
+}
 #endif // PERIODIC_BC_CUDA_H_
