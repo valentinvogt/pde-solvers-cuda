@@ -11,7 +11,7 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
 #define PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(TYPE, FUNC)           \
   template void convolve_sigma_add_f_cuda<TYPE, FUNC>(                         \
       zisa::array_view<TYPE, 2>, zisa::array_const_view<TYPE, 2>,              \
-      zisa::array_const_view<TYPE, 2>, Scalar, FUNC);
+      zisa::array_const_view<TYPE, 2>, TYPE, FUNC);
 
 PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(float, GenericFunction<float>)
 PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(double,
