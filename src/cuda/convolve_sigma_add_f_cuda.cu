@@ -1,3 +1,4 @@
+#include "generic_function.hpp"
 #include <cuda/convolve_sigma_add_f_cuda.hpp>
 #include <cuda/convolve_sigma_add_f_cuda_impl.hpp>
 
@@ -11,7 +12,7 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
                                            zisa::array_const_view<TYPE, 2>,    \
                                            zisa::array_const_view<TYPE, 2>, Scalar, FUNC);
 
-PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(float, float (*)(float))
-PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(double, double (*)(double))
+PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(float, GenericFunction<float>)
+PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(double, GenericFunction<double>)
 
 #undef PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA
