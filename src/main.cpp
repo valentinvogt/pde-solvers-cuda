@@ -101,7 +101,18 @@ int main() {
     pde.apply(0.01);
   }
   auto end = std::chrono::steady_clock::now();
-  std::cout << "time for 1000 iterations is " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
+  std::cout << "time for 1000 iterations on cuda is " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
+
+  
+  PDEHeat<float, BoundaryCondition, GenericFunction<float>> pde_cpu(
+    8, 8, zisa::device_type::cpu, bc, func);
+  pde_cpu.read_values("data/simple_data.nc");
+  begin = std::chrono::steady_clock::now();
+  for (int i = 0; i < 1000; i++) {
+    pde_cpu.apply(0.01);
+  }
+  end = std::chrono::steady_clock::now();
+  std::cout << "time for 1000 iterations on cpu is " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
   pde.print();
 
   return 0;
