@@ -9,7 +9,23 @@ template <typename Scalar, typename Function>
 __global__ void convolve_sigma_add_f_cuda_kernel(
     zisa::array_view<Scalar, 2> dst, zisa::array_const_view<Scalar, 2> src,
     zisa::array_const_view<Scalar, 2> sigma, Scalar del_x_2, Function f) {
-  // TODO:
+  const int linear_idx = threadIdx.x + blockIdx.x * THREAD_DIMS;
+  const int Nx = src.shape(0) - 2;
+  const int Ny = src.shape(1) - 2;
+  if (linear_idx < Nx * Ny) {
+    const int x_idx = 1 + linear_idx / Ny;
+    const int y_idx = 1 + linear_idx % Ny;
+    dst(x_idx, y_idx) =
+        del_x_2 *
+            (sigma(2 * x_idx - 1, y_idx - 1) * src(x_idx, y_idx - 1) +
+             sigma(2 * x_idx - 1, y_idx) * src(x_idx, y_idx + 1) +
+             sigma(2 * x_idx - 2, y_idx - 1) * src(x_idx - 1, y_idx) +
+             sigma(2 * x_idx, y_idx - 1) * src(x_idx + 1, y_idx) -
+             (sigma(2 * x_idx - 1, y_idx - 1) + sigma(2 * x_idx - 1, y_idx) +
+              sigma(2 * x_idx - 2, y_idx - 1) + sigma(2 * x_idx, y_idx - 1)) *
+                 src(x_idx, y_idx)) +
+        f(src(x_idx, y_idx));
+  }
 }
 
 template <typename Scalar, typename Function>

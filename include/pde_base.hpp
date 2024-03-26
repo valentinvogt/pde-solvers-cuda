@@ -26,25 +26,10 @@ public:
         sigma_values_(zisa::shape_t<2>(2 * Nx + 1, Ny + 1), memory_location),
         memory_location_(memory_location), bc_(bc) {}
 
-  void read_values(const std::string &filename,
-                   const std::string &tag_data = "initial_data",
-                   const std::string &tag_sigma = "sigma",
-                   const std::string &tag_bc = "bc") {
-    zisa::HDF5SerialReader reader(filename);
-    read_data(reader, data_, tag_data);
-    read_data(reader, sigma_values_, tag_sigma);
-
-    if (bc_ == BoundaryCondition::Neumann) {
-      read_data(reader, bc_neumann_values_, tag_bc);
-    } else if (bc_ == BoundaryCondition::Dirichlet) {
-      // do noching as long as data on boundary does not change
-    } else if (bc_ == BoundaryCondition::Periodic) {
-      add_bc();
-    }
-    ready_ = true;
-    std::cout << "initial data, sigma and boundary conditions read!"
-              << std::endl;
-  }
+  virtual void read_values(const std::string &filename,
+                           const std::string &tag_data = "initial_data",
+                           const std::string &tag_sigma = "sigma",
+                           const std::string &tag_bc = "bc") = 0;
 
   virtual void apply(Scalar dt) = 0;
 
