@@ -18,7 +18,7 @@ __global__ void add_arrays_cuda_kernel(
   const int linear_idx = threadIdx.x + blockIdx.x * THREAD_DIMS;
   const int Nx = src.shape(0);
   const int Ny = src.shape(1);
-  if (linerar_idx < Nx * Ny) {
+  if (linear_idx < Nx * Ny) {
     const int x_idx = linear_idx / Ny;
     const int y_idx = linear_idx % Ny;
     dst(x_idx, y_idx) += scaling * src(x_idx, y_idx);
