@@ -7,6 +7,7 @@
 #include <pde_heat.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/device_type.hpp>
+#include <chrono>
 
 void add_bc_values_file(zisa::HierarchicalWriter &writer) {
   zisa::array<float, 2> data(zisa::shape_t<2>(10, 10));
@@ -95,11 +96,12 @@ int main() {
   pde.read_values("data/simple_data.nc");
   pde.print();
 
-  pde.apply(0.1);
-  pde.print();
+  auto begin = std::chrono::steady_clock::now();
   for (int i = 0; i < 1000; i++) {
     pde.apply(0.1);
   }
+  auto end = std::chrono::steady_clock::now();
+  std::cout << "time for 1000 iterations is " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
   pde.print();
 
   return 0;

@@ -3,6 +3,9 @@
 
 #include "zisa/memory/device_type.hpp"
 #include <zisa/memory/array.hpp>
+#if CUDA_AVAILABLE
+#include <cuda/add_arrays_cuda.hpp>
+#endif
 
 template <typename Scalar>
 void add_arrays_cpu(zisa::array_view<Scalar, 2> dst,
