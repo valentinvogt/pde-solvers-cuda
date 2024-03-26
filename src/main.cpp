@@ -98,7 +98,7 @@ int main() {
 
   auto begin = std::chrono::steady_clock::now();
   for (int i = 0; i < 1000; i++) {
-    pde.apply(0.1);
+    pde.apply(0.01);
   }
   auto end = std::chrono::steady_clock::now();
   std::cout << "time for 1000 iterations is " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
