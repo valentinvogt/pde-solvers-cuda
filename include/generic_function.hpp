@@ -1,6 +1,10 @@
 #ifndef GENERIC_FUNCTION_HPP_
 #define GENERIC_FUNCTION_HPP_
 
+#if CUDA_AVAILABLE
+#include <cuda_runtime.h>
+#endif
+
 #include <cmath>
 template <typename Scalar> class GenericFunction {
 public:
