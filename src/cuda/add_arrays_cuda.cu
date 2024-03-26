@@ -1,5 +1,5 @@
-#include <cuda/add_arrays.hpp>
-#include <cuda/add_arrays_impl.cuh>
+#include <cuda/add_arrays_cuda.hpp>
+#include <cuda/add_arrays_cuda_impl.cuh>
 
 
 template <typename Scalar>
