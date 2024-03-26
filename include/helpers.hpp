@@ -38,8 +38,8 @@ void add_arrays(zisa::array_view<Scalar, 2> dst,
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
     // TODO
-    std::cout << "add arrays on cuda have to be implemented" << std::endl;
-    // add_arrays_cuda(dst, src);
+    // std::cout << "add arrays on cuda have to be implemented" << std::endl;
+    add_arrays_cuda(dst, src, scaling);
   }
 #endif // CUDA_AVAILABLE
   else {
