@@ -16,11 +16,11 @@ void small_example() {
   std::cout << "case_gpu" << std::endl;
 
   PDEHeat<float, BoundaryCondition, GenericFunction<float>> pde(
-      8, 8, zisa::device_type::cuda, bc, func);
+      8, 8, zisa::device_type::cuda, bc, func, 0.1, 0.1);
 #else
   std::cout << "case_cpu" << std::endl;
   PDEHeat<float, BoundaryCondition, GenericFunction<float>> pde(
-      8, 8, zisa::device_type::cpu, bc, func);
+      8, 8, zisa::device_type::cpu, bc, func, 0.1, 0.1);
 #endif
   pde.read_values("data/simple_data.nc");
   auto begin = std::chrono::steady_clock::now();
