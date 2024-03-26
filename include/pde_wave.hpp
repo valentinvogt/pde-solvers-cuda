@@ -12,7 +12,7 @@ class PDEWave : public virtual PDEBase<Scalar, BoundaryCondition> {
 public:
   // TODO: add derivative
   PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
-          BoundaryCondition bc, Function f)
+          BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
       : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc),
         func_(f),
         deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2)){}

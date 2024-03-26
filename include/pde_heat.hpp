@@ -9,8 +9,8 @@ template <typename Scalar, typename BoundaryCondition, typename Function>
 class PDEHeat : public virtual PDEBase<Scalar, BoundaryCondition> {
 public:
   PDEHeat(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
-          BoundaryCondition bc, Function f)
-      : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc),
+          BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
+      : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc, dx, dy),
         func_(f) {}
 
   void read_values(const std::string &filename,
@@ -42,7 +42,7 @@ public:
 
     zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
     // TODO: add cuda implementation, handle 1/dx^2, add f
-    Scalar del_x_2 = 1 / (0.01);
+    const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
     convolve_sigma_add_f(tmp.view(), this->data_.const_view(),
                          this->sigma_values_.const_view(), del_x_2, func_);
     // TODO:

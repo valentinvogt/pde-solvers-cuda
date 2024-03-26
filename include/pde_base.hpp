@@ -20,11 +20,11 @@ public:
   // note here that Nx and Ny denote the size INSIDE the boundary WITHOUT the
   // boundary
   PDEBase(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
-          BoundaryCondition bc)
+          BoundaryCondition bc, Scalar dx, Scalar dy)
       : data_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location),
         bc_neumann_values_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location),
         sigma_values_(zisa::shape_t<2>(2 * Nx + 1, Ny + 1), memory_location),
-        memory_location_(memory_location), bc_(bc) {}
+        memory_location_(memory_location), bc_(bc), dx_(dx), dy_(dy) {}
 
   virtual void read_values(const std::string &filename,
                            const std::string &tag_data = "initial_data",
@@ -32,6 +32,14 @@ public:
                            const std::string &tag_bc = "bc") = 0;
 
   virtual void apply(Scalar dt) = 0;
+
+  void apply(Scalar T, unsigned int n_timesteps, unsigned int n_snapshots) {
+    // TODO
+    Scalar dt = T/n_timesteps;
+    for (int i = 0; i < n_timesteps; i++) {
+      apply(dt);
+    }
+  }
 
   // remove those later
   unsigned num_ghost_cells(unsigned dir) { return 1; }
@@ -73,7 +81,10 @@ protected:
 
   const BoundaryCondition bc_;
   const zisa::device_type memory_location_;
+
+  const Scalar dx_;
+  const Scalar dy_;
   bool ready_ = false;
-};
+ };
 
 #endif // PDE_BASE_HPP_
