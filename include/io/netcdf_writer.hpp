@@ -9,17 +9,6 @@
 #include <zisa/io/hierarchical_file.hpp>
 #include <zisa/memory/array.hpp>
 
-// change this one later
-inline zisa::NetCDFSerialWriter DummyWriter() {
-  std::vector<std::tuple<std::string, std::size_t>> dims;
-  std::vector<
-      std::tuple<std::string, std::vector<std::string>, zisa::ErasedDataType>>
-      vars;
-  zisa::NetCDFFileStructure file_structure(dims, vars);
-
-  return zisa::NetCDFSerialWriter("dummy", file_structure);
-}
-
 template <typename Scalar> class NetCDFPDEWriter {
 public:
   // initializes reader and alredy saves member, time, n_x and n_y values
@@ -29,7 +18,8 @@ public:
                   const std::string &filename)
       : /* used for compilation (no default constructor), should be changed
            later*/
-        writer_(make_writer(n_snapshots, T, n_members, n_x, x_begin, x_end, n_y, y_begin, y_end, filename) {
+        writer_(make_writer(n_snapshots, T, n_members, n_x, x_begin, x_end, n_y,
+                            y_begin, y_end, filename)) {
     // netcd_put_vara
     // save in chunks
 
@@ -71,10 +61,11 @@ public:
 
 private:
   zisa::NetCDFSerialWriter writer_;
-  zisa::NetCDFSerialWriter make_writer(unsigned int n_snapshots, Scalar T, unsigned int n_members,
-                  unsigned int n_x, Scalar x_begin, Scalar x_end,
-                  unsigned int n_y, Scalar y_begin, Scalar y_end,
-                  const std::string &filename) {
+
+  zisa::NetCDFSerialWriter
+  make_writer(unsigned int n_snapshots, Scalar T, unsigned int n_members,
+              unsigned int n_x, Scalar x_begin, Scalar x_end, unsigned int n_y,
+              Scalar y_begin, Scalar y_end, const std::string &filename) {
     std::vector<std::tuple<std::string, std::size_t>> dims = {
         {"member", n_members}, {"time", n_snapshots}, {"x", n_x}, {"y", n_y}};
 
@@ -108,7 +99,6 @@ private:
 
     zisa::NetCDFFileStructure file_structure(dims, vars);
     return zisa::NetCDFSerialWriter(filename, file_structure);
-    
   }
 };
 
