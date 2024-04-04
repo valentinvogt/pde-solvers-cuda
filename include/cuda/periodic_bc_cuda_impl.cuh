@@ -62,8 +62,8 @@ void periodic_bc_cuda(zisa::array_view<Scalar, 2> data) {
   // size of whole boundary where periodic bc has to be applied
   const unsigned data_size = (data.shape(0) + data.shape(1)) * 2 - 4;
   const unsigned block_dims = std::ceil((double)data_size / thread_dims);
-  std::cout << "should reach cuda " << block_dims << " "
-            << "thread_dims" << std::endl;
+  // std::cout << "should reach cuda " << block_dims << " "
+  //           << "thread_dims" << std::endl;
   periodic_bc_cuda_kernel<<<block_dims, thread_dims>>>(data, data_size);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {

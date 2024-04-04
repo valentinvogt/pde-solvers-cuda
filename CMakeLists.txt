@@ -54,6 +54,7 @@ find_package(ZisaCore REQUIRED)
 find_package(ZisaMemory REQUIRED)
 find_package(googletest REQUIRED)
 
+######### main executable start ###############
 add_executable(main)
 set_target_properties(main PROPERTIES CXX_STANDARD 17)
 
@@ -67,3 +68,22 @@ target_include_directories(main PUBLIC include include/kernel include/cuda)
 target_link_libraries(main Zisa::core Zisa::memory)
 
 add_subdirectory(src)
+######### main executable end #################
+
+
+
+######### test executable start ###############
+add_executable(unit_tests)
+set_target_properties(unit_tests PROPERTIES CXX_STANDARD 17)
+
+if (CUDA_AVAILABLE)
+  target_compile_options(unit_tests PUBLIC -DCUDA_AVAILABLE=1)
+  target_compile_options(unit_tests PUBLIC $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>>)
+endif()
+
+target_include_directories(unit_tests PUBLIC include include/kernel include/cuda)
+
+target_link_libraries(unit_tests Zisa::core Zisa::memory gtest_main)
+
+add_subdirectory(test)
+######### test executable end #################

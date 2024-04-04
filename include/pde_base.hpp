@@ -1,14 +1,19 @@
 #ifndef PDE_BASE_HPP_
 #define PDE_BASE_HPP_
 
+#include "zisa/io/hierarchical_file.hpp"
+#include "zisa/io/netcdf_file.hpp"
 #include <convolution.hpp>
 #include <convolve_sigma_add_f.hpp>
 #include <helpers.hpp>
+#include <io/netcdf_writer.hpp>
 #include <neumann_bc.hpp>
 #include <periodic_bc.hpp>
+#include <string>
 #include <zisa/io/file_manipulation.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/io/hierarchical_reader.hpp>
+#include <zisa/io/netcdf_serial_writer.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/array_traits.hpp>
 #include <zisa/memory/device_type.hpp>
@@ -18,40 +23,60 @@
 template <typename Scalar, typename BoundaryCondition> class PDEBase {
 public:
   // note here that Nx and Ny denote the size INSIDE the boundary WITHOUT the
-  // boundary
+  // boundary so that the total size is Nx + 2 * Ny + 2
   PDEBase(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
-          BoundaryCondition bc)
+          BoundaryCondition bc, Scalar dx, Scalar dy)
       : data_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location),
         bc_neumann_values_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location),
         sigma_values_(zisa::shape_t<2>(2 * Nx + 1, Ny + 1), memory_location),
-        memory_location_(memory_location), bc_(bc) {}
+        memory_location_(memory_location), bc_(bc), dx_(dx), dy_(dy) {}
 
-  void read_values(const std::string &filename,
-                   const std::string &tag_data = "initial_data",
-                   const std::string &tag_sigma = "sigma",
-                   const std::string &tag_bc = "bc") {
-    zisa::HDF5SerialReader reader(filename);
-    read_data(reader, data_, tag_data);
-    read_data(reader, sigma_values_, tag_sigma);
-
-    if (bc_ == BoundaryCondition::Neumann) {
-      read_data(reader, bc_neumann_values_, tag_bc);
-    } else if (bc_ == BoundaryCondition::Dirichlet) {
-      // do noching as long as data on boundary does not change
-    } else if (bc_ == BoundaryCondition::Periodic) {
-      add_bc();
-    }
-    ready_ = true;
-    std::cout << "initial data, sigma and boundary conditions read!"
-              << std::endl;
-  }
+  virtual void read_values(const std::string &filename,
+                           const std::string &tag_data = "initial_data",
+                           const std::string &tag_sigma = "sigma",
+                           const std::string &tag_bc = "bc") = 0;
 
   virtual void apply(Scalar dt) = 0;
 
-  // remove those later
-  unsigned num_ghost_cells(unsigned dir) { return 1; }
-  unsigned num_ghost_cells_x() { return 1; }
-  unsigned num_ghost_cells_y() { return 1; }
+  // apply timesteps and save snapshots at times T/n_snapshots
+  // note that for this we sometimes have to change the timestep
+  void apply_with_snapshots(Scalar T, unsigned int n_timesteps,
+                            unsigned int n_snapshots,
+                            NetCDFPDEWriter<Scalar> &writer) {
+
+    Scalar dt = T / n_timesteps;
+    Scalar time = 0.;
+    unsigned int snapshot_counter = 0;
+    Scalar dsnapshots = T / (n_snapshots - 1);
+    // save initial data
+    writer.save_snapshot(0, snapshot_counter, data_.const_view());
+    std::cout << "saved snapshot " << snapshot_counter + 1 << " at time "
+              << time << std::endl;
+    snapshot_counter++;
+    for (unsigned int i = 0; i < n_timesteps; ++i) {
+      if (time + dt >= dsnapshots * snapshot_counter) {
+        Scalar dt_new = dsnapshots * snapshot_counter - time;
+        apply(dt_new);
+        writer.save_snapshot(0, snapshot_counter, data_.const_view());
+        std::cout << "saved snapshot " << snapshot_counter + 1 << " at time "
+                  << time + dt_new << std::endl;
+        apply(dt - dt_new);
+        snapshot_counter++;
+      } else {
+        apply(dt);
+      }
+      time += dt;
+    }
+
+    if (snapshot_counter < n_snapshots) {
+      // total Time doesn't reach T due to numerical errors. Add more timesteps
+      Scalar dt_new = T - time;
+      apply(dt_new);
+      writer.save_snapshot(0, snapshot_counter, data_.const_view());
+      std::cout << "saved snapshot " << snapshot_counter + 1 << " at time "
+                << time + dt_new << std::endl;
+    }
+  }
 
   // for testing/debugging
   void print() {
@@ -67,6 +92,9 @@ public:
   }
 
 protected:
+  // apply boundary conditions
+  // for cuda implementation, this should probably be done in the same step as
+  // applying the convolution to avoid copying data back and forth
   void add_bc() {
     if (bc_ == BoundaryCondition::Dirichlet) {
       // do nothing as long as data on boundary does not change
@@ -88,6 +116,9 @@ protected:
 
   const BoundaryCondition bc_;
   const zisa::device_type memory_location_;
+
+  const Scalar dx_;
+  const Scalar dy_;
   bool ready_ = false;
 };
 

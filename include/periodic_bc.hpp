@@ -56,13 +56,13 @@ template <typename Scalar> void periodic_bc(zisa::array_view<Scalar, 2> data) {
 
   const zisa::device_type memory_location = data.memory_location();
   if (memory_location == zisa::device_type::cpu) {
-    std::cout << "periodic bc cpu reached" << std::endl;
+    // std::cout << "periodic bc cpu reached" << std::endl;
     periodic_bc_cpu(data);
   }
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
     // TODO
-    std::cout << "periodic bc cuda reached" << std::endl;
+    // std::cout << "periodic bc cuda reached" << std::endl;
     periodic_bc_cuda(data);
   }
 #endif // CUDA_AVAILABLE
