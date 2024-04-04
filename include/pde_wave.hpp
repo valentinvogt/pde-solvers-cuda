@@ -14,8 +14,7 @@ public:
   PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
       : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc),
-        func_(f),
-        deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2)){}
+        func_(f), deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2)) {}
 
   void apply(Scalar dt) override {
     if (!this->ready_) {
@@ -52,8 +51,7 @@ public:
     this->ready_ = true;
     std::cout << "initial data, sigma and boundary conditions read!"
               << std::endl;
- }
-
+  }
 
 protected:
   Function func_;

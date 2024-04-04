@@ -12,34 +12,31 @@
 // change this one later
 inline zisa::NetCDFSerialWriter DummyWriter() {
   std::vector<std::tuple<std::string, std::size_t>> dims;
-  std::vector<std::tuple<std::string, std::vector<std::string>, zisa::ErasedDataType>> vars;
+  std::vector<
+      std::tuple<std::string, std::vector<std::string>, zisa::ErasedDataType>>
+      vars;
   zisa::NetCDFFileStructure file_structure(dims, vars);
 
   return zisa::NetCDFSerialWriter("dummy", file_structure);
 }
 
 template <typename Scalar> class NetCDFPDEWriter {
-  using dim_t = std::tuple<std::string, std::size_t>;
-  using vector_dims_t = std::vector<dim_t>;
-
-  using var_t =
-      std::tuple<std::string, std::vector<std::string>, zisa::ErasedDataType>;
-  using vector_vars_t = std::vector<var_t>;
-
 public:
   // initializes reader and alredy saves member, time, n_x and n_y values
   NetCDFPDEWriter(unsigned int n_snapshots, Scalar T, unsigned int n_members,
                   unsigned int n_x, Scalar x_begin, Scalar x_end,
                   unsigned int n_y, Scalar y_begin, Scalar y_end,
-                  const std::string &filename): writer_(DummyWriter()) {
+                  const std::string &filename)
+      : /* used for compilation (no default constructor), should be changed
+           later*/
+        writer_(DummyWriter()) {
 
-    vector_dims_t dims = {
-        {"member", n_members},
-        {"time", n_snapshots},
-        {"x", n_x},
-        {"y", n_y}};
+    std::vector<std::tuple<std::string, std::size_t>> dims = {
+        {"member", n_members}, {"time", n_snapshots}, {"x", n_x}, {"y", n_y}};
 
-    vector_vars_t vars;
+    std::vector<
+        std::tuple<std::string, std::vector<std::string>, zisa::ErasedDataType>>
+        vars;
     std::vector<std::string> member_var{"member"};
     vars.emplace_back("member", member_var, zisa::erase_data_type<int>());
 
@@ -59,15 +56,17 @@ public:
         std::string append =
             "m_" + std::to_string(member) + "_s_" + std::to_string(snapshot);
         std::vector<std::string> function_value_var{append};
-        vars.emplace_back(append, function_value_var, zisa::erase_data_type<Scalar>());
+        vars.emplace_back(append, function_value_var,
+                          zisa::erase_data_type<Scalar>());
         dims.emplace_back(append, n_x * n_y);
       }
     }
 
     zisa::NetCDFFileStructure file_structure(dims, vars);
     writer_ = zisa::NetCDFSerialWriter(filename, file_structure);
+    std::cout << "writer created" << std::endl;
 
-    // already save member, time and position arrays 
+    // already save member, time and position arrays
     zisa::array<int, 1> members((zisa::shape_t<1>(n_members)));
     for (int i = 0; i < n_members; i++) {
       members(i) = i;
@@ -79,7 +78,7 @@ public:
     // maybe change this to accept a vector with values
     zisa::array<Scalar, 1> time((zisa::shape_t<1>(n_snapshots)));
     for (int i = 0; i < n_snapshots; i++) {
-      time(i) = i * T/(Scalar)(n_snapshots - 1);
+      time(i) = i * T / (Scalar)(n_snapshots - 1);
     }
     zisa::save(writer_, time.const_view(), "time");
 
@@ -96,16 +95,14 @@ public:
     zisa::save(writer_, y_values.const_view(), "y_pos");
   }
 
-  void save_snapshot (int member, int snapshot_number, zisa::array_const_view<Scalar, 2> data) {
-        std::string snapshot_string =
-            "m_" + std::to_string(member) + "_s_" + std::to_string(snapshot_number);
-      zisa::save(writer_, data, snapshot_string);
+  void save_snapshot(int member, int snapshot_number,
+                     zisa::array_const_view<Scalar, 2> data) {
+    std::string snapshot_string =
+        "m_" + std::to_string(member) + "_s_" + std::to_string(snapshot_number);
+    zisa::save(writer_, data, snapshot_string);
   }
 
 private:
-  vector_dims_t dims_;
-  vector_vars_t vars_;
-
   zisa::NetCDFSerialWriter writer_;
 };
 

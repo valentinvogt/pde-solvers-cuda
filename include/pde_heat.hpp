@@ -17,7 +17,7 @@ public:
                    const std::string &tag_data = "initial_data",
                    const std::string &tag_sigma = "sigma",
                    const std::string &tag_bc = "bc") override {
-    
+
     zisa::HDF5SerialReader reader(filename);
     read_data(reader, this->data_, tag_data);
     read_data(reader, this->sigma_values_, tag_sigma);
@@ -33,7 +33,7 @@ public:
     std::cout << "initial data, sigma and boundary conditions read!"
               << std::endl;
   }
-  
+
   void apply(Scalar dt) override {
     if (!this->ready_) {
       std::cerr << "Heat solver is not ready yet! Read data first" << std::endl;

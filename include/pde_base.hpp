@@ -6,19 +6,19 @@
 #include <convolution.hpp>
 #include <convolve_sigma_add_f.hpp>
 #include <helpers.hpp>
+#include <io/netcdf_writer.hpp>
 #include <neumann_bc.hpp>
 #include <periodic_bc.hpp>
 #include <string>
 #include <zisa/io/file_manipulation.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
-#include <zisa/io/netcdf_serial_writer.hpp>
 #include <zisa/io/hierarchical_reader.hpp>
+#include <zisa/io/netcdf_serial_writer.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/array_traits.hpp>
 #include <zisa/memory/device_type.hpp>
 #include <zisa/memory/memory_location.hpp>
 #include <zisa/memory/shape.hpp>
-#include <io/netcdf_writer.hpp>
 
 template <typename Scalar, typename BoundaryCondition> class PDEBase {
 public:
@@ -36,18 +36,18 @@ public:
                            const std::string &tag_sigma = "sigma",
                            const std::string &tag_bc = "bc") = 0;
 
-
   virtual void apply(Scalar dt) = 0;
 
-  
   // apply timesteps and save snapshots at times T/n_snapshots
   // note that for this we sometimes have to change the timestep
-  void apply_with_snapshots(Scalar T, unsigned int n_timesteps, unsigned int n_snapshots, NetCDFPDEWriter<Scalar> &writer) {
+  void apply_with_snapshots(Scalar T, unsigned int n_timesteps,
+                            unsigned int n_snapshots,
+                            NetCDFPDEWriter<Scalar> &writer) {
 
-    Scalar dt = T/n_timesteps;
+    Scalar dt = T / n_timesteps;
     Scalar time = 0.;
     unsigned int snapshot_counter = 0;
-    Scalar dsnapshots = T/(n_snapshots - 1);
+    Scalar dsnapshots = T / (n_snapshots - 1);
     // save initial data
     writer.save_snapshot(0, snapshot_counter, data_.const_view());
     snapshot_counter++;
@@ -56,13 +56,14 @@ public:
         Scalar dt_new = dsnapshots * snapshot_counter - time;
         apply(dt_new);
         writer.save_snapshot(0, snapshot_counter, data_.const_view());
-        std::cout << "saved snapshot " << snapshot_counter + 1<<  " at time " << time + dt_new << std::endl;
+        std::cout << "saved snapshot " << snapshot_counter + 1 << " at time "
+                  << time + dt_new << std::endl;
         apply(dt - dt_new);
         snapshot_counter++;
       } else {
         apply(dt);
       }
-      time += dt; 
+      time += dt;
     }
   }
 
@@ -113,6 +114,6 @@ protected:
   const Scalar dx_;
   const Scalar dy_;
   bool ready_ = false;
- };
+};
 
 #endif // PDE_BASE_HPP_

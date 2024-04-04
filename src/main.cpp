@@ -1,12 +1,11 @@
+#include "helpers_main.hpp"
+#include <chrono>
 #include <generic_function.hpp>
+#include <io/netcdf_writer.hpp>
 #include <iostream>
 #include <pde_heat.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/device_type.hpp>
-#include <chrono>
-#include <io/netcdf_writer.hpp>
-#include "helpers_main.hpp"
-
 
 enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 
@@ -25,15 +24,19 @@ void small_example() {
 #endif
   pde.read_values("data/simple_data.nc");
 
-  NetCDFPDEWriter<float> writer(3, 1, 1, 10, 0., 1., 10, 0., 1., "out/result01.nc");
+  NetCDFPDEWriter<float> writer(3, 1, 1, 10, 0., 1., 10, 0., 1.,
+                                "out/result01.nc");
   auto begin = std::chrono::steady_clock::now();
   for (int i = 0; i < 1000; i++) {
     pde.apply_with_snapshots(1., 1000, 3, writer);
-  } 
+  }
   auto end = std::chrono::steady_clock::now();
-  std::cout << "time for 1000 iterations on cpu is " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
+  std::cout << "time for 1000 iterations on cpu is "
+            << std::chrono::duration_cast<std::chrono::microseconds>(end -
+                                                                     begin)
+                   .count()
+            << std::endl;
   pde.print();
-  
 }
 
 int main() {

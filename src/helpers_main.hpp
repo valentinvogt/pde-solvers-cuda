@@ -1,11 +1,11 @@
 #ifndef HELPERS_MAIN_HPP_
 #define HELPERS_MAIN_HPP_
 
-#include <zisa/memory/array.hpp>
 #include "zisa/io/hdf5_serial_writer.hpp"
 #include "zisa/io/hierarchical_file.hpp"
 #include "zisa/io/hierarchical_writer.hpp"
 #include <filesystem>
+#include <zisa/memory/array.hpp>
 
 inline void add_bc_values_file(zisa::HierarchicalWriter &writer) {
   zisa::array<float, 2> data(zisa::shape_t<2>(10, 10));
@@ -26,7 +26,6 @@ inline void add_medium_bc_values_file(zisa::HierarchicalWriter &writer) {
   }
   zisa::save(writer, data, "bc");
 }
-
 
 inline void add_initial_data_file(zisa::HierarchicalWriter &writer) {
   zisa::array<float, 2> data(zisa::shape_t<2>(10, 10));
@@ -101,8 +100,6 @@ inline void add_simple_nc_file() {
   add_sigma_file(serial_writer);
 }
 
-
-
 inline void add_medium_nc_file() {
   // check if it has already been created
   if (std::filesystem::exists("data/data_100_100.nc"))
@@ -112,9 +109,6 @@ inline void add_medium_nc_file() {
   add_medium_initial_data_file(serial_writer);
   add_medium_bc_values_file(serial_writer);
   add_medium_sigma_file(serial_writer);
-
-  
 }
-
 
 #endif // HELPERS_MAIN_HPP_
