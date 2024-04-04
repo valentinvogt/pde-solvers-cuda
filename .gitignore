@@ -45,3 +45,6 @@ slurm*
 *.txt
 
 
+dummy
+out/*
+
