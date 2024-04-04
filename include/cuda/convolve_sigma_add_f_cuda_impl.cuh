@@ -37,7 +37,6 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
   const int thread_dims = THREAD_DIMS;
   const int block_dims = std::ceil(
       (double)((src.shape(0) - 2) * (src.shape(1) - 2)) / thread_dims);
-  std::cout << "conv_sigma on cuda not implemented yet" << std::endl;
   convolve_sigma_add_f_cuda_kernel<<<block_dims, thread_dims>>>(dst, src, sigma,
                                                                 del_x_2, f);
   const auto error = cudaDeviceSynchronize();

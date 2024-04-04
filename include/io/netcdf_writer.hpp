@@ -62,7 +62,7 @@ public:
 #if CUDA_AVAILABLE
     zisa::array<Scalar, 2> cpu_data(data.shape(), zisa::device_type::cpu);
     zisa::copy(cpu_data, data);
-    zisa::save(writer_, cpu_data, snapshot_string)
+    zisa::save(writer_, cpu_data, snapshot_string);
 #else
     zisa::save(writer_, data, snapshot_string);
 #endif
