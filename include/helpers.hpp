@@ -54,7 +54,7 @@ void add_arrays(zisa::array_view<Scalar, 2> dst,
 template <typename Scalar>
 inline void print_matrix(const zisa::array_const_view<Scalar, 2> &array) {
 #if CUDA_AVAILABLE
-  zisa::array<float, 2> cpu_data(array.shape());
+  zisa::array<Scalar, 2> cpu_data(array.shape());
   zisa::copy(cpu_data, array);
   for (int i = 0; i < array.shape(0); i++) {
     for (int j = 0; j < array.shape(1); j++) {
@@ -80,7 +80,7 @@ template <typename Scalar>
 inline void read_data(zisa::HierarchicalReader &reader,
                       zisa::array<Scalar, 2> &data, const std::string &tag) {
 #if CUDA_AVAILABLE
-  zisa::array<float, 2> cpu_data(data.shape());
+  zisa::array<Scalar, 2> cpu_data(data.shape());
   zisa::load_impl<Scalar, 2>(reader, cpu_data, tag,
                              zisa::default_dispatch_tag{});
   zisa::copy(data, cpu_data);

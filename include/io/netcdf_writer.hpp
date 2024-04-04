@@ -12,6 +12,8 @@
 template <typename Scalar> class NetCDFPDEWriter {
 public:
   // initializes reader and alredy saves member, time, n_x and n_y values
+  // make shure the folder of filename exists, for example if the file
+  // has to be savet at out/result.nc, make shure that the out folder is created
   NetCDFPDEWriter(unsigned int n_snapshots, Scalar T, unsigned int n_members,
                   unsigned int n_x, Scalar x_begin, Scalar x_end,
                   unsigned int n_y, Scalar y_begin, Scalar y_end,
@@ -20,6 +22,7 @@ public:
            later*/
         writer_(make_writer(n_snapshots, T, n_members, n_x, x_begin, x_end, n_y,
                             y_begin, y_end, filename)) {
+    std::cout << "writer created!" << std::endl;
     // netcd_put_vara
     // save in chunks
 
@@ -56,7 +59,13 @@ public:
                      zisa::array_const_view<Scalar, 2> data) {
     std::string snapshot_string =
         "m_" + std::to_string(member) + "_s_" + std::to_string(snapshot_number);
+#if CUDA_AVAILABLE
+    zisa::array<Scalar, 2> cpu_data(data.shape(), zisa::device_type::cpu);
+    zisa::copy(cpu_data, data);
+    zisa::save(writer_, cpu_data, snapshot_string)
+#else
     zisa::save(writer_, data, snapshot_string);
+#endif
   }
 
 private:
