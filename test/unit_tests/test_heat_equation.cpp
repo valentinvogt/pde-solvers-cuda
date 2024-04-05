@@ -95,7 +95,7 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
 #if CUDA_AVAILABLE
-      data_tmp(i, j) = i * j;
+      data_cpu(i, j) = i * j;
 #else
       data(i, j) = i * j;
 #endif
@@ -103,7 +103,7 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   }
 
 #if CUDA_AVAILABLE
-  zisa::copy(data, data_tmp);
+  zisa::copy(data, data_cpu);
 #endif
 
   // if sigma == 0, then du == 0 everywhere => u is constant
