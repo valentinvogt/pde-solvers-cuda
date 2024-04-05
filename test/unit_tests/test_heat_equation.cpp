@@ -5,6 +5,9 @@
 #include <pde_heat.hpp>
 #include <zisa/memory/array.hpp>
 
+// TODO: add tests for neumann and periodic bc, larger and nonsymmetric grids
+//       add tests for sigma != constant (how to get solution)
+
 namespace HeatEquationTests {
 
 // helper function which creates simple data array where all values are set to value,
