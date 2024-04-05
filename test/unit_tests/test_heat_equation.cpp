@@ -88,7 +88,7 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   zisa::array<float, 2> data(zisa::shape_t<2>(array_size, array_size),
                              memory_location);
 #if CUDA_AVAILABLE
-  zisa::array<float, 2> data_tmp(zisa::shape_t<2>(array_size, array_size),
+  zisa::array<float, 2> data_cpu(zisa::shape_t<2>(array_size, array_size),
                                  zisa::device_type::cpu);
 #endif
 
@@ -133,7 +133,11 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   float tol = 1e-10;
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
+#if CUDA_AVAILABLE
+      ASSERT_NEAR(data_cpu(i, j), result(i, j), tol);
+#else
       ASSERT_NEAR(data(i, j), result(i, j), tol);
+#endif
     }
   }
 }
