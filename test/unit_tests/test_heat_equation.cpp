@@ -154,14 +154,14 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
   zisa::array<float, 2> data(zisa::shape_t<2>(array_size, array_size),
                              memory_location);
 #if CUDA_AVAILABLE
-  zisa::array<float, 2> data_tmp(zisa::shape_t<2>(array_size, array_size),
+  zisa::array<float, 2> data_cpu(zisa::shape_t<2>(array_size, array_size),
                                  zisa::device_type::cpu);
 #endif
 
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
 #if CUDA_AVAILABLE
-      data_tmp(i, j) = i * j;
+      data_cpu(i, j) = i * j;
 #else
       data(i, j) = i * j;
 #endif
@@ -169,7 +169,7 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
   }
 
 #if CUDA_AVAILABLE
-  zisa::copy(data, data_tmp);
+  zisa::copy(data, data_cpu);
 #endif
   zisa::array<float, 2> sigma_values = create_value_data<float>(
       2 * array_size - 3, array_size - 1, 0., memory_location);
