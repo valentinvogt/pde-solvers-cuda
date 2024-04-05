@@ -8,7 +8,7 @@
 namespace HeatEquationTests {
 
 // creates simple data array where all values are set to value,
-// if CUDA_AVAILABLE on gpu, else on cpu
+// if CUDA_AVAILABLE on cudagpu, else on cpu
 template <typename Scalar>
 inline zisa::array<Scalar, 2>
 create_value_data(int x_size, int y_size, Scalar value,
@@ -26,7 +26,7 @@ create_value_data(int x_size, int y_size, Scalar value,
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
     zisa::array<Scalar, 2> data_gpu(zisa::shape_t<2>(x_size, y_size),
-                                    zisa::device_type::gpu);
+                                    zisa::device_type::cuda);
     zisa::copy(data_gpu, data);
     return data_gpu;
   }
