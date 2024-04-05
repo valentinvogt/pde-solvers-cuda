@@ -84,9 +84,10 @@ public:
     }
   }
 
+  // for testing, does this work if on gpu?
   zisa::array_const_view<Scalar, 2> get_data() { return data_.const_view(); }
 
-  zisa::array_const_view<Scalar, 2> ger_sigma() {
+  zisa::array_const_view<Scalar, 2> get_sigma() {
     return sigma_values_.const_view();
   }
 

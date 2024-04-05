@@ -8,7 +8,7 @@
 namespace HeatEquationTests {
 
 // creates simple data array where all values are set to value,
-// if CUDA_AVAILABLE on cudagpu, else on cpu
+// if CUDA_AVAILABLE on gpu, else on cpu
 template <typename Scalar>
 inline zisa::array<Scalar, 2>
 create_value_data(int x_size, int y_size, Scalar value,
@@ -26,7 +26,7 @@ create_value_data(int x_size, int y_size, Scalar value,
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
     zisa::array<Scalar, 2> data_gpu(zisa::shape_t<2>(x_size, y_size),
-                                    zisa::device_type::cuda);
+                                    zisa::device_type::gpu);
     zisa::copy(data_gpu, data);
     return data_gpu;
   }
@@ -61,7 +61,13 @@ TEST(HeatEquationTests, TEST_ZERO) {
   for (int i = 0; i < 1000; i++) {
     pde.apply(0.1);
   }
+#if CUDA_AVAILABLE
+  zisa::array_const_view<float, 2> result_gpu = pde.get_data();
+  zisa::array<float, 2> result(result_gpu.shape());
+  zisa::copy(result, result_gpu);
+#else
   zisa::array_const_view<float, 2> result = pde.get_data();
+#endif
   float tol = 1e-10;
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
@@ -107,9 +113,8 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   // f == 0 everywhere
   GenericFunction<float> func;
 
-  PDEHeat<float, GenericFunction<float>> pde(8, 8, memory_location,
-                                             BoundaryCondition::Dirichlet, func,
-                                             0.1, 0.1);
+  PDEHeat<float, GenericFunction<float>> pde(
+      8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view());
@@ -159,9 +164,8 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
 
   GenericFunction<float> func;
   func.set_const(1.);
-  PDEHeat<float, GenericFunction<float>> pde(8, 8, memory_location,
-                                             BoundaryCondition::Dirichlet, func,
-                                             0.1, 0.1);
+  PDEHeat<float, GenericFunction<float>> pde(
+      8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view());
