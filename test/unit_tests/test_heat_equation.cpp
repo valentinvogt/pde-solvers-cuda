@@ -197,7 +197,11 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
   // values on boundary do not change because of dirichlet bc
   for (int i = 1; i < 9; i++) {
     for (int j = 1; j < 9; j++) {
+#if CUDA_AVAILABLE
+      ASSERT_NEAR(data_cpu(i, j) + 10, result(i, j), tol);
+#else
       ASSERT_NEAR(data(i, j) + 10, result(i, j), tol);
+#endif
     }
   }
 }
