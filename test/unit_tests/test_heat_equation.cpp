@@ -207,6 +207,13 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
 }
 
 // u(x, y, 0) != 0, sigma = 0, f(x) = a*x => du = a*u => u(x, y, t) = u(x, y, 0) * exp(a * t)
+
+// this only works for very small times because
+// the boundary stays constant but the inner values increases, which 
+// leads to a huge 2nd derivative in the corner values
+
+// this error should be resulved when using sigma=0 but nan * 0 != 0
+// you could prevent it by using a max_value in convolve_sigma_add_f?
 TEST(HeatEquationTests, TEST_F_LINEAR) {
   const int array_size = 10; // 2 border values included
 #if CUDA_AVAILABLE
@@ -245,9 +252,7 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view());
-  // t = 0.2, this only works for very small times because
-  // the boundary stays constant but the inner values increases, which 
-  // leads to a huge 2nd derivative in the corner values
+  // t = 0.2
   for (int i = 0; i < 20; i++) {
     pde.apply(0.01);
     pde.print();
@@ -264,14 +269,20 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
 
   float tol = 1e-1;
   // values on boundary do not change because of dirichlet bc
+  float max_err = 0;
   for (int i = 1; i < 9; i++) {
     for (int j = 1; j < 9; j++) {
 #if CUDA_AVAILABLE
       ASSERT_NEAR(data_cpu(i, j) * std::exp(0.1), result(i, j), tol);
+      float err = std::abs(data_cpu(i, j) * std::exp(0.1) - result(i, j));
 #else
       ASSERT_NEAR(data(i, j) * std::exp(0.1), result(i, j), tol);
+      float err = std::abs(data(i, j) * std::exp(0.1) - result(i, j));
 #endif
+      max_err = std::max(max_err, err);
+
     }
   }
+  std::cout << "max err: " << max_err << std::endl;
 }
 } // namespace HeatEquationTests
