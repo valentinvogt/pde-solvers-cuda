@@ -66,11 +66,7 @@ endif()
 target_include_directories(main PUBLIC include include/kernel include/cuda)
 
 target_link_libraries(main Zisa::core Zisa::memory)
-
-add_subdirectory(src)
 ######### main executable end #################
-
-
 
 ######### test executable start ###############
 add_executable(unit_tests)
@@ -84,6 +80,7 @@ endif()
 target_include_directories(unit_tests PUBLIC include include/kernel include/cuda)
 
 target_link_libraries(unit_tests Zisa::core Zisa::memory gtest_main)
-
-add_subdirectory(test)
 ######### test executable end #################
+
+add_subdirectory(src)
+add_subdirectory(test)
