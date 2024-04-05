@@ -1,8 +1,6 @@
 #ifndef PDE_BASE_HPP_
 #define PDE_BASE_HPP_
 
-#include <zisa/io/hierarchical_file.hpp>
-#include <zisa/io/netcdf_file.hpp>
 #include <convolution.hpp>
 #include <convolve_sigma_add_f.hpp>
 #include <helpers.hpp>
@@ -12,7 +10,9 @@
 #include <string>
 #include <zisa/io/file_manipulation.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
+#include <zisa/io/hierarchical_file.hpp>
 #include <zisa/io/hierarchical_reader.hpp>
+#include <zisa/io/netcdf_file.hpp>
 #include <zisa/io/netcdf_serial_writer.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/array_traits.hpp>
@@ -38,9 +38,9 @@ public:
                            const std::string &tag_sigma = "sigma",
                            const std::string &tag_bc = "bc") = 0;
 
-  virtual void read_values(zisa::array_const_view<Scalar, 2> data, zisa::array_const_view<Scalar, 2> sigma,
+  virtual void read_values(zisa::array_const_view<Scalar, 2> data,
+                           zisa::array_const_view<Scalar, 2> sigma,
                            zisa::array_const_view<Scalar, 2> bc) = 0;
-  
 
   virtual void apply(Scalar dt) = 0;
 
@@ -84,9 +84,7 @@ public:
     }
   }
 
-  zisa::array_const_view<Scalar, 2> get_data(){
-    return data_.const_view();
-  }
+  zisa::array_const_view<Scalar, 2> get_data() { return data_.const_view(); }
 
   zisa::array_const_view<Scalar, 2> ger_sigma() {
     return sigma_values_.const_view();
@@ -96,10 +94,7 @@ public:
     return bc_neumann_values_.const_view();
   }
 
-  BoundaryCondition get_bc_type() {
-    return bc_;
-  }
-
+  BoundaryCondition get_bc_type() { return bc_; }
 
   // for testing/debugging
   void print() {

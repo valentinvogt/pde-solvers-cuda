@@ -10,4 +10,4 @@ module load netcdf/4.6.0
 cmake -B build -DENABLE_CUDA=ON
 make -C build
 
-compute-sanitizer ./build/main
+compute-sanitizer ./build/unit_tests

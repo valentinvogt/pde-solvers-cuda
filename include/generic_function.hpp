@@ -26,21 +26,16 @@ public:
 #endif
 
   // TODO: setters
-  void set_const(Scalar value) {
-    const_val_ = value;
-  }
+  void set_const(Scalar value) { const_val_ = value; }
 
-  void set_lin(Scalar value) {
-    lin_val_ = value;
-  }
-  void set_quad(Scalar value) {
-    quad_val_ = value;
-  }
+  void set_lin(Scalar value) { lin_val_ = value; }
+  void set_quad(Scalar value) { quad_val_ = value; }
 
   void set_exp(Scalar scale, Scalar pot) {
     exp_scale_val_ = scale;
     exp_pot_val_ = pot;
   }
+
 private:
   // functions returns f(x) = const_val_ + lin_val_ * x + quad_val_ * x^2 +
   // exp_scale_val_ * exp(exp_pot_val_ * x)

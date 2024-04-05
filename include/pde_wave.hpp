@@ -13,8 +13,8 @@ public:
   // TODO: add derivative
   PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
-      : PDEBase<Scalar>(Nx, Ny, memory_location, bc),
-        func_(f), deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2)) {}
+      : PDEBase<Scalar>(Nx, Ny, memory_location, bc), func_(f),
+        deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2)) {}
 
   void apply(Scalar dt) override {
     if (!this->ready_) {
