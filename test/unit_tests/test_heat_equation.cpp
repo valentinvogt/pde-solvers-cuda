@@ -26,7 +26,7 @@ create_value_data(int x_size, int y_size, Scalar value,
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
     zisa::array<Scalar, 2> data_gpu(zisa::shape_t<2>(x_size, y_size),
-                                    zisa::device_type::gpu);
+                                    zisa::device_type::cuda);
     zisa::copy(data_gpu, data);
     return data_gpu;
   }
@@ -121,7 +121,15 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   for (int i = 0; i < 1000; i++) {
     pde.apply(0.1);
   }
+
+#if CUDA_AVAILABLE
+  zisa::array_const_view<float, 2> result_gpu = pde.get_data();
+  zisa::array<float, 2> result(result_gpu.shape());
+  zisa::copy(result, result_gpu);
+#else
   zisa::array_const_view<float, 2> result = pde.get_data();
+#endif
+
   float tol = 1e-10;
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
@@ -172,7 +180,15 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
   for (int i = 0; i < 100; i++) {
     pde.apply(0.1);
   }
+
+#if CUDA_AVAILABLE
+  zisa::array_const_view<float, 2> result_gpu = pde.get_data();
+  zisa::array<float, 2> result(result_gpu.shape());
+  zisa::copy(result, result_gpu);
+#else
   zisa::array_const_view<float, 2> result = pde.get_data();
+#endif
+
   float tol = 1e-3;
   // values on boundary do not change because of dirichlet bc
   for (int i = 1; i < 9; i++) {
