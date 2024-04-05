@@ -1,8 +1,8 @@
 #ifndef PDE_BASE_HPP_
 #define PDE_BASE_HPP_
 
-#include "zisa/io/hierarchical_file.hpp"
-#include "zisa/io/netcdf_file.hpp"
+#include <zisa/io/hierarchical_file.hpp>
+#include <zisa/io/netcdf_file.hpp>
 #include <convolution.hpp>
 #include <convolve_sigma_add_f.hpp>
 #include <helpers.hpp>
@@ -20,7 +20,9 @@
 #include <zisa/memory/memory_location.hpp>
 #include <zisa/memory/shape.hpp>
 
-template <typename Scalar, typename BoundaryCondition> class PDEBase {
+enum BoundaryCondition { Dirichlet, Neumann, Periodic };
+
+template <typename Scalar> class PDEBase {
 public:
   // note here that Nx and Ny denote the size INSIDE the boundary WITHOUT the
   // boundary so that the total size is Nx + 2 * Ny + 2
@@ -35,6 +37,10 @@ public:
                            const std::string &tag_data = "initial_data",
                            const std::string &tag_sigma = "sigma",
                            const std::string &tag_bc = "bc") = 0;
+
+  virtual void read_values(zisa::array_const_view<Scalar, 2> data, zisa::array_const_view<Scalar, 2> sigma,
+                           zisa::array_const_view<Scalar, 2> bc) = 0;
+  
 
   virtual void apply(Scalar dt) = 0;
 
@@ -77,6 +83,23 @@ public:
                 << time + dt_new << std::endl;
     }
   }
+
+  zisa::array_const_view<Scalar, 2> get_data(){
+    return data_.const_view();
+  }
+
+  zisa::array_const_view<Scalar, 2> ger_sigma() {
+    return sigma_values_.const_view();
+  }
+
+  zisa::array_const_view<Scalar, 2> get_bc() {
+    return bc_neumann_values_.const_view();
+  }
+
+  BoundaryCondition get_bc_type() {
+    return bc_;
+  }
+
 
   // for testing/debugging
   void print() {

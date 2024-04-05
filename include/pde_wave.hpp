@@ -7,13 +7,13 @@
 #include "zisa/io/hdf5_writer.hpp"
 #include <pde_base.hpp>
 
-template <typename Scalar, typename BoundaryCondition, typename Function>
-class PDEWave : public virtual PDEBase<Scalar, BoundaryCondition> {
+template <typename Scalar, typename Function>
+class PDEWave : public virtual PDEBase<Scalar> {
 public:
   // TODO: add derivative
   PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
-      : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc),
+      : PDEBase<Scalar>(Nx, Ny, memory_location, bc),
         func_(f), deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2)) {}
 
   void apply(Scalar dt) override {
@@ -28,7 +28,7 @@ public:
                          this->sigma_values_.const_view(), 0.01, func_);
     // TODO: add
     add_arrays(this->data_.view(), tmp.const_view());
-    PDEBase<Scalar, BoundaryCondition>::add_bc();
+    PDEBase<Scalar>::add_bc();
   }
 
   void read_values(const std::string &filename,
