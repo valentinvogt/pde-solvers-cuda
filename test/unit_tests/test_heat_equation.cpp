@@ -222,10 +222,10 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
   const zisa::device_type memory_location = zisa::device_type::cpu;
 #endif
 
-  zisa::array<float, 2> data(zisa::shape_t<2>(array_size, array_size),
+  zisa::array<double, 2> data(zisa::shape_t<2>(array_size, array_size),
                              memory_location);
 #if CUDA_AVAILABLE
-  zisa::array<float, 2> data_cpu(zisa::shape_t<2>(array_size, array_size),
+  zisa::array<double, 2> data_cpu(zisa::shape_t<2>(array_size, array_size),
                                  zisa::device_type::cpu);
 #endif
 
@@ -242,12 +242,12 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
 #if CUDA_AVAILABLE
   zisa::copy(data, data_cpu);
 #endif
-  zisa::array<float, 2> sigma_values = create_value_data<float>(
+  zisa::array<double, 2> sigma_values = create_value_data<double>(
       2 * array_size - 3, array_size - 1, 0., memory_location);
 
-  GenericFunction<float> func;
+  GenericFunction<double> func;
   func.set_lin(.5);
-  PDEHeat<float, GenericFunction<float>> pde(
+  PDEHeat<double, GenericFunction<double>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
@@ -259,25 +259,25 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
   }
 
 #if CUDA_AVAILABLE
-  zisa::array_const_view<float, 2> result_gpu = pde.get_data();
-  zisa::array<float, 2> result(result_gpu.shape());
+  zisa::array_const_view<double, 2> result_gpu = pde.get_data();
+  zisa::array<double, 2> result(result_gpu.shape());
   zisa::copy(result, result_gpu);
 #else
-  zisa::array_const_view<float, 2> result = pde.get_data();
+  zisa::array_const_view<double, 2> result = pde.get_data();
 #endif
   pde.print();  
 
-  float tol = 1e-1;
+  double tol = 1e-1;
   // values on boundary do not change because of dirichlet bc
-  float max_err = 0;
+  double max_err = 0;
   for (int i = 1; i < 9; i++) {
     for (int j = 1; j < 9; j++) {
 #if CUDA_AVAILABLE
       ASSERT_NEAR(data_cpu(i, j) * std::exp(0.1), result(i, j), tol);
-      float err = std::abs(data_cpu(i, j) * std::exp(0.1) - result(i, j));
+      double err = std::abs(data_cpu(i, j) * std::exp(0.1) - result(i, j));
 #else
       ASSERT_NEAR(data(i, j) * std::exp(0.1), result(i, j), tol);
-      float err = std::abs(data(i, j) * std::exp(0.1) - result(i, j));
+      double err = std::abs(data(i, j) * std::exp(0.1) - result(i, j));
 #endif
       max_err = std::max(max_err, err);
 
