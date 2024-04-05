@@ -211,6 +211,8 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
 // this only works for very small times because
 // the boundary stays constant but the inner values increases, which 
 // leads to a huge 2nd derivative in the corner values
+// note that using float or double does not increase or decrease the error,
+// it's because of algorithmic instabilities...could be prevented by reducing dx and dy
 
 // this error should be resulved when using sigma=0 but nan * 0 != 0
 // you could prevent it by using a max_value in convolve_sigma_add_f?
@@ -222,10 +224,10 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
   const zisa::device_type memory_location = zisa::device_type::cpu;
 #endif
 
-  zisa::array<double, 2> data(zisa::shape_t<2>(array_size, array_size),
+  zisa::array<float, 2> data(zisa::shape_t<2>(array_size, array_size),
                              memory_location);
 #if CUDA_AVAILABLE
-  zisa::array<double, 2> data_cpu(zisa::shape_t<2>(array_size, array_size),
+  zisa::array<float, 2> data_cpu(zisa::shape_t<2>(array_size, array_size),
                                  zisa::device_type::cpu);
 #endif
 
@@ -242,12 +244,12 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
 #if CUDA_AVAILABLE
   zisa::copy(data, data_cpu);
 #endif
-  zisa::array<double, 2> sigma_values = create_value_data<double>(
+  zisa::array<float, 2> sigma_values = create_value_data<float>(
       2 * array_size - 3, array_size - 1, 0., memory_location);
 
-  GenericFunction<double> func;
+  GenericFunction<float> func;
   func.set_lin(.5);
-  PDEHeat<double, GenericFunction<double>> pde(
+  PDEHeat<float, GenericFunction<float>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
@@ -255,34 +257,26 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
   // t = 0.2
   for (int i = 0; i < 20; i++) {
     pde.apply(0.01);
-    pde.print();
   }
 
 #if CUDA_AVAILABLE
-  zisa::array_const_view<double, 2> result_gpu = pde.get_data();
-  zisa::array<double, 2> result(result_gpu.shape());
+  zisa::array_const_view<float, 2> result_gpu = pde.get_data();
+  zisa::array<float, 2> result(result_gpu.shape());
   zisa::copy(result, result_gpu);
 #else
-  zisa::array_const_view<double, 2> result = pde.get_data();
+  zisa::array_const_view<float, 2> result = pde.get_data();
 #endif
-  pde.print();  
 
-  double tol = 1e-1;
+  float tol = 1e-1;
   // values on boundary do not change because of dirichlet bc
-  double max_err = 0;
   for (int i = 1; i < 9; i++) {
     for (int j = 1; j < 9; j++) {
 #if CUDA_AVAILABLE
       ASSERT_NEAR(data_cpu(i, j) * std::exp(0.1), result(i, j), tol);
-      double err = std::abs(data_cpu(i, j) * std::exp(0.1) - result(i, j));
 #else
       ASSERT_NEAR(data(i, j) * std::exp(0.1), result(i, j), tol);
-      double err = std::abs(data(i, j) * std::exp(0.1) - result(i, j));
 #endif
-      max_err = std::max(max_err, err);
-
     }
   }
-  std::cout << "max err: " << max_err << std::endl;
 }
 } // namespace HeatEquationTests
