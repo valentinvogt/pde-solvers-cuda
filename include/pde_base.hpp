@@ -104,6 +104,8 @@ public:
 
     std::cout << "data:" << std::endl;
     print_matrix(data_.const_view());
+    // do not print bc and sigma
+    return;
     std::cout << "bc values:" << std::endl;
     print_matrix(bc_neumann_values_.const_view());
     std::cout << "sigma values:" << std::endl;

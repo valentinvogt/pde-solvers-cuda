@@ -7,7 +7,7 @@
 
 namespace HeatEquationTests {
 
-// creates simple data array where all values are set to value,
+// helper function which creates simple data array where all values are set to value,
 // if CUDA_AVAILABLE on gpu, else on cpu
 template <typename Scalar>
 inline zisa::array<Scalar, 2>
@@ -76,7 +76,7 @@ TEST(HeatEquationTests, TEST_ZERO) {
   }
 }
 
-// sigma = 0, f = 0 => u(x, y, t) = u(x, y, 0)
+//u(x, y, 0) != 0, f = 0, sigma = 0 => u(x, y, t) = u(x, y, 0)
 TEST(HeatEquationTests, TEST_U_CONSTANT) {
   const int array_size = 10; // 2 border values included
 #if CUDA_AVAILABLE
@@ -142,7 +142,7 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   }
 }
 
-// TODO: sigma = 0, f = const => du = f => u(x, y, t) = u(x, y, 0) + f * t
+// u(x, y, 0) != 0, sigma = 0, f = const => du = f => u(x, y, t) = u(x, y, 0) + f * t
 TEST(HeatEquationTests, TEST_F_CONSTANT) {
   const int array_size = 10; // 2 border values included
 #if CUDA_AVAILABLE
@@ -175,13 +175,13 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
       2 * array_size - 3, array_size - 1, 0., memory_location);
 
   GenericFunction<float> func;
-  func.set_const(1.);
+  func.set_const(.5);
   PDEHeat<float, GenericFunction<float>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view());
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 200; i++) {
     pde.apply(0.1);
   }
 
@@ -201,6 +201,75 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
       ASSERT_NEAR(data_cpu(i, j) + 10, result(i, j), tol);
 #else
       ASSERT_NEAR(data(i, j) + 10, result(i, j), tol);
+#endif
+    }
+  }
+}
+
+// u(x, y, 0) != 0, sigma = 0, f(x) = a*x => du = a*u => u(x, y, t) = u(x, y, 0) * exp(a * t)
+TEST(HeatEquationTests, TEST_F_LINEAR) {
+  const int array_size = 10; // 2 border values included
+#if CUDA_AVAILABLE
+  const zisa::device_type memory_location = zisa::device_type::cuda;
+#else
+  const zisa::device_type memory_location = zisa::device_type::cpu;
+#endif
+
+  zisa::array<float, 2> data(zisa::shape_t<2>(array_size, array_size),
+                             memory_location);
+#if CUDA_AVAILABLE
+  zisa::array<float, 2> data_cpu(zisa::shape_t<2>(array_size, array_size),
+                                 zisa::device_type::cpu);
+#endif
+
+  for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 10; j++) {
+#if CUDA_AVAILABLE
+      data_cpu(i, j) = i * j;
+#else
+      data(i, j) = i * j;
+#endif
+    }
+  }
+
+#if CUDA_AVAILABLE
+  zisa::copy(data, data_cpu);
+#endif
+  zisa::array<float, 2> sigma_values = create_value_data<float>(
+      2 * array_size - 3, array_size - 1, 0., memory_location);
+
+  GenericFunction<float> func;
+  func.set_lin(.5);
+  PDEHeat<float, GenericFunction<float>> pde(
+      8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
+
+  pde.read_values(data.const_view(), sigma_values.const_view(),
+                  data.const_view());
+  // t = 0.2, this only works for very small times because
+  // the boundary stays constant but the inner values increases, which 
+  // leads to a huge 2nd derivative in the corner values
+  for (int i = 0; i < 20; i++) {
+    pde.apply(0.01);
+    pde.print();
+  }
+
+#if CUDA_AVAILABLE
+  zisa::array_const_view<float, 2> result_gpu = pde.get_data();
+  zisa::array<float, 2> result(result_gpu.shape());
+  zisa::copy(result, result_gpu);
+#else
+  zisa::array_const_view<float, 2> result = pde.get_data();
+#endif
+  pde.print();  
+
+  float tol = 1e-1;
+  // values on boundary do not change because of dirichlet bc
+  for (int i = 1; i < 9; i++) {
+    for (int j = 1; j < 9; j++) {
+#if CUDA_AVAILABLE
+      ASSERT_NEAR(data_cpu(i, j) * std::exp(0.1), result(i, j), tol);
+#else
+      ASSERT_NEAR(data(i, j) * std::exp(0.1), result(i, j), tol);
 #endif
     }
   }
