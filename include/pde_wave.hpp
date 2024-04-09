@@ -23,11 +23,10 @@ public:
     }
 
     zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
-    // TODO: add cuda implementation, handle 1/dx^2, add f
+    const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
     convolve_sigma_add_f(tmp.view(), this->data_.const_view(),
-                         this->sigma_values_.const_view(), 0.01, func_);
-    // TODO: add
-    add_arrays(this->data_.view(), tmp.const_view());
+                         this->sigma_values_.const_view(), del_x_2, func_);
+    add_arrays_interior(this->data_.view(), tmp.const_view());
     PDEBase<Scalar>::add_bc();
   }
 
@@ -49,8 +48,6 @@ public:
       periodic_bc(this->data_.view());
     }
     this->ready_ = true;
-    std::cout << "initial data, sigma and boundary conditions read!"
-              << std::endl;
   }
 
 protected:

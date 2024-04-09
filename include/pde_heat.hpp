@@ -29,8 +29,6 @@ public:
       periodic_bc(this->data_.view());
     }
     this->ready_ = true;
-    std::cout << "initial data, sigma and boundary conditions read!"
-              << std::endl;
   }
 
   virtual void read_values(zisa::array_const_view<Scalar, 2> data,
@@ -46,8 +44,6 @@ public:
       periodic_bc(this->data_.view());
     }
     this->ready_ = true;
-    std::cout << "initial data, sigma and boundary conditions read!"
-              << std::endl;
   }
 
   void apply(Scalar dt) override {
@@ -57,12 +53,13 @@ public:
     }
 
     zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
-    // TODO: add cuda implementation, handle 1/dx^2, add f
     const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
     convolve_sigma_add_f(tmp.view(), this->data_.const_view(),
                          this->sigma_values_.const_view(), del_x_2, func_);
-    // TODO:
-    add_arrays(this->data_.view(), tmp.const_view(), dt);
+    // TODO: this also adds the boundary. If dirichlet, we have to ensure that the boundary
+    // stays the same, but convolve_sigma_add_f does not set the boundary to 0.
+    // Therefore, add_arrays should only add the interior:
+    add_arrays_interior(this->data_.view(), tmp.const_view(), dt);
     PDEBase<Scalar>::add_bc();
   }
 

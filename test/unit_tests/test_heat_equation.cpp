@@ -40,6 +40,36 @@ create_value_data(int x_size, int y_size, Scalar value,
     exit(-1);
   }
 }
+// helper function which creates simple data array where all arr(i, j) = i*j
+template <typename Scalar>
+inline zisa::array<Scalar, 2>
+create_simple_data(int x_size, int y_size,
+                  zisa::device_type memory_location) {
+  zisa::array<Scalar, 2> data(zisa::shape_t<2>(x_size, y_size),
+                              zisa::device_type::cpu);
+  for (int i = 0; i < x_size; i++) {
+    for (int j = 0; j < y_size; j++) {
+      data(i, j) = i * j;
+    }
+  }
+  if (memory_location == zisa::device_type::cpu) {
+    return data;
+  }
+#if CUDA_AVAILABLE
+  else if (memory_location == zisa::device_type::cuda) {
+    zisa::array<Scalar, 2> data_gpu(zisa::shape_t<2>(x_size, y_size),
+                                    zisa::device_type::cuda);
+    zisa::copy(data_gpu, data);
+    return data_gpu;
+  }
+#endif
+  else {
+    std::cout << "device type not supported yet in test_heat_equation"
+              << std::endl;
+    exit(-1);
+  }
+}
+
 
 // u(x, y, 0) = 0, f = 0, sigma = 0 => u(x, y, t) = 0
 TEST(HeatEquationTests, TEST_ZERO) {
@@ -88,26 +118,8 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   const zisa::device_type memory_location = zisa::device_type::cpu;
 #endif
 
-  zisa::array<float, 2> data(zisa::shape_t<2>(array_size, array_size),
-                             memory_location);
-#if CUDA_AVAILABLE
-  zisa::array<float, 2> data_cpu(zisa::shape_t<2>(array_size, array_size),
-                                 zisa::device_type::cpu);
-#endif
-
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 10; j++) {
-#if CUDA_AVAILABLE
-      data_cpu(i, j) = i * j;
-#else
-      data(i, j) = i * j;
-#endif
-    }
-  }
-
-#if CUDA_AVAILABLE
-  zisa::copy(data, data_cpu);
-#endif
+  zisa::array<float, 2> data =
+      create_simple_data<float>(array_size, array_size, memory_location);
 
   // if sigma == 0, then du == 0 everywhere => u is constant
   zisa::array<float, 2> sigma_values = create_value_data<float>(
@@ -129,6 +141,7 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   zisa::array_const_view<float, 2> result_gpu = pde.get_data();
   zisa::array<float, 2> result(result_gpu.shape());
   zisa::copy(result, result_gpu);
+  zisa::array<float, 2> data_cpu = create_simple_data<float>(array_size, array_size, zisa::device_type::cpu);
 #else
   zisa::array_const_view<float, 2> result = pde.get_data();
 #endif
@@ -154,26 +167,8 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
   const zisa::device_type memory_location = zisa::device_type::cpu;
 #endif
 
-  zisa::array<float, 2> data(zisa::shape_t<2>(array_size, array_size),
-                             memory_location);
-#if CUDA_AVAILABLE
-  zisa::array<float, 2> data_cpu(zisa::shape_t<2>(array_size, array_size),
-                                 zisa::device_type::cpu);
-#endif
+  auto data = create_simple_data<float>(array_size, array_size, memory_location);
 
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 10; j++) {
-#if CUDA_AVAILABLE
-      data_cpu(i, j) = i * j;
-#else
-      data(i, j) = i * j;
-#endif
-    }
-  }
-
-#if CUDA_AVAILABLE
-  zisa::copy(data, data_cpu);
-#endif
   zisa::array<float, 2> sigma_values = create_value_data<float>(
       2 * array_size - 3, array_size - 1, 0., memory_location);
 
@@ -192,6 +187,7 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
   zisa::array_const_view<float, 2> result_gpu = pde.get_data();
   zisa::array<float, 2> result(result_gpu.shape());
   zisa::copy(result, result_gpu);
+  zisa::array<float, 2> data_cpu = create_simple_data<float>(array_size, array_size, zisa::device_type::cpu);
 #else
   zisa::array_const_view<float, 2> result = pde.get_data();
 #endif
@@ -227,31 +223,14 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
   const zisa::device_type memory_location = zisa::device_type::cpu;
 #endif
 
-  zisa::array<float, 2> data(zisa::shape_t<2>(array_size, array_size),
-                             memory_location);
-#if CUDA_AVAILABLE
-  zisa::array<float, 2> data_cpu(zisa::shape_t<2>(array_size, array_size),
-                                 zisa::device_type::cpu);
-#endif
+  zisa::array<float, 2> data = create_simple_data<float>(array_size, array_size, memory_location);
 
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 10; j++) {
-#if CUDA_AVAILABLE
-      data_cpu(i, j) = i * j;
-#else
-      data(i, j) = i * j;
-#endif
-    }
-  }
-
-#if CUDA_AVAILABLE
-  zisa::copy(data, data_cpu);
-#endif
   zisa::array<float, 2> sigma_values = create_value_data<float>(
       2 * array_size - 3, array_size - 1, 0., memory_location);
 
   GenericFunction<float> func;
   func.set_lin(.5);
+
   PDEHeat<float, GenericFunction<float>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
@@ -266,6 +245,7 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
   zisa::array_const_view<float, 2> result_gpu = pde.get_data();
   zisa::array<float, 2> result(result_gpu.shape());
   zisa::copy(result, result_gpu);
+  zisa::array<float, 2> data_cpu = create_simple_data(array_size, array_size, zisa::device_type::cpu);
 #else
   zisa::array_const_view<float, 2> result = pde.get_data();
 #endif

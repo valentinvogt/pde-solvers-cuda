@@ -56,16 +56,12 @@ public:
     Scalar dsnapshots = T / (n_snapshots - 1);
     // save initial data
     writer.save_snapshot(0, snapshot_counter, data_.const_view());
-    std::cout << "saved snapshot " << snapshot_counter + 1 << " at time "
-              << time << std::endl;
     snapshot_counter++;
     for (unsigned int i = 0; i < n_timesteps; ++i) {
       if (time + dt >= dsnapshots * snapshot_counter) {
         Scalar dt_new = dsnapshots * snapshot_counter - time;
         apply(dt_new);
         writer.save_snapshot(0, snapshot_counter, data_.const_view());
-        std::cout << "saved snapshot " << snapshot_counter + 1 << " at time "
-                  << time + dt_new << std::endl;
         apply(dt - dt_new);
         snapshot_counter++;
       } else {
@@ -79,8 +75,6 @@ public:
       Scalar dt_new = T - time;
       apply(dt_new);
       writer.save_snapshot(0, snapshot_counter, data_.const_view());
-      std::cout << "saved snapshot " << snapshot_counter + 1 << " at time "
-                << time + dt_new << std::endl;
     }
   }
 
