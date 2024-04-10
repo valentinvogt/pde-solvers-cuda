@@ -1,13 +1,13 @@
 #ifndef NETCDF_WRITER_HPP_
 #define NETCDF_WRITER_HPP_
 
-#include <zisa/io/netcdf_serial_writer.hpp>
-#include <zisa/memory/array_view_decl.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <zisa/io/hierarchical_file.hpp>
+#include <zisa/io/netcdf_serial_writer.hpp>
 #include <zisa/memory/array.hpp>
+#include <zisa/memory/array_view_decl.hpp>
 
 template <typename Scalar> class NetCDFPDEWriter {
 public:

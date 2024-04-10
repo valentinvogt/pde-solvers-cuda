@@ -22,13 +22,15 @@ public:
       return;
     }
 
-    zisa::array<Scalar, 2> second_deriv(this->data_.shape(), this->data_.device());
+    zisa::array<Scalar, 2> second_deriv(this->data_.shape(),
+                                        this->data_.device());
     const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
     convolve_sigma_add_f(second_deriv.view(), this->data_.const_view(),
                          this->sigma_values_.const_view(), del_x_2, func_);
 
     // euler update of derivative
-    add_arrays_interior(this->deriv_data_.view(), second_deriv.const_view(), dt);
+    add_arrays_interior(this->deriv_data_.view(), second_deriv.const_view(),
+                        dt);
 
     // euler update of data
     add_arrays_interior(this->data_.view(), this->deriv_data_.const_view(), dt);

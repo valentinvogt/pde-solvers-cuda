@@ -70,15 +70,15 @@ int main() {
     PDEHeat<float, GenericFunction<float>> pde_cuda(
         array_size - 2, array_size - 2, zisa::device_type::cuda,
         BoundaryCondition::Dirichlet, func, 1. / array_size, 1. / array_size);
-    pde_cpu.read_values(zero_values_cpu.const_view(),
+    pde_cuda.read_values(zero_values_cpu.const_view(),
                         sigma_values_cpu.const_view(),
                         zero_values_cpu.const_view());
     // TODO: measure time and add cuda stuff
-    auto start = std::chrono::high_resolution_clock::now();
+    start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 10000; i++) {
       pde_cuda.apply(0.1);
     }
-    auto stop = std::chrono::high_resolution_clock::now();
+    stop = std::chrono::high_resolution_clock::now();
     std::cout << array_size << "\t"
               << std::chrono::duration_cast<std::chrono::microseconds>(stop -
                                                                        start)

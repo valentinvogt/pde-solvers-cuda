@@ -32,8 +32,8 @@ public:
   }
 
   void read_values(zisa::array_const_view<Scalar, 2> data,
-                           zisa::array_const_view<Scalar, 2> sigma,
-                           zisa::array_const_view<Scalar, 2> bc) {
+                   zisa::array_const_view<Scalar, 2> sigma,
+                   zisa::array_const_view<Scalar, 2> bc) {
     zisa::copy(this->data_, data);
     zisa::copy(this->sigma_values_, sigma);
     if (this->bc_ == BoundaryCondition::Neumann) {

@@ -9,7 +9,8 @@
 
 template <typename Scalar>
 void add_arrays_interior_cpu(zisa::array_view<Scalar, 2> dst,
-                    zisa::array_const_view<Scalar, 2> src, Scalar scaling) {
+                             zisa::array_const_view<Scalar, 2> src,
+                             Scalar scaling) {
   for (int i = 1; i < dst.shape(0) - 1; i++) {
     for (int j = 1; j < dst.shape(1) - 1; j++) {
       dst(i, j) += scaling * src(i, j);
@@ -22,7 +23,8 @@ void add_arrays_interior_cpu(zisa::array_view<Scalar, 2> dst,
 //       dst(i, j) = dst(i, j)                       on boundary
 template <typename Scalar>
 void add_arrays_interior(zisa::array_view<Scalar, 2> dst,
-                zisa::array_const_view<Scalar, 2> src, Scalar scaling) {
+                         zisa::array_const_view<Scalar, 2> src,
+                         Scalar scaling) {
   const zisa::device_type memory_dst = dst.memory_location();
   if (memory_dst != src.memory_location()) {
     std::cerr << "Error in add_arrays: dst and src have to have the same "
