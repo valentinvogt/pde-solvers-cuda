@@ -4,7 +4,7 @@
 #include "zisa/memory/device_type.hpp"
 #include <zisa/memory/array.hpp>
 #if CUDA_AVAILABLE
-#include <cuda/add_arrays_cuda.hpp>
+#include <cuda/add_arrays_interior_cuda.hpp>
 #endif
 
 template <typename Scalar>

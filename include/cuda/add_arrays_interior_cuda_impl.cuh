@@ -5,8 +5,12 @@
 #include <stdio.h>
 #include <zisa/memory/array.hpp>
 
-#ifndef THREAD_DIMS
-#define THREAD_DIMS 1024
+#ifndef NUM_THREAD_X
+#define NUM_THREAD_X 32
+#endif
+
+#ifndef NUM_THREAD_Y
+#define NUM_THREAD_Y 32
 #endif
 
 template <typename Scalar>
@@ -14,16 +18,14 @@ __global__ void add_arrays_interior_cuda_kernel(zisa::array_view<Scalar, 2> dst,
                                        zisa::array_const_view<Scalar, 2> src,
                                        Scalar scaling) {
 
-  // TODO: only do it in interior
-  const int linear_idx = threadIdx.x + blockIdx.x * THREAD_DIMS;
+  const int x_idx = threadIdx.x + 1 + blockIdx.x * NUM_THREAD_X; // cannot be on boundary
+  const int y_idx = threadIdx.y + 1 + blockIdx.y * NUM_THREAD_Y;
+
   const int Nx = src.shape(0);
   const int Ny = src.shape(1);
-  if (linear_idx < Nx * Ny) {
-    const int x_idx = linear_idx / Ny;
-    const int y_idx = linear_idx % Ny;
-    if (x_idx != 0 && y_ind != 0 && x_idx != Nx - 1 && x_idx != Ny - 1) {
-      dst(x_idx, y_idx) += scaling * src(x_idx, y_idx);
-    }
+  if (x_idx < Nx - 1 && y_idx < Ny - 1) {
+    // printf("x_idx: %d, y_idx: %d\n", x_idx, y_idx);
+    dst(x_idx, y_idx) += scaling * src(x_idx, y_idx);
   }
 }
 
@@ -31,9 +33,11 @@ template <typename Scalar>
 void add_arrays_interior_cuda(zisa::array_view<Scalar, 2> dst,
                      zisa::array_const_view<Scalar, 2> src, Scalar scaling) {
 #if CUDA_AVAILABLE
-  const int thread_dims = THREAD_DIMS;
-  const int block_dims =
-      std::ceil((double)(src.shape(0) * src.shape(1)) / thread_dims);
+  const dim3 thread_dims(NUM_THREAD_X, NUM_THREAD_Y);
+  const dim3 block_dims(std::ceil((src.shape(0) - 2) / (double) thread_dims.x), std::ceil((src.shape(1) - 2) / (double) thread_dims.y));
+
+  // std::cout << "thread dims: " << thread_dims.x << " " << thread_dims.y << std::endl;
+  // std::cout << "block dims: " << block_dims.x << " " << block_dims.y << std::endl;
   add_arrays_interior_cuda_kernel<<<block_dims, thread_dims>>>(dst, src, scaling);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {

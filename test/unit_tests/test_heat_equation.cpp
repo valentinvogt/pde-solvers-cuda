@@ -245,7 +245,7 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
   zisa::array_const_view<float, 2> result_gpu = pde.get_data();
   zisa::array<float, 2> result(result_gpu.shape());
   zisa::copy(result, result_gpu);
-  zisa::array<float, 2> data_cpu = create_simple_data(array_size, array_size, zisa::device_type::cpu);
+  zisa::array<float, 2> data_cpu = create_simple_data<float>(array_size, array_size, zisa::device_type::cpu);
 #else
   zisa::array_const_view<float, 2> result = pde.get_data();
 #endif
