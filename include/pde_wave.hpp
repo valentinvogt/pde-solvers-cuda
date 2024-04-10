@@ -7,14 +7,14 @@
 #include "zisa/io/hdf5_writer.hpp"
 #include <pde_base.hpp>
 
-template <typename Scalar, typename BoundaryCondition, typename Function>
-class PDEWave : public virtual PDEBase<Scalar, BoundaryCondition> {
+template <typename Scalar, typename Function>
+class PDEWave : public virtual PDEBase<Scalar> {
 public:
   // TODO: add derivative
   PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
-      : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc),
-        func_(f), deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2)) {}
+      : PDEBase<Scalar>(Nx, Ny, memory_location, bc, dx, dy), func_(f),
+        deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location) {}
 
   void apply(Scalar dt) override {
     if (!this->ready_) {
@@ -22,13 +22,17 @@ public:
       return;
     }
 
-    zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
-    // TODO: add cuda implementation, handle 1/dx^2, add f
-    convolve_sigma_add_f(tmp.view(), this->data_.const_view(),
-                         this->sigma_values_.const_view(), 0.01, func_);
-    // TODO: add
-    add_arrays(this->data_.view(), tmp.const_view());
-    PDEBase<Scalar, BoundaryCondition>::add_bc();
+    zisa::array<Scalar, 2> second_deriv(this->data_.shape(), this->data_.device());
+    const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
+    convolve_sigma_add_f(second_deriv.view(), this->data_.const_view(),
+                         this->sigma_values_.const_view(), del_x_2, func_);
+
+    // euler update of derivative
+    add_arrays_interior(this->deriv_data_.view(), second_deriv.const_view(), dt);
+
+    // euler update of data
+    add_arrays_interior(this->data_.view(), this->deriv_data_.const_view(), dt);
+    PDEBase<Scalar>::add_bc();
   }
 
   void read_values(const std::string &filename,
@@ -49,8 +53,28 @@ public:
       periodic_bc(this->data_.view());
     }
     this->ready_ = true;
-    std::cout << "initial data, sigma and boundary conditions read!"
-              << std::endl;
+  }
+
+  void read_values(zisa::array_const_view<Scalar, 2> data,
+                   zisa::array_const_view<Scalar, 2> sigma,
+                   zisa::array_const_view<Scalar, 2> bc,
+                   zisa::array_const_view<Scalar, 2> initial_derivative) {
+    zisa::copy(this->data_, data);
+    zisa::copy(this->sigma_values_, sigma);
+    zisa::copy(this->deriv_data_, initial_derivative);
+    if (this->bc_ == BoundaryCondition::Neumann) {
+      zisa::copy(this->bc_neumann_values_, initial_derivative);
+    } else if (this->bc_ == BoundaryCondition::Dirichlet) {
+      // do noching as long as data on boundary does not change
+    } else if (this->bc_ == BoundaryCondition::Periodic) {
+      periodic_bc(this->data_.view());
+    }
+    this->ready_ = true;
+  }
+
+  void print_deriv() {
+    std::cout << "deriv: " << std::endl;
+    print_matrix(this->deriv_data_.const_view());
   }
 
 protected:

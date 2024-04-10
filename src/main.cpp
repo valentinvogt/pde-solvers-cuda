@@ -7,20 +7,18 @@
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/device_type.hpp>
 
-enum BoundaryCondition { Dirichlet, Neumann, Periodic };
-
 void small_example() {
   BoundaryCondition bc = BoundaryCondition::Periodic;
   GenericFunction<float> func;
 #if CUDA_AVAILABLE
   std::cout << "case_gpu" << std::endl;
 
-  PDEHeat<float, BoundaryCondition, GenericFunction<float>> pde(
-      8, 8, zisa::device_type::cuda, bc, func, 0.1, 0.1);
+  PDEHeat<float, GenericFunction<float>> pde(8, 8, zisa::device_type::cuda, bc,
+                                             func, 0.1, 0.1);
 #else
   std::cout << "case_cpu" << std::endl;
-  PDEHeat<float, BoundaryCondition, GenericFunction<float>> pde(
-      8, 8, zisa::device_type::cpu, bc, func, 0.1, 0.1);
+  PDEHeat<float, GenericFunction<float>> pde(8, 8, zisa::device_type::cpu, bc,
+                                             func, 0.1, 0.1);
 #endif
   pde.read_values("data/simple_data.nc");
 

@@ -1,8 +1,8 @@
 #ifndef NETCDF_WRITER_HPP_
 #define NETCDF_WRITER_HPP_
 
-#include "zisa/io/netcdf_serial_writer.hpp"
-#include "zisa/memory/array_view_decl.hpp"
+#include <zisa/io/netcdf_serial_writer.hpp>
+#include <zisa/memory/array_view_decl.hpp>
 #include <iostream>
 #include <string>
 #include <vector>

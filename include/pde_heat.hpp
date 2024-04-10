@@ -5,18 +5,17 @@
 #include "zisa/memory/device_type.hpp"
 #include <pde_base.hpp>
 
-template <typename Scalar, typename BoundaryCondition, typename Function>
-class PDEHeat : public virtual PDEBase<Scalar, BoundaryCondition> {
+template <typename Scalar, typename Function>
+class PDEHeat : public virtual PDEBase<Scalar> {
 public:
   PDEHeat(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
-      : PDEBase<Scalar, BoundaryCondition>(Nx, Ny, memory_location, bc, dx, dy),
-        func_(f) {}
+      : PDEBase<Scalar>(Nx, Ny, memory_location, bc, dx, dy), func_(f) {}
 
   void read_values(const std::string &filename,
                    const std::string &tag_data = "initial_data",
                    const std::string &tag_sigma = "sigma",
-                   const std::string &tag_bc = "bc") override {
+                   const std::string &tag_bc = "bc") {
 
     zisa::HDF5SerialReader reader(filename);
     read_data(reader, this->data_, tag_data);
@@ -30,8 +29,21 @@ public:
       periodic_bc(this->data_.view());
     }
     this->ready_ = true;
-    std::cout << "initial data, sigma and boundary conditions read!"
-              << std::endl;
+  }
+
+  void read_values(zisa::array_const_view<Scalar, 2> data,
+                           zisa::array_const_view<Scalar, 2> sigma,
+                           zisa::array_const_view<Scalar, 2> bc) {
+    zisa::copy(this->data_, data);
+    zisa::copy(this->sigma_values_, sigma);
+    if (this->bc_ == BoundaryCondition::Neumann) {
+      zisa::copy(this->bc_neumann_values_, bc);
+    } else if (this->bc_ == BoundaryCondition::Dirichlet) {
+      // do noching as long as data on boundary does not change
+    } else if (this->bc_ == BoundaryCondition::Periodic) {
+      periodic_bc(this->data_.view());
+    }
+    this->ready_ = true;
   }
 
   void apply(Scalar dt) override {
@@ -41,13 +53,13 @@ public:
     }
 
     zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
-    // TODO: add cuda implementation, handle 1/dx^2, add f
     const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
     convolve_sigma_add_f(tmp.view(), this->data_.const_view(),
                          this->sigma_values_.const_view(), del_x_2, func_);
-    // TODO:
-    add_arrays(this->data_.view(), tmp.const_view(), dt);
-    PDEBase<Scalar, BoundaryCondition>::add_bc();
+
+    // euler update of data
+    add_arrays_interior(this->data_.view(), tmp.const_view(), dt);
+    PDEBase<Scalar>::add_bc();
   }
 
 protected:

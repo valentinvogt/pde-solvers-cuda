@@ -4,24 +4,24 @@
 #include "zisa/memory/device_type.hpp"
 #include <zisa/memory/array.hpp>
 #if CUDA_AVAILABLE
-#include <cuda/add_arrays_cuda.hpp>
+#include <cuda/add_arrays_interior_cuda.hpp>
 #endif
 
 template <typename Scalar>
-void add_arrays_cpu(zisa::array_view<Scalar, 2> dst,
+void add_arrays_interior_cpu(zisa::array_view<Scalar, 2> dst,
                     zisa::array_const_view<Scalar, 2> src, Scalar scaling) {
-  // TODO: Optimize
-  for (int i = 0; i < dst.shape(0); i++) {
-    for (int j = 0; j < dst.shape(1); j++) {
+  for (int i = 1; i < dst.shape(0) - 1; i++) {
+    for (int j = 1; j < dst.shape(1) - 1; j++) {
       dst(i, j) += scaling * src(i, j);
     }
   }
 }
 
 // PRE: dimensions of src and dst match, both are stored on same device type
-// POST: dst(i, j) = dst(i, j) + scaling * src(i, j)
+// POST: dst(i, j) = dst(i, j) + scaling * src(i, j) in interior
+//       dst(i, j) = dst(i, j)                       on boundary
 template <typename Scalar>
-void add_arrays(zisa::array_view<Scalar, 2> dst,
+void add_arrays_interior(zisa::array_view<Scalar, 2> dst,
                 zisa::array_const_view<Scalar, 2> src, Scalar scaling) {
   const zisa::device_type memory_dst = dst.memory_location();
   if (memory_dst != src.memory_location()) {
@@ -36,13 +36,11 @@ void add_arrays(zisa::array_view<Scalar, 2> dst,
     exit(1);
   }
   if (memory_dst == zisa::device_type::cpu) {
-    add_arrays_cpu(dst, src, scaling);
+    add_arrays_interior_cpu(dst, src, scaling);
   }
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
-    // TODO
-    // std::cout << "add arrays on cuda have to be implemented" << std::endl;
-    add_arrays_cuda(dst, src, scaling);
+    add_arrays_interior_cuda(dst, src, scaling);
   }
 #endif // CUDA_AVAILABLE
   else {

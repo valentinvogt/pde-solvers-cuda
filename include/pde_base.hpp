@@ -1,8 +1,6 @@
 #ifndef PDE_BASE_HPP_
 #define PDE_BASE_HPP_
 
-#include "zisa/io/hierarchical_file.hpp"
-#include "zisa/io/netcdf_file.hpp"
 #include <convolution.hpp>
 #include <convolve_sigma_add_f.hpp>
 #include <helpers.hpp>
@@ -12,7 +10,9 @@
 #include <string>
 #include <zisa/io/file_manipulation.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
+#include <zisa/io/hierarchical_file.hpp>
 #include <zisa/io/hierarchical_reader.hpp>
+#include <zisa/io/netcdf_file.hpp>
 #include <zisa/io/netcdf_serial_writer.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/array_traits.hpp>
@@ -20,7 +20,9 @@
 #include <zisa/memory/memory_location.hpp>
 #include <zisa/memory/shape.hpp>
 
-template <typename Scalar, typename BoundaryCondition> class PDEBase {
+enum BoundaryCondition { Dirichlet, Neumann, Periodic };
+
+template <typename Scalar> class PDEBase {
 public:
   // note here that Nx and Ny denote the size INSIDE the boundary WITHOUT the
   // boundary so that the total size is Nx + 2 * Ny + 2
@@ -30,11 +32,6 @@ public:
         bc_neumann_values_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location),
         sigma_values_(zisa::shape_t<2>(2 * Nx + 1, Ny + 1), memory_location),
         memory_location_(memory_location), bc_(bc), dx_(dx), dy_(dy) {}
-
-  virtual void read_values(const std::string &filename,
-                           const std::string &tag_data = "initial_data",
-                           const std::string &tag_sigma = "sigma",
-                           const std::string &tag_bc = "bc") = 0;
 
   virtual void apply(Scalar dt) = 0;
 
@@ -50,16 +47,12 @@ public:
     Scalar dsnapshots = T / (n_snapshots - 1);
     // save initial data
     writer.save_snapshot(0, snapshot_counter, data_.const_view());
-    std::cout << "saved snapshot " << snapshot_counter + 1 << " at time "
-              << time << std::endl;
     snapshot_counter++;
     for (unsigned int i = 0; i < n_timesteps; ++i) {
       if (time + dt >= dsnapshots * snapshot_counter) {
         Scalar dt_new = dsnapshots * snapshot_counter - time;
         apply(dt_new);
         writer.save_snapshot(0, snapshot_counter, data_.const_view());
-        std::cout << "saved snapshot " << snapshot_counter + 1 << " at time "
-                  << time + dt_new << std::endl;
         apply(dt - dt_new);
         snapshot_counter++;
       } else {
@@ -73,10 +66,21 @@ public:
       Scalar dt_new = T - time;
       apply(dt_new);
       writer.save_snapshot(0, snapshot_counter, data_.const_view());
-      std::cout << "saved snapshot " << snapshot_counter + 1 << " at time "
-                << time + dt_new << std::endl;
     }
   }
+
+  // for testing, does this work if on gpu?
+  zisa::array_const_view<Scalar, 2> get_data() { return data_.const_view(); }
+
+  zisa::array_const_view<Scalar, 2> get_sigma() {
+    return sigma_values_.const_view();
+  }
+
+  zisa::array_const_view<Scalar, 2> get_bc() {
+    return bc_neumann_values_.const_view();
+  }
+
+  BoundaryCondition get_bc_type() { return bc_; }
 
   // for testing/debugging
   void print() {
@@ -85,6 +89,8 @@ public:
 
     std::cout << "data:" << std::endl;
     print_matrix(data_.const_view());
+    // do not print bc and sigma
+    // return;
     std::cout << "bc values:" << std::endl;
     print_matrix(bc_neumann_values_.const_view());
     std::cout << "sigma values:" << std::endl;

@@ -10,6 +10,7 @@
 template <typename Scalar>
 __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
                                         unsigned data_size) {
+  // Probably change idx to 3darray?
   const unsigned idx = blockIdx.x * THREAD_DIMS + threadIdx.x;
   const unsigned x_length = data.shape(0);
   const unsigned y_length = data.shape(1);
