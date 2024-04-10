@@ -55,6 +55,23 @@ public:
     this->ready_ = true;
   }
 
+  void read_values(zisa::array_const_view<Scalar, 2> data,
+                   zisa::array_const_view<Scalar, 2> sigma,
+                   zisa::array_const_view<Scalar, 2> bc,
+                   zisa::array_const_view<Scalar, 2> initial_derivative) {
+    zisa::copy(this->data_, data);
+    zisa::copy(this->sigma_values_, sigma);
+    zisa::copy(this->deriv_data_, initial_derivative);
+    if (this->bc_ == BoundaryCondition::Neumann) {
+      zisa::copy(this->bc_neumann_values_, initial_derivative);
+    } else if (this->bc_ == BoundaryCondition::Dirichlet) {
+      // do noching as long as data on boundary does not change
+    } else if (this->bc_ == BoundaryCondition::Periodic) {
+      periodic_bc(this->data_.view());
+    }
+    this->ready_ = true;
+  }
+
 protected:
   Function func_;
   // add

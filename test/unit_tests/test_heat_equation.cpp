@@ -73,40 +73,40 @@ create_simple_data(int x_size, int y_size,
 
 // u(x, y, 0) = 0, f = 0, sigma = 0 => u(x, y, t) = 0
 TEST(HeatEquationTests, TEST_ZERO) {
-  const int array_size = 10; // 2 border values included
+const int array_size = 10; // 2 border values included
 #if CUDA_AVAILABLE
-  const zisa::device_type memory_location = zisa::device_type::cuda;
+const zisa::device_type memory_location = zisa::device_type::cuda;
 #else
-  const zisa::device_type memory_location = zisa::device_type::cpu;
+const zisa::device_type memory_location = zisa::device_type::cpu;
 #endif
-  zisa::array<float, 2> data =
-      create_value_data<float>(array_size, array_size, 0., memory_location);
+zisa::array<float, 2> data =
+    create_value_data<float>(array_size, array_size, 0., memory_location);
 
-  zisa::array<float, 2> sigma_values = create_value_data<float>(
-      2 * array_size - 3, array_size - 1, 1., memory_location);
-  // f == 0 everywhere
-  GenericFunction<float> func;
+zisa::array<float, 2> sigma_values = create_value_data<float>(
+    2 * array_size - 3, array_size - 1, 1., memory_location);
+// f == 0 everywhere
+GenericFunction<float> func;
 
-  PDEHeat<float, GenericFunction<float>> pde(
-      8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
-  pde.read_values(data.const_view(), sigma_values.const_view(),
-                  data.const_view());
-  for (int i = 0; i < 1000; i++) {
-    pde.apply(0.1);
-  }
+PDEHeat<float, GenericFunction<float>> pde(
+    8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
+pde.read_values(data.const_view(), sigma_values.const_view(),
+                data.const_view());
+for (int i = 0; i < 1000; i++) {
+  pde.apply(0.1);
+}
 #if CUDA_AVAILABLE
-  zisa::array_const_view<float, 2> result_gpu = pde.get_data();
-  zisa::array<float, 2> result(result_gpu.shape());
-  zisa::copy(result, result_gpu);
+zisa::array_const_view<float, 2> result_gpu = pde.get_data();
+zisa::array<float, 2> result(result_gpu.shape());
+zisa::copy(result, result_gpu);
 #else
-  zisa::array_const_view<float, 2> result = pde.get_data();
+zisa::array_const_view<float, 2> result = pde.get_data();
 #endif
-  float tol = 1e-10;
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 10; j++) {
-      ASSERT_NEAR(0.0, result(i, j), tol);
-    }
+float tol = 1e-10;
+for (int i = 0; i < 10; i++) {
+  for (int j = 0; j < 10; j++) {
+    ASSERT_NEAR(0.0, result(i, j), tol);
   }
+}
 }
 
 //u(x, y, 0) != 0, f = 0, sigma = 0 => u(x, y, t) = u(x, y, 0)
