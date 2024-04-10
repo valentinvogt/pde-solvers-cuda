@@ -13,7 +13,7 @@ public:
   // TODO: add derivative
   PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
-      : PDEBase<Scalar>(Nx, Ny, memory_location, bc), func_(f),
+      : PDEBase<Scalar>(Nx, Ny, memory_location, bc, dx, dy), func_(f),
         deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2)) {}
 
   void apply(Scalar dt) override {
@@ -28,7 +28,7 @@ public:
                          this->sigma_values_.const_view(), del_x_2, func_);
 
     // euler update of derivative
-    add_arrays_interior(this->deriv_data_.view(), second_deriv.const_view(), dt)
+    add_arrays_interior(this->deriv_data_.view(), second_deriv.const_view(), dt);
 
     // euler update of data
     add_arrays_interior(this->data_.view(), this->deriv_data_.const_view(), dt);
@@ -70,6 +70,11 @@ public:
       periodic_bc(this->data_.view());
     }
     this->ready_ = true;
+  }
+
+  void print_deriv() {
+    std::cout << "deriv: " << std::endl;
+    print_matrix(this->deriv_data_.const_view());
   }
 
 protected:

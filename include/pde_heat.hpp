@@ -15,7 +15,7 @@ public:
   void read_values(const std::string &filename,
                    const std::string &tag_data = "initial_data",
                    const std::string &tag_sigma = "sigma",
-                   const std::string &tag_bc = "bc") override {
+                   const std::string &tag_bc = "bc") {
 
     zisa::HDF5SerialReader reader(filename);
     read_data(reader, this->data_, tag_data);
@@ -31,9 +31,9 @@ public:
     this->ready_ = true;
   }
 
-  virtual void read_values(zisa::array_const_view<Scalar, 2> data,
+  void read_values(zisa::array_const_view<Scalar, 2> data,
                            zisa::array_const_view<Scalar, 2> sigma,
-                           zisa::array_const_view<Scalar, 2> bc) override {
+                           zisa::array_const_view<Scalar, 2> bc) {
     zisa::copy(this->data_, data);
     zisa::copy(this->sigma_values_, sigma);
     if (this->bc_ == BoundaryCondition::Neumann) {

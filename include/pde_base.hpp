@@ -33,15 +33,6 @@ public:
         sigma_values_(zisa::shape_t<2>(2 * Nx + 1, Ny + 1), memory_location),
         memory_location_(memory_location), bc_(bc), dx_(dx), dy_(dy) {}
 
-  virtual void read_values(const std::string &filename,
-                           const std::string &tag_data = "initial_data",
-                           const std::string &tag_sigma = "sigma",
-                           const std::string &tag_bc = "bc") = 0;
-
-  virtual void read_values(zisa::array_const_view<Scalar, 2> data,
-                           zisa::array_const_view<Scalar, 2> sigma,
-                           zisa::array_const_view<Scalar, 2> bc) = 0;
-
   virtual void apply(Scalar dt) = 0;
 
   // apply timesteps and save snapshots at times T/n_snapshots
@@ -99,7 +90,7 @@ public:
     std::cout << "data:" << std::endl;
     print_matrix(data_.const_view());
     // do not print bc and sigma
-    return;
+    // return;
     std::cout << "bc values:" << std::endl;
     print_matrix(bc_neumann_values_.const_view());
     std::cout << "sigma values:" << std::endl;
