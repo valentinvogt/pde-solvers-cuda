@@ -36,55 +36,57 @@ create_value_data(int x_size, int y_size, Scalar value,
 
 int main() {
   const int array_size_0 = 10;
-  for (int i = 0; i < 5; i++) {
-    const int array_size = array_size_0 * std::pow(2, i);
-    zisa::array<float, 2> zero_values_cpu = create_value_data<float>(
-        array_size, array_size, 0., zisa::device_type::cpu);
-    zisa::array<float, 2> sigma_values_cpu = create_value_data<float>(
-        2 * array_size - 3, array_size - 1, 0., zisa::device_type::cpu);
+  for (int i = 1; i < 100; i++) {
+    for (int n_iters = 0; n_iters < 2; n_iters++) {
+      const int array_size = array_size_0 * i;
+      zisa::array<float, 2> zero_values_cpu = create_value_data<float>(
+          array_size, array_size, 0., zisa::device_type::cpu);
+      zisa::array<float, 2> sigma_values_cpu = create_value_data<float>(
+          2 * array_size - 3, array_size - 1, 0., zisa::device_type::cpu);
 
-    GenericFunction<float> func;
-    PDEHeat<float, GenericFunction<float>> pde_cpu(
-        array_size - 2, array_size - 2, zisa::device_type::cpu,
-        BoundaryCondition::Dirichlet, func, 1. / array_size, 1. / array_size);
-    pde_cpu.read_values(zero_values_cpu.const_view(),
-                        sigma_values_cpu.const_view(),
-                        zero_values_cpu.const_view());
-    // TODO: measure time and add cuda stuff
-    auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 10000; i++) {
-      pde_cpu.apply(0.1);
-    }
-    auto stop = std::chrono::high_resolution_clock::now();
-    std::cout << array_size << "\t"
-              << std::chrono::duration_cast<std::chrono::microseconds>(stop -
-                                                                       start)
-                     .count()
-              << std::endl;
-#if CUDA_AVAILABLE
-    zisa::array<float, 2> zero_values_cuda = create_value_data<float>(
-        array_size, array_size, 0., zisa::device_type::cuda);
-    zisa::array<float, 2> sigma_values_cuda = create_value_data<float>(
-        2 * array_size - 3, array_size - 1, 0., zisa::device_type::cuda);
+      GenericFunction<float> func;
+      PDEHeat<float, GenericFunction<float>> pde_cpu(
+          array_size - 2, array_size - 2, zisa::device_type::cpu,
+          BoundaryCondition::Dirichlet, func, 1. / array_size, 1. / array_size);
+      pde_cpu.read_values(zero_values_cpu.const_view(),
+                          sigma_values_cpu.const_view(),
+                          zero_values_cpu.const_view());
+      // TODO: measure time and add cuda stuff
+      auto start = std::chrono::high_resolution_clock::now();
+      for (int i = 0; i < 10000; i++) {
+        pde_cpu.apply(0.1);
+      }
+      auto stop = std::chrono::high_resolution_clock::now();
+      std::cout << array_size << "\t"
+                << std::chrono::duration_cast<std::chrono::microseconds>(stop -
+                                                                         start)
+                       .count()
+                << std::endl;
+  #if CUDA_AVAILABLE
+      zisa::array<float, 2> zero_values_cuda = create_value_data<float>(
+          array_size, array_size, 0., zisa::device_type::cuda);
+      zisa::array<float, 2> sigma_values_cuda = create_value_data<float>(
+          2 * array_size - 3, array_size - 1, 0., zisa::device_type::cuda);
 
-    PDEHeat<float, GenericFunction<float>> pde_cuda(
-        array_size - 2, array_size - 2, zisa::device_type::cuda,
-        BoundaryCondition::Dirichlet, func, 1. / array_size, 1. / array_size);
-    pde_cuda.read_values(zero_values_cpu.const_view(),
-                        sigma_values_cpu.const_view(),
-                        zero_values_cpu.const_view());
-    // TODO: measure time and add cuda stuff
-    start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 10000; i++) {
-      pde_cuda.apply(0.1);
+      PDEHeat<float, GenericFunction<float>> pde_cuda(
+          array_size - 2, array_size - 2, zisa::device_type::cuda,
+          BoundaryCondition::Dirichlet, func, 1. / array_size, 1. / array_size);
+      pde_cuda.read_values(zero_values_cpu.const_view(),
+                           sigma_values_cpu.const_view(),
+                           zero_values_cpu.const_view());
+      // TODO: measure time and add cuda stuff
+      start = std::chrono::high_resolution_clock::now();
+      for (int i = 0; i < 10000; i++) {
+        pde_cuda.apply(0.1);
+      }
+      stop = std::chrono::high_resolution_clock::now();
+      std::cout << array_size << "\t"
+                << std::chrono::duration_cast<std::chrono::microseconds>(stop -
+                                                                         start)
+                       .count()
+                << std::endl;
+  #endif
     }
-    stop = std::chrono::high_resolution_clock::now();
-    std::cout << array_size << "\t"
-              << std::chrono::duration_cast<std::chrono::microseconds>(stop -
-                                                                       start)
-                     .count()
-              << std::endl;
-#endif
   }
 
   return 0;
