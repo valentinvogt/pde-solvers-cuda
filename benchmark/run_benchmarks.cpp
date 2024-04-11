@@ -36,9 +36,19 @@ create_value_data(int x_size, int y_size, Scalar value,
 
 int main() {
   const int array_size_0 = 10;
-  for (int i = 1; i < 100; i++) {
-    for (int n_iters = 0; n_iters < 2; n_iters++) {
-      const int array_size = array_size_0 * i;
+#if CUDA_AVAILABLE
+  std::cout << "# array_size, time_cpu, time_gpu" << std::endl;
+#else
+  std::cout << "# array_size, time_cpu" << std::endl;
+#endif
+  for (int size = 1; size < 100; size++) {
+    int n_iters = 5;
+    double time_cpu = 0;
+#if CUDA_AVAILABLE
+    double time_cuda = 0;
+#endif
+    for (int iters = 0; iters < n_iters; iters++) {
+      const int array_size = array_size_0 * size;
       zisa::array<float, 2> zero_values_cpu = create_value_data<float>(
           array_size, array_size, 0., zisa::device_type::cpu);
       zisa::array<float, 2> sigma_values_cpu = create_value_data<float>(
@@ -57,12 +67,10 @@ int main() {
         pde_cpu.apply(0.1);
       }
       auto stop = std::chrono::high_resolution_clock::now();
-      std::cout << array_size << "\t"
-                << std::chrono::duration_cast<std::chrono::microseconds>(stop -
-                                                                         start)
-                       .count()
-                << std::endl;
-  #if CUDA_AVAILABLE
+      time_cpu +=
+          std::chrono::duration_cast<std::chrono::microseconds>(stop - start)
+              .count();
+#if CUDA_AVAILABLE
       zisa::array<float, 2> zero_values_cuda = create_value_data<float>(
           array_size, array_size, 0., zisa::device_type::cuda);
       zisa::array<float, 2> sigma_values_cuda = create_value_data<float>(
@@ -80,12 +88,15 @@ int main() {
         pde_cuda.apply(0.1);
       }
       stop = std::chrono::high_resolution_clock::now();
-      std::cout << array_size << "\t"
-                << std::chrono::duration_cast<std::chrono::microseconds>(stop -
-                                                                         start)
-                       .count()
+      time_cuda +=
+          std::chrono::duration_cast<std::chrono::microseconds>(stop - start)
+              .count();
+#endif
+      std::cout << array_size << "," << time_cpu / (double)n_iter
+#if CUDA_AVAILABLE
+                << "," << time_cuda / (double)n_iter
+#endif
                 << std::endl;
-  #endif
     }
   }
 
