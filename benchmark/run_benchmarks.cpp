@@ -93,9 +93,9 @@ int main() {
               .count();
 #endif
     }
-    std::cout << array_size << "," << time_cpu / (double)n_iter
+    std::cout << array_size << "," << time_cpu / (double)n_iters
 #if CUDA_AVAILABLE
-                << "," << time_cuda / (double)n_iter
+                << "," << time_cuda / (double)n_iters
 #endif
                 << std::endl;
   }
