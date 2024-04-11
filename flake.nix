@@ -20,6 +20,15 @@
         netcdf
         hdf5
         gdb
+
+        (python3.withPackages (ps: with ps;
+        [
+          python-lsp-server
+          numpy
+
+          matplotlib
+          pandas
+        ]))
         ];
         buildInputs = with pkgs; [ 
         ];

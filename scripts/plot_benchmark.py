@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Read data from file
-with open('data.txt', 'r') as file:
+with open('out/res_benchmark_1.txt', 'r') as file:
     next(file)  # Skip header
     data = np.loadtxt(file, delimiter=',', skiprows=0)
 

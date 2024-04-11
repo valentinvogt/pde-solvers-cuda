@@ -47,8 +47,8 @@ int main() {
 #if CUDA_AVAILABLE
     double time_cuda = 0;
 #endif
+    const int array_size = array_size_0 * size;
     for (int iters = 0; iters < n_iters; iters++) {
-      const int array_size = array_size_0 * size;
       zisa::array<float, 2> zero_values_cpu = create_value_data<float>(
           array_size, array_size, 0., zisa::device_type::cpu);
       zisa::array<float, 2> sigma_values_cpu = create_value_data<float>(
@@ -92,12 +92,12 @@ int main() {
           std::chrono::duration_cast<std::chrono::microseconds>(stop - start)
               .count();
 #endif
-      std::cout << array_size << "," << time_cpu / (double)n_iter
+    }
+    std::cout << array_size << "," << time_cpu / (double)n_iter
 #if CUDA_AVAILABLE
                 << "," << time_cuda / (double)n_iter
 #endif
                 << std::endl;
-    }
   }
 
   return 0;
