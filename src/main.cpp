@@ -11,7 +11,7 @@
 void small_example() {
   BoundaryCondition bc = BoundaryCondition::Periodic;
   GenericFunction<float> func;
-  zisa::array<float, 3> function_scalings(zisa::shape_t<3>(2, 2, 2),
+  zisa::array<float, 1> function_scalings(zisa::shape_t<1>(8),
                                           zisa::device_type::cpu);
   CoupledFunction<float, 3, 2> func_coupled(function_scalings.const_view());
 #if CUDA_AVAILABLE
