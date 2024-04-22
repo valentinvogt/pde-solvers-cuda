@@ -26,15 +26,16 @@ template <typename Scalar, int n_coupled = 1> class PDEBase {
 public:
   // note here that Nx and Ny denote the size INSIDE the boundary WITHOUT the
   // boundary so that the total size is Nx + 2 * Ny + 2
-  // if n_coupled > 1, the coupled values are saved next to each other in data_ and bc_neumann_values_,
-  // for example for n_coupled = 3, 
-  // data_ = u(0, 0), v(0, 0), w(0, 0), u(0, 1), v(0, 1)...
+  // if n_coupled > 1, the coupled values are saved next to each other in data_
+  // and bc_neumann_values_, for example for n_coupled = 3, data_ = u(0, 0),
+  // v(0, 0), w(0, 0), u(0, 1), v(0, 1)...
   //         u(1, 0), v(1, 0), w(1, 0), u(1, 1), v(1, 1)...
   // note that sigma_values is independent of n_coupled
   PDEBase(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Scalar dx, Scalar dy)
       : data_(zisa::shape_t<2>(n_coupled * (Nx + 2), Ny + 2), memory_location),
-        bc_neumann_values_(zisa::shape_t<2>(n_coupled * (Nx + 2), Ny + 2), memory_location),
+        bc_neumann_values_(zisa::shape_t<2>(n_coupled * (Nx + 2), Ny + 2),
+                           memory_location),
         sigma_values_(zisa::shape_t<2>(2 * Nx + 1, Ny + 1), memory_location),
         memory_location_(memory_location), bc_(bc), dx_(dx), dy_(dy) {}
 
@@ -113,9 +114,10 @@ protected:
     } else if (bc_ == BoundaryCondition::Neumann) {
       // TODO: change dt
       Scalar dt = 0.1;
-      neumann_bc<n_coupled>(data_.view(), bc_neumann_values_.const_view(), dt);
+      neumann_bc<Scalar, n_coupled>(data_.view(),
+                                    bc_neumann_values_.const_view(), dt);
     } else if (bc_ == BoundaryCondition::Periodic) {
-      periodic_bc(data_.view());
+      periodic_bc<Scalar, n_coupled>(data_.view());
     } else {
       std::cout << "boundary condition not implemented yet!" << std::endl;
     }

@@ -5,12 +5,13 @@
 #include "zisa/memory/device_type.hpp"
 #include <pde_base.hpp>
 
-template <typename Scalar, typename Function>
+template <typename Scalar, typename Function, int n_coupled = 1>
 class PDEHeat : public virtual PDEBase<Scalar> {
 public:
   PDEHeat(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
-      : PDEBase<Scalar>(Nx, Ny, memory_location, bc, dx, dy), func_(f) {}
+      : PDEBase<Scalar, n_coupled>(Nx, Ny, memory_location, bc, dx, dy),
+        func_(f) {}
 
   void read_values(const std::string &filename,
                    const std::string &tag_data = "initial_data",
@@ -26,7 +27,7 @@ public:
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
       // do noching as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {
-      periodic_bc(this->data_.view());
+      periodic_bc<Scalar, n_coupled>(this->data_.view());
     }
     this->ready_ = true;
   }
@@ -41,7 +42,7 @@ public:
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
       // do noching as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {
-      periodic_bc(this->data_.view());
+      periodic_bc<Scalar, n_coupled>(this->data_.view());
     }
     this->ready_ = true;
   }

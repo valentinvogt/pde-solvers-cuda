@@ -1,5 +1,6 @@
 #include "helpers_main.hpp"
 #include <chrono>
+#include <coupled_function.hpp>
 #include <generic_function.hpp>
 #include <io/netcdf_writer.hpp>
 #include <iostream>
@@ -10,6 +11,9 @@
 void small_example() {
   BoundaryCondition bc = BoundaryCondition::Periodic;
   GenericFunction<float> func;
+  zisa::array<float, 3> function_scalings(zisa::shape_t<3>(2, 2, 2),
+                                          zisa::device_type::cpu);
+  CoupledFunction<float, 3, 2> func_coupled(function_scalings.const_view());
 #if CUDA_AVAILABLE
   std::cout << "case_gpu" << std::endl;
 
