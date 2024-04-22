@@ -10,7 +10,9 @@
 // currently implemented for polynoms of max degree 2
 #include <cmath>
 
+// TODO: shape_t size > 3 ?
 template <int n> zisa::shape_t<n> create_shape(int value) {
+  std::cout << "more than 3 coupled functions not allowed yet!" << std::endl;
   return zisa::shape_t<n>(value);
 }
 
@@ -38,14 +40,71 @@ public:
   inline __host__ __device__ Scalar
   operator()(zisa::array_const_view<Scalar, 1> x) {
     // TODO
-    return 0;
+    // implemented for n_coupled <= 3
+    Scalar result = 0;
+    if (n_coupled == 1) {
+      for (int i = 0; i < max_pot; i++) {
+        if (scalings_(i) != 0) {
+          result += scalings_(i) * std::pow(x(0), i);
+        }
+      }
+    } else if (n_coupled == 2) {
+      for (int i = 0; i < max_pot; i++) {
+        for (int j = 0; j < max_pot; j++) {
+          if (scalings_(i, j) != 0) {
+            result += scalings_(i, j) * std::pow(x(0), i) * std::pow(x(1), j);
+          }
+        }
+      }
+    } else if (n_coupled == 3) {
+      for (int i = 0; i < max_pot; i++) {
+        for (int j = 0; j < max_pot; j++) {
+          for (int k = 0; k < max_pot; k++) {
+            if (scalings_(i, j, k) != 0) {
+              result += scalings_(i, j, k) * std::pow(x(0), i) * std::pow(x(1), j) * std::pow(x(2), j);
+            }
+          }
+        }
+      }
+    } else {
+      std::cout << "operator+ not implented for n_coupled > 3 in coupled_function" << std::endl;
+    }
+    return result;
   }
 #else
   // input: array of size n_coupled, representing all values of one position
   // output: Scalar, f(x, y, z)
   inline Scalar operator()(zisa::array_const_view<Scalar, 1> x) {
-    // TODO
-    return 0;
+    // implemented for n_coupled <= 3
+    Scalar result = 0;
+    if (n_coupled == 1) {
+      for (int i = 0; i < max_pot; i++) {
+        if (scalings_(i) != 0) {
+          result += scalings_(i) * std::pow(x(0), i);
+        }
+      }
+    } else if (n_coupled == 2) {
+      for (int i = 0; i < max_pot; i++) {
+        for (int j = 0; j < max_pot; j++) {
+          if (scalings_(i, j) != 0) {
+            result += scalings_(i, j) * std::pow(x(0), i) * std::pow(x(1), j);
+          }
+        }
+      }
+    } else if (n_coupled == 3) {
+      for (int i = 0; i < max_pot; i++) {
+        for (int j = 0; j < max_pot; j++) {
+          for (int k = 0; k < max_pot; k++) {
+            if (scalings_(i, j, k) != 0) {
+              result += scalings_(i, j, k) * std::pow(x(0), i) * std::pow(x(1), j) * std::pow(x(2), j);
+            }
+          }
+        }
+      }
+    } else {
+      std::cout << "operator+ not implented for n_coupled > 3 in coupled_function" << std::endl;
+    }
+    return result;
   }
 #endif
 
