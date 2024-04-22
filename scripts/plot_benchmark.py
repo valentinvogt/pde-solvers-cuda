@@ -16,8 +16,11 @@ plt.plot(array_size, time_cpu, marker='o', label='CPU Time')
 plt.plot(array_size, time_cuda, marker='o', label='CUDA Time')
 plt.title('Execution Time Comparison (CPU vs CUDA)')
 plt.xlabel('Array Size')
-plt.ylabel('Time (milliseconds)')
+plt.ylabel('Time (microseconds)')
 plt.xticks(array_size)
 plt.grid(True)
 plt.legend()
-plt.show()
+plt.yscale('log')
+
+
+plt.savefig('out/res_benchmark_1.pdf')
