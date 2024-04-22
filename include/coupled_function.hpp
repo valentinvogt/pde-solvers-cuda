@@ -22,7 +22,8 @@ public:
   // input: array of size n_coupled, representing all values of one position
   // output: Scalar, f(x, y, z)
   inline __host__ __device__ Scalar
-  operator()(zisa::array_const_view<Scalar, 1> x) {
+  operator()(zisa::array_const_view<Scalar, 1> x,
+                           int n_values_left = n_coupled, int curr_pos = 0) {
     Scalar result = 0.;
     Scalar curr_pot = 1.;
     // base case
