@@ -93,7 +93,7 @@ public:
   // input: array of size n_coupled, representing all values of one position
   // output: Scalar, f(x, y, z)
   inline Scalar operator()(zisa::array_const_view<Scalar, 1> x,
-                           int n_values_left = n_coupled, int curr_pos = 0) {
+                           int n_values_left = n_coupled, int curr_scalings_pos = 0) {
 
     assert(memory_location_ == zisa::device_type::cpu);
     assert(x.memory_location() == memory_location_);
@@ -125,7 +125,7 @@ public:
   // could be deleted later
   inline Scalar operator()(Scalar value)  {
     assert(n_coupled == 1);
-    assert(memory_loction_ == zisa::device_type::cpu);
+    assert(memory_location_ == zisa::device_type::cpu);
     zisa::array<Scalar, 1> tmp(zisa::shape_t<1>(1), memory_location_);
     tmp(0) = value;
     return this->operator()(tmp.const_view());
