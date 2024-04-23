@@ -28,6 +28,7 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
   }
 }
 
+// TODO: add coupled function(s)
 // Function is a general function taking a Scalar returning a Scalar
 template <typename Scalar, typename Function>
 void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
