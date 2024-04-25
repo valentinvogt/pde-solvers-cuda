@@ -85,9 +85,17 @@ TEST(WaveEquationTests, TEST_ZERO) {
   zisa::array<float, 2> sigma_values = create_value_data<float>(
       2 * array_size - 3, array_size - 1, 1., memory_location);
   // f == 0 everywhere
-  zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), memory_location);
+  zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), zisa::device_type::cpu);
   function_scalings(0) = 0.;
+#if CUDA_AVAILABLE
+  zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1), zisa::device_type::cuda);
+  zisa::copy(function_scalings_cuda, function_scalings);
+  CoupledFunction<float, 1, 1> func(function_scalings_cuda);
+#else
   CoupledFunction<float, 1, 1> func(function_scalings);
+#endif
+
+  
 
 
   PDEWave<float, CoupledFunction<float, 1, 1>> pde(
@@ -132,9 +140,15 @@ TEST(WaveEquationTests, TEST_U_CONSTANT) {
 
   // f == 0 everywhere
 
-  zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), memory_location);
+  zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), zisa::device_type::cpu);
   function_scalings(0) = 0.;
-  CoupledFunction<float, 1, 1> func(function_scalings.const_view());
+#if CUDA_AVAILABLE
+  zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1), zisa::device_type::cuda);
+  zisa::copy(function_scalings_cuda, function_scalings);
+  CoupledFunction<float, 1, 1> func(function_scalings_cuda);
+#else
+  CoupledFunction<float, 1, 1> func(function_scalings);
+#endif
 
   PDEWave<float, CoupledFunction<float, 1, 1>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);

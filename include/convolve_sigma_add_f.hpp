@@ -29,12 +29,12 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
           f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu));
       for (int i = 0; i < n_coupled; i++) {
         dst(x, y + i) =
-            del_x_2 * (sigma(2 * x - 1, y + i - 1) * src(x, y + i - 1) +
-                       sigma(2 * x - 1, y + i) * src(x, y + i + 1) +
-                       sigma(2 * x - 2, y + i - 1) * src(x - 1, y + i) +
-                       sigma(2 * x, y + i - 1) * src(x + 1, y + i) -
-                       (sigma(2 * x - 1, y + i - 1) + sigma(2 * x - 1, y + i) +
-                        sigma(2 * x - 2, y + i - 1) + sigma(2 * x, y + i - 1)) *
+            del_x_2 * (sigma(2 * x - 1, (y - 1) / n_coupled) * src(x, y + i - 1) +
+                       sigma(2 * x - 1, (y - 1) / n_coupled + 2) * src(x, y + i + 1) +
+                       sigma(2 * x - 2, (y - 1) / n_coupled + 1) * src(x - 1, y + i) +
+                       sigma(2 * x, (y - 1) / n_coupled + 1) * src(x + 1, y + i) -
+                       (sigma(2 * x - 1, (y - 1) / n_coupled) + sigma(2 * x - 1, (y - 1) / n_coupled + 2) +
+                        sigma(2 * x - 2, (y - 1) / n_coupled + 1) + sigma(2 * x, (y - 1) / n_coupled + 1)) *
                            src(x, y + i)) +
             result_function(i);
       }
@@ -71,7 +71,7 @@ void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
     // TODO add n_coupled
-    convolve_sigma_add_f_cuda(dst, src, sigma, del_x_2, f);
+    convolve_sigma_add_f_cuda<n_coupled>(dst, src, sigma, del_x_2, f);
   }
 #endif // CUDA_AVAILABLE
   else {

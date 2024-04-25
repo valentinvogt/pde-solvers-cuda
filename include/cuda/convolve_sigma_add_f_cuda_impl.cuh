@@ -9,7 +9,14 @@
 #define NUM_THREAD_Y 32
 #endif
 
-template <typename Scalar, typename Function>
+#ifndef COUPLED_SLICE
+#define COUPLED_SLICE(n_coupled, start_value, memory_location)                 \
+  zisa::array_const_view<Scalar, 1> {                                          \
+    zisa::shape_t<1>(n_coupled), &start_value, memory_location                 \
+  }
+#endif
+
+template <int n_coupled, typename Scalar, typename Function>
 __global__ void convolve_sigma_add_f_cuda_kernel(
     zisa::array_view<Scalar, 2> dst, zisa::array_const_view<Scalar, 2> src,
     zisa::array_const_view<Scalar, 2> sigma, Scalar del_x_2, Function f) {
@@ -18,22 +25,27 @@ __global__ void convolve_sigma_add_f_cuda_kernel(
   const int y_idx = threadIdx.y + 1 + blockIdx.y * NUM_THREAD_Y;
 
   const int Nx = src.shape(0);
-  const int Ny = src.shape(1);
+  const int Ny = src.shape(1) / n_coupled;
   if (x_idx < Nx - 1 && y_idx < Ny - 1) {
-    dst(x_idx, y_idx) =
-        del_x_2 *
-            (sigma(2 * x_idx - 1, y_idx - 1) * src(x_idx, y_idx - 1) +
-             sigma(2 * x_idx - 1, y_idx) * src(x_idx, y_idx + 1) +
-             sigma(2 * x_idx - 2, y_idx - 1) * src(x_idx - 1, y_idx) +
-             sigma(2 * x_idx, y_idx - 1) * src(x_idx + 1, y_idx) -
-             (sigma(2 * x_idx - 1, y_idx - 1) + sigma(2 * x_idx - 1, y_idx) +
-              sigma(2 * x_idx - 2, y_idx - 1) + sigma(2 * x_idx, y_idx - 1)) *
-                 src(x_idx, y_idx)) +
-        f(src(x_idx, y_idx));
+      zisa::array<Scalar, 1> result_function =
+          f(COUPLED_SLICE(n_coupled, src(x_idx, n_coupled * y_idx), zisa::device_type::cuda));
+    for (int i = 0; i < n_coupled; i++) {
+      dst(x_idx, n_coupled * y_idx + i) =
+          del_x_2 *
+              (sigma(2 * x_idx - 1, y_idx - 1) * src(x_idx, y_idx - 1) +
+               sigma(2 * x_idx - 1, y_idx + 1) * src(x_idx, y_idx + 1) +
+               sigma(2 * x_idx - 2, y_idx) * src(x_idx - 1, y_idx) +
+               sigma(2 * x_idx, y_idx) * src(x_idx + 1, y_idx) -
+               (sigma(2 * x_idx - 1, y_idx - 1) + sigma(2 * x_idx - 1, y_idx) +
+                sigma(2 * x_idx - 2, y_idx - 1) + sigma(2 * x_idx, y_idx - 1)) *
+                   src(x_idx, y_idx)) +
+            result_function(i);
+      
+    }
   }
 }
 
-template <typename Scalar, typename Function>
+template <int n_coupled, typename Scalar, typename Function>
 void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
                                zisa::array_const_view<Scalar, 2> src,
                                zisa::array_const_view<Scalar, 2> sigma,
@@ -45,7 +57,7 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
   // std::cout << "thread dims: " << thread_dims.x << " " << thread_dims.y <<
   // std::endl; std::cout << "block dims: " << block_dims.x << " " <<
   // block_dims.y << std::endl;
-  convolve_sigma_add_f_cuda_kernel<<<block_dims, thread_dims>>>(dst, src, sigma,
+  convolve_sigma_add_f_cuda_kernel<n_coupled><<<block_dims, thread_dims>>>(dst, src, sigma,
                                                                 del_x_2, f);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
