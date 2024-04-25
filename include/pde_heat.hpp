@@ -55,11 +55,12 @@ public:
 
     zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
     const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
-    convolve_sigma_add_f(tmp.view(), this->data_.const_view(),
-                         this->sigma_values_.const_view(), del_x_2, func_);
+    convolve_sigma_add_f<n_coupled>(tmp.view(), this->data_.const_view(),
+                                    this->sigma_values_.const_view(), del_x_2,
+                                    func_);
 
     // euler update of data
-    add_arrays_interior(this->data_.view(), tmp.const_view(), dt);
+    add_arrays_interior<n_coupled>(this->data_.view(), tmp.const_view(), dt);
     PDEBase<Scalar>::add_bc();
   }
 

@@ -1,8 +1,8 @@
 #ifndef CONVOLVE_SIGMA_ADD_F_CUDA_H_
 #define CONVOLVE_SIGMA_ADD_F_CUDA_H_
 
-#include <generic_function.hpp>
 #include <coupled_function.hpp>
+#include <generic_function.hpp>
 #include <zisa/memory/array.hpp>
 
 template <typename Scalar, typename Function>
@@ -21,15 +21,18 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
 PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(float, GenericFunction<float>)
 PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(double,
                                                  GenericFunction<double>)
-PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(float, CoupledFunction<float COMMA 1 COMMA 1>)
-PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(double,
-                                                 CoupledFunction<double COMMA 1 COMMA 1>)
-PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(float, CoupledFunction<float COMMA 1 COMMA 3>)
-PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(double,
-                                                 CoupledFunction<double COMMA 1 COMMA 3>)
-PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(float, CoupledFunction<float COMMA 1 COMMA 4>)
-PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(double,
-                                                 CoupledFunction<double COMMA 1 COMMA 4>)
+PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(
+    float, CoupledFunction<float COMMA 1 COMMA 1>)
+PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(
+    double, CoupledFunction<double COMMA 1 COMMA 1>)
+PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(
+    float, CoupledFunction<float COMMA 1 COMMA 3>)
+PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(
+    double, CoupledFunction<double COMMA 1 COMMA 3>)
+PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(
+    float, CoupledFunction<float COMMA 1 COMMA 4>)
+PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA(
+    double, CoupledFunction<double COMMA 1 COMMA 4>)
 
 #undef PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA
 #endif // CONVOLVE_SIGMA_ADD_F_CUDA_H_

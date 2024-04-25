@@ -1,7 +1,7 @@
 #include "pde_base.hpp"
 #include "zisa/memory/device_type.hpp"
 #include <chrono>
-#include <generic_function.hpp>
+#include <coupled_function.hpp>
 #include <pde_heat.hpp>
 // helper function which creates simple data array where all values are set to
 // value, if CUDA_AVAILABLE on gpu, else on cpu
@@ -54,8 +54,10 @@ int main() {
       zisa::array<float, 2> sigma_values_cpu = create_value_data<float>(
           2 * array_size - 3, array_size - 1, 0., zisa::device_type::cpu);
 
-      GenericFunction<float> func;
-      PDEHeat<float, GenericFunction<float>> pde_cpu(
+      zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), zisa::device_type::cpu);
+      function_scalings(0) = 0.;
+      CoupledFunction<float, 1, 1> func;
+      PDEHeat<float, CoupledFunction<float, 1, 1>> pde_cpu(
           array_size - 2, array_size - 2, zisa::device_type::cpu,
           BoundaryCondition::Dirichlet, func, 1. / array_size, 1. / array_size);
       pde_cpu.read_values(zero_values_cpu.const_view(),
@@ -76,9 +78,12 @@ int main() {
       zisa::array<float, 2> sigma_values_cuda = create_value_data<float>(
           2 * array_size - 3, array_size - 1, 0., zisa::device_type::cuda);
 
-      PDEHeat<float, GenericFunction<float>> pde_cuda(
+      zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1), zisa::device_type::cuda);
+      zisa::copy(function_scalings_cuda, function_scalings);
+      CoupledFunction<float, 1, 1> func_cuda(function_scalings_cuda.const_view());
+      PDEHeat<float, CoupledFunction<float, 1, 1>> pde_cuda(
           array_size - 2, array_size - 2, zisa::device_type::cuda,
-          BoundaryCondition::Dirichlet, func, 1. / array_size, 1. / array_size);
+          BoundaryCondition::Dirichlet, func_cuda, 1. / array_size, 1. / array_size);
       pde_cuda.read_values(zero_values_cpu.const_view(),
                            sigma_values_cpu.const_view(),
                            zero_values_cpu.const_view());

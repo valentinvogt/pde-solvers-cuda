@@ -1,7 +1,6 @@
 #include "helpers_main.hpp"
 #include <chrono>
 #include <coupled_function.hpp>
-#include <generic_function.hpp>
 #include <io/netcdf_writer.hpp>
 #include <iostream>
 #include <pde_heat.hpp>
@@ -10,19 +9,21 @@
 
 void small_example() {
   BoundaryCondition bc = BoundaryCondition::Periodic;
-  GenericFunction<float> func;
-  zisa::array<float, 1> function_scalings(zisa::shape_t<1>(8),
+  zisa::array<float, 1> function_scalings(zisa::shape_t<1>(16),
                                           zisa::device_type::cpu);
+  for (int i = 0; i < 16; i++) {
+    function_scalings(i) = 0;
+  }
   CoupledFunction<float, 3, 2> func_coupled(function_scalings.const_view());
 #if CUDA_AVAILABLE
   std::cout << "case_gpu" << std::endl;
 
-  PDEHeat<float, GenericFunction<float>> pde(8, 8, zisa::device_type::cuda, bc,
-                                             func, 0.1, 0.1);
+  PDEHeat<float, CoupledFunction<float, 3, 2>> pde(
+      8, 8, zisa::device_type::cuda, bc, func, 0.1, 0.1);
 #else
   std::cout << "case_cpu" << std::endl;
-  PDEHeat<float, GenericFunction<float>> pde(8, 8, zisa::device_type::cpu, bc,
-                                             func, 0.1, 0.1);
+  PDEHeat<float, CoupledFunction<float, 3, 2>> pde(8, 8, zisa::device_type::cpu,
+                                                   bc, func_coupled, 0.1, 0.1);
 #endif
   pde.read_values("data/simple_data.nc");
 
