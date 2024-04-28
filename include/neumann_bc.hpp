@@ -5,7 +5,7 @@
 #include <cuda/neumann_bc_cuda.hpp>
 #endif
 
-template <typename Scalar>
+template <typename Scalar, int n_coupled = 1>
 void neumann_bc_cpu(zisa::array_view<Scalar, 2> data,
                     zisa::array_const_view<Scalar, 2> bc, Scalar dt) {
 
@@ -26,7 +26,8 @@ void neumann_bc_cpu(zisa::array_view<Scalar, 2> data,
 }
 
 // updates the outermost data with dt * values on bc
-template <typename Scalar>
+// TODO: add coupled
+template <typename Scalar, int n_coupled = 1>
 void neumann_bc(zisa::array_view<Scalar, 2> data,
                 zisa::array_const_view<Scalar, 2> bc, Scalar dt) {
   const zisa::device_type memory_location = data.memory_location();
@@ -35,12 +36,12 @@ void neumann_bc(zisa::array_view<Scalar, 2> data,
     exit(1);
   }
   if (memory_location == zisa::device_type::cpu) {
-    neumann_bc_cpu(data, bc, dt);
+    neumann_bc_cpu<Scalar, n_coupled>(data, bc, dt);
   }
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
     // TODO
-    neumann_bc_cuda(data, bc, dt);
+    neumann_bc_cuda<Scalar, n_coupled>(data, bc, dt);
   }
 #endif // CUDA_AVAILABLE
   else {

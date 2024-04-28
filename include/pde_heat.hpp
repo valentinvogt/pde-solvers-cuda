@@ -5,12 +5,13 @@
 #include "zisa/memory/device_type.hpp"
 #include <pde_base.hpp>
 
-template <typename Scalar, typename Function>
+template <typename Scalar, typename Function, int n_coupled = 1>
 class PDEHeat : public virtual PDEBase<Scalar> {
 public:
   PDEHeat(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
-      : PDEBase<Scalar>(Nx, Ny, memory_location, bc, dx, dy), func_(f) {}
+      : PDEBase<Scalar, n_coupled>(Nx, Ny, memory_location, bc, dx, dy),
+        func_(f) {}
 
   void read_values(const std::string &filename,
                    const std::string &tag_data = "initial_data",
@@ -26,14 +27,14 @@ public:
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
       // do noching as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {
-      periodic_bc(this->data_.view());
+      periodic_bc<Scalar, n_coupled>(this->data_.view());
     }
     this->ready_ = true;
   }
 
   void read_values(zisa::array_const_view<Scalar, 2> data,
-                           zisa::array_const_view<Scalar, 2> sigma,
-                           zisa::array_const_view<Scalar, 2> bc) {
+                   zisa::array_const_view<Scalar, 2> sigma,
+                   zisa::array_const_view<Scalar, 2> bc) {
     zisa::copy(this->data_, data);
     zisa::copy(this->sigma_values_, sigma);
     if (this->bc_ == BoundaryCondition::Neumann) {
@@ -41,7 +42,7 @@ public:
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
       // do noching as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {
-      periodic_bc(this->data_.view());
+      periodic_bc<Scalar, n_coupled>(this->data_.view());
     }
     this->ready_ = true;
   }
@@ -54,11 +55,12 @@ public:
 
     zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
     const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
-    convolve_sigma_add_f(tmp.view(), this->data_.const_view(),
-                         this->sigma_values_.const_view(), del_x_2, func_);
+    convolve_sigma_add_f<n_coupled>(tmp.view(), this->data_.const_view(),
+                                    this->sigma_values_.const_view(), del_x_2,
+                                    func_);
 
     // euler update of data
-    add_arrays_interior(this->data_.view(), tmp.const_view(), dt);
+    add_arrays_interior<n_coupled>(this->data_.view(), tmp.const_view(), dt);
     PDEBase<Scalar>::add_bc();
   }
 

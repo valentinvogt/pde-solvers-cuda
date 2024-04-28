@@ -63,7 +63,7 @@ if (CUDA_AVAILABLE)
   target_compile_options(main PUBLIC $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>>)
 endif()
 
-target_include_directories(main PUBLIC include include/kernel include/cuda)
+target_include_directories(main PUBLIC include)
 
 target_link_libraries(main Zisa::core Zisa::memory)
 ######### main executable end #################
@@ -81,6 +81,21 @@ target_include_directories(unit_tests PUBLIC include include/kernel include/cuda
 
 target_link_libraries(unit_tests Zisa::core Zisa::memory gtest_main)
 ######### test executable end #################
+######### benchmark executable start ##########
+
+add_executable(benchmarks)
+set_target_properties(benchmarks PROPERTIES CXX_STANDARD 17)
+
+if (CUDA_AVAILABLE)
+  target_compile_options(benchmarks PUBLIC -DCUDA_AVAILABLE=1)
+  target_compile_options(benchmarks PUBLIC $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>>)
+endif()
+
+target_include_directories(benchmarks PUBLIC include include/kernel include/cuda)
+
+target_link_libraries(benchmarks Zisa::core Zisa::memory gtest_main)
+######### benchmark executable end ############
 
 add_subdirectory(src)
 add_subdirectory(test)
+add_subdirectory(benchmark)

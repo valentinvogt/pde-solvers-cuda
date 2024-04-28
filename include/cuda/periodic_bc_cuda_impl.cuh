@@ -7,7 +7,8 @@
 #define THREAD_DIMS 1024
 #endif
 
-template <typename Scalar>
+// TODO: add n_coupled
+template <typename Scalar, int n_coupled>
 __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
                                         unsigned data_size) {
   // Probably change idx to 3darray?
@@ -56,7 +57,7 @@ __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
   }
 }
 
-template <typename Scalar>
+template <typename Scalar, int n_coupled>
 void periodic_bc_cuda(zisa::array_view<Scalar, 2> data) {
 #if CUDA_AVAILABLE
   const unsigned thread_dims = THREAD_DIMS;
@@ -65,7 +66,8 @@ void periodic_bc_cuda(zisa::array_view<Scalar, 2> data) {
   const unsigned block_dims = std::ceil((double)data_size / thread_dims);
   // std::cout << "should reach cuda " << block_dims << " "
   //           << "thread_dims" << std::endl;
-  periodic_bc_cuda_kernel<<<block_dims, thread_dims>>>(data, data_size);
+  periodic_bc_cuda_kernel<Scalar, n_coupled>
+      <<<block_dims, thread_dims>>>(data, data_size);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
     std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)

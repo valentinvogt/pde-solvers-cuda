@@ -14,11 +14,13 @@
 #endif
 
 template <typename Scalar>
-__global__ void add_arrays_interior_cuda_kernel(zisa::array_view<Scalar, 2> dst,
-                                       zisa::array_const_view<Scalar, 2> src,
-                                       Scalar scaling) {
+__global__ void
+add_arrays_interior_cuda_kernel(zisa::array_view<Scalar, 2> dst,
+                                zisa::array_const_view<Scalar, 2> src,
+                                Scalar scaling) {
 
-  const int x_idx = threadIdx.x + 1 + blockIdx.x * NUM_THREAD_X; // cannot be on boundary
+  const int x_idx =
+      threadIdx.x + 1 + blockIdx.x * NUM_THREAD_X; // cannot be on boundary
   const int y_idx = threadIdx.y + 1 + blockIdx.y * NUM_THREAD_Y;
 
   const int Nx = src.shape(0);
@@ -31,14 +33,18 @@ __global__ void add_arrays_interior_cuda_kernel(zisa::array_view<Scalar, 2> dst,
 
 template <typename Scalar>
 void add_arrays_interior_cuda(zisa::array_view<Scalar, 2> dst,
-                     zisa::array_const_view<Scalar, 2> src, Scalar scaling) {
+                              zisa::array_const_view<Scalar, 2> src,
+                              Scalar scaling) {
 #if CUDA_AVAILABLE
   const dim3 thread_dims(NUM_THREAD_X, NUM_THREAD_Y);
-  const dim3 block_dims(std::ceil((src.shape(0) - 2) / (double) thread_dims.x), std::ceil((src.shape(1) - 2) / (double) thread_dims.y));
+  const dim3 block_dims(std::ceil((src.shape(0) - 2) / (double)thread_dims.x),
+                        std::ceil((src.shape(1) - 2) / (double)thread_dims.y));
 
-  // std::cout << "thread dims: " << thread_dims.x << " " << thread_dims.y << std::endl;
-  // std::cout << "block dims: " << block_dims.x << " " << block_dims.y << std::endl;
-  add_arrays_interior_cuda_kernel<<<block_dims, thread_dims>>>(dst, src, scaling);
+  // std::cout << "thread dims: " << thread_dims.x << " " << thread_dims.y <<
+  // std::endl; std::cout << "block dims: " << block_dims.x << " " <<
+  // block_dims.y << std::endl;
+  add_arrays_interior_cuda_kernel<<<block_dims, thread_dims>>>(dst, src,
+                                                               scaling);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
     std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)

@@ -1,5 +1,5 @@
 #include "zisa/memory/device_type.hpp"
-#include <generic_function.hpp>
+#include <coupled_function.hpp>
 #include <gtest/gtest.h>
 #include <pde_wave.hpp>
 #include <zisa/memory/array.hpp>
@@ -7,6 +7,7 @@
 // TODO: add tests for neumann and periodic bc, larger and nonsymmetric grids
 //       add tests for sigma != constant (how to get solution)
 
+// TODO: implement for coupled function class
 namespace WaveEquationTests {
 
 // helper function which creates simple data array where all values are set to value,
@@ -84,9 +85,20 @@ TEST(WaveEquationTests, TEST_ZERO) {
   zisa::array<float, 2> sigma_values = create_value_data<float>(
       2 * array_size - 3, array_size - 1, 1., memory_location);
   // f == 0 everywhere
-  GenericFunction<float> func;
+  zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), zisa::device_type::cpu);
+  function_scalings(0) = 0.;
+#if CUDA_AVAILABLE
+  zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1), zisa::device_type::cuda);
+  zisa::copy(function_scalings_cuda, function_scalings);
+  CoupledFunction<float, 1, 1> func(function_scalings_cuda);
+#else
+  CoupledFunction<float, 1, 1> func(function_scalings);
+#endif
 
-  PDEWave<float, GenericFunction<float>> pde(
+  
+
+
+  PDEWave<float, CoupledFunction<float, 1, 1>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view(), data.const_view());
@@ -127,9 +139,18 @@ TEST(WaveEquationTests, TEST_U_CONSTANT) {
   zisa::array<float, 2> deriv_data = create_value_data<float>(array_size, array_size, 0., memory_location);
 
   // f == 0 everywhere
-  GenericFunction<float> func;
 
-  PDEWave<float, GenericFunction<float>> pde(
+  zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), zisa::device_type::cpu);
+  function_scalings(0) = 0.;
+#if CUDA_AVAILABLE
+  zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1), zisa::device_type::cuda);
+  zisa::copy(function_scalings_cuda, function_scalings);
+  CoupledFunction<float, 1, 1> func(function_scalings_cuda);
+#else
+  CoupledFunction<float, 1, 1> func(function_scalings);
+#endif
+
+  PDEWave<float, CoupledFunction<float, 1, 1>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),

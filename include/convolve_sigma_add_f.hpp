@@ -7,7 +7,14 @@
 #include <cuda/convolve_sigma_add_f_cuda.hpp>
 #endif
 
-template <typename Scalar, typename Function>
+#ifndef COUPLED_SLICE
+#define COUPLED_SLICE(n_coupled, start_value, memory_location)                 \
+  zisa::array_const_view<Scalar, 1> {                                          \
+    zisa::shape_t<1>(n_coupled), &start_value, memory_location                 \
+  }
+#endif
+
+template <int n_coupled, typename Scalar, typename Function>
 void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
                               zisa::array_const_view<Scalar, 2> src,
                               zisa::array_const_view<Scalar, 2> sigma,
@@ -15,21 +22,32 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
   const unsigned Nx = src.shape(0);
   const unsigned Ny = src.shape(1);
   for (int x = 1; x < Nx - 1; x++) {
-    for (int y = 1; y < Ny - 1; y++) {
-      dst(x, y) = del_x_2 * (sigma(2 * x - 1, y - 1) * src(x, y - 1) +
-                             sigma(2 * x - 1, y) * src(x, y + 1) +
-                             sigma(2 * x - 2, y - 1) * src(x - 1, y) +
-                             sigma(2 * x, y - 1) * src(x + 1, y) -
-                             (sigma(2 * x - 1, y - 1) + sigma(2 * x - 1, y) +
-                              sigma(2 * x - 2, y - 1) + sigma(2 * x, y - 1)) *
-                                 src(x, y)) +
-                  f(src(x, y));
+    for (int y = 1; y < Ny - 1; y += n_coupled) {
+      // does not work for generic function, calculates all f_1, f_2, ... , fn
+      // in one run
+      zisa::array<Scalar, 1> result_function =
+          f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu));
+      for (int i = 0; i < n_coupled; i++) {
+        dst(x, y + i) =
+            del_x_2 *
+                (sigma(2 * x - 1, (y - 1) / n_coupled) * src(x, y + i - 1) +
+                 sigma(2 * x - 1, (y - 1) / n_coupled + 2) * src(x, y + i + 1) +
+                 sigma(2 * x - 2, (y - 1) / n_coupled + 1) * src(x - 1, y + i) +
+                 sigma(2 * x, (y - 1) / n_coupled + 1) * src(x + 1, y + i) -
+                 (sigma(2 * x - 1, (y - 1) / n_coupled) +
+                  sigma(2 * x - 1, (y - 1) / n_coupled + 2) +
+                  sigma(2 * x - 2, (y - 1) / n_coupled + 1) +
+                  sigma(2 * x, (y - 1) / n_coupled + 1)) *
+                     src(x, y + i)) +
+            result_function(i);
+      }
     }
   }
 }
 
+// TODO: add coupled function(s)
 // Function is a general function taking a Scalar returning a Scalar
-template <typename Scalar, typename Function>
+template <int n_coupled = 1, typename Scalar, typename Function>
 void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
                           zisa::array_const_view<Scalar, 2> src,
                           zisa::array_const_view<Scalar, 2> sigma,
@@ -51,12 +69,11 @@ void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
   }
 
   if (memory_dst == zisa::device_type::cpu) {
-    convolve_sigma_add_f_cpu(dst, src, sigma, del_x_2, f);
+    convolve_sigma_add_f_cpu<n_coupled>(dst, src, sigma, del_x_2, f);
   }
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
-    // TODO
-    convolve_sigma_add_f_cuda(dst, src, sigma, del_x_2, f);
+    // convolve_sigma_add_f_cuda<n_coupled>(dst, src, sigma, del_x_2, f);
   }
 #endif // CUDA_AVAILABLE
   else {

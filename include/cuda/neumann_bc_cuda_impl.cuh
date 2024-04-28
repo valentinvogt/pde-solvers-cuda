@@ -4,7 +4,8 @@
 #include <cassert>
 #include <zisa/memory/array.hpp>
 
-template <typename Scalar>
+// TODO: add n_coupled
+template <typename Scalar, int n_coupled>
 __global__ void neumann_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
                                        zisa::array_const_view<Scalar, 2> bc,
                                        Scalar dt) {
@@ -29,14 +30,15 @@ __global__ void neumann_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
   }
 }
 
-template <typename Scalar>
+template <typename Scalar, int n_coupled>
 void neumann_bc_cuda(zisa::array_view<Scalar, 2> data,
                      zisa::array_const_view<Scalar, 2> bc, Scalar dt) {
 #if CUDA_AVAILABLE
   const int thread_dims = THREAD_DIMS;
   const int block_dims =
       std::ceil((double)(data.shape(0) * data.shape(1)) / thread_dims);
-  neumann_bc_cuda_kernel<<<block_dims, thread_dims>>>(data, bc, dt);
+  neumann_bc_cuda_kernel<Scalar, n_coupled>
+      <<<block_dims, thread_dims>>>(data, bc, dt);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
     std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)

@@ -5,7 +5,8 @@
 #include <cuda/periodic_bc_cuda.hpp>
 #endif
 
-template <typename Scalar>
+// TODO: add n_coupled
+template <typename Scalar, int n_coupled>
 void periodic_bc_cpu(zisa::array_view<Scalar, 2> data) {
   const unsigned x_length = data.shape(0);
   const unsigned y_length = data.shape(1);
@@ -52,18 +53,19 @@ void periodic_bc_cpu(zisa::array_view<Scalar, 2> data) {
   }
 }
 
-template <typename Scalar> void periodic_bc(zisa::array_view<Scalar, 2> data) {
+template <typename Scalar, int n_coupled>
+void periodic_bc(zisa::array_view<Scalar, 2> data) {
 
   const zisa::device_type memory_location = data.memory_location();
   if (memory_location == zisa::device_type::cpu) {
     // std::cout << "periodic bc cpu reached" << std::endl;
-    periodic_bc_cpu(data);
+    periodic_bc_cpu<Scalar, n_coupled>(data);
   }
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
     // TODO
     // std::cout << "periodic bc cuda reached" << std::endl;
-    periodic_bc_cuda(data);
+    periodic_bc_cuda<Scalar, n_coupled>(data);
   }
 #endif // CUDA_AVAILABLE
   else {
