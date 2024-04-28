@@ -85,7 +85,13 @@ TEST(HeatEquationTests, TEST_ZERO) {
       2 * array_size - 3, array_size - 1, 1., memory_location);
   // f == 0 everywhere
   zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), memory_location);
+#if CUDA_AVAILABLE
+  zisa::array<float, 1> tmp_cpu(zisa::shape_t<1>(1), zisa::device_type::cpu);
+  tmp_cpu(0) = 0.;
+  zisa::copy(function_scalings, tmp_cpu);
+#else
   function_scalings(0) = 0.;
+#endif
   CoupledFunction<float, 1, 1> func(function_scalings.const_view());
 
   PDEHeat<float, CoupledFunction<float, 1, 1>> pde(
@@ -129,9 +135,17 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
 
   // f == 0 everywhere
   zisa::array<float, 1> function_scalings(zisa::shape_t<1>(3), memory_location);
+#if CUDA_AVAILABLE
+  zisa::array<float, 1> tmp_cpu(zisa::shape_t<1>(3), zisa::device_type::cpu);
+  tmp_cpu(0) = 0.;
+  tmp_cpu(1) = 0.;
+  tmp_cpu(2) = 0.;
+  zisa::copy(function_scalings, tmp_cpu);
+#else
   function_scalings(0) = 0.;
   function_scalings(1) = 0.;
   function_scalings(2) = 0.;
+#endif
   CoupledFunction<float, 1, 3> func(function_scalings.const_view());
 
   PDEHeat<float, CoupledFunction<float, 1, 3>> pde(
@@ -182,18 +196,28 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
       2 * array_size - 3, array_size - 1, 0., memory_location);
 
   zisa::array<float, 1> function_scalings(zisa::shape_t<1>(3), memory_location);
+#if CUDA_AVAILABLE
+  zisa::array<float, 1> tmp_cpu(zisa::shape_t<1>(3), zisa::device_type::cpu);
+  tmp_cpu(0) = 0.5;
+  tmp_cpu(1) = 0.;
+  tmp_cpu(2) = 0.;
+  zisa::copy(function_scalings, tmp_cpu);
+#else
   function_scalings(0) = 0.5;
   function_scalings(1) = 0.;
   function_scalings(2) = 0.;
+#endif
   CoupledFunction<float, 1, 3> func(function_scalings.const_view());
   PDEHeat<float, CoupledFunction<float, 1, 3>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view());
+  // pde.print();
   for (int i = 0; i < 200; i++) {
     pde.apply(0.1);
   }
+  // pde.print();
 
 #if CUDA_AVAILABLE
   zisa::array_const_view<float, 2> result_gpu = pde.get_data();
@@ -245,10 +269,19 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
       2 * array_size - 3, array_size - 1, 0., memory_location);
 
   zisa::array<float, 1> function_scalings(zisa::shape_t<1>(4), memory_location);
+#if CUDA_AVAILABLE
+  zisa::array<float, 1> tmp_cpu(zisa::shape_t<1>(4), zisa::device_type::cpu);
+  tmp_cpu(0) = 0.;
+  tmp_cpu(1) = 0.5;
+  tmp_cpu(2) = 0.;
+  tmp_cpu(3) = 0.;
+  zisa::copy(function_scalings, tmp_cpu);
+#else
   function_scalings(0) = 0.;
   function_scalings(1) = 0.5;
   function_scalings(2) = 0.;
   function_scalings(3) = 0.;
+#endif
   CoupledFunction<float, 1, 4> func(function_scalings.const_view());
 
   PDEHeat<float, CoupledFunction<float, 1, 4>> pde(

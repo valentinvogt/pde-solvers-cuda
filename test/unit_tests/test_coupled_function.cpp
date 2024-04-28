@@ -1,5 +1,5 @@
 
-#include "zisa/memory/array_view_decl.hpp"
+#include <zisa/memory/array_view_decl.hpp>
 #include <coupled_function.hpp>
 #include <gtest/gtest.h>
 #include <zisa/memory/array.hpp>
@@ -24,12 +24,14 @@ TEST(CoupledFunctionTests, TEST_ZERO) {
   //                                                zisa::device_type::cuda);
   //   zisa::copy(function_scalings_cuda, function_scalings);
   //   CoupledFunction<float, 2, 3>
-  //   func_cuda(function_scalings_cuda.const_view()); zisa::array<float, 1>
-  //   values_cuda(zisa::shape_t<1>(2),
+  //   func_cuda(function_scalings_cuda.const_view()); 
+  //   zisa::array<float, 1> values_cuda(zisa::shape_t<1>(2),
   //                                     zisa::device_type::cuda);
   //   zisa::copy(values_cuda, values);
+  //   zisa::array<float, 1> results(zisa::shape_t<1>(2), zisa::device_type::cuda);
+  //   call_coupled_function_cuda<float>(func_cuda, values_cuda.const_view(), results);
 
-  //   ASSERT_NEAR(0.0, func_cuda(values_cuda.const_view()), tol);
+  //   ASSERT_NEAR(0.0, results(), tol);
 
   // #endif
 }

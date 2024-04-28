@@ -63,7 +63,7 @@ if (CUDA_AVAILABLE)
   target_compile_options(main PUBLIC $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>>)
 endif()
 
-target_include_directories(main PUBLIC include include/kernel include/cuda)
+target_include_directories(main PUBLIC include)
 
 target_link_libraries(main Zisa::core Zisa::memory)
 ######### main executable end #################

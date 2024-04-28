@@ -104,7 +104,8 @@ public:
       tmp(0) = value;
       return (this->operator()(tmp.const_view()))(0);
     } else if (memory_location_ == zisa::device_type::cuda) {
-      zisa::array<Scalar, 1> tmp_cpu(zisa::shape_t<1>(1), zisa::device_type::cpu);
+      zisa::array<Scalar, 1> tmp_cpu(zisa::shape_t<1>(1),
+                                     zisa::device_type::cpu);
       tmp_cpu(0) = value;
       zisa::copy(tmp, tmp_cpu);
     }
