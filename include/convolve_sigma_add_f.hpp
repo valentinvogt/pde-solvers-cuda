@@ -25,8 +25,8 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
     for (int y = 1; y < Ny - 1; y += n_coupled) {
       // does not work for generic function, calculates all f_1, f_2, ... , fn
       // in one run
-      zisa::array<Scalar, 1> result_function =
-          f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu));
+      Scalar result_function[n_coupled];
+      f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu), result_function);
       for (int i = 0; i < n_coupled; i++) {
         dst(x, y + i) =
             del_x_2 *
@@ -39,7 +39,7 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
                   sigma(2 * x - 2, (y - 1) / n_coupled + 1) +
                   sigma(2 * x, (y - 1) / n_coupled + 1)) *
                      src(x, y + i)) +
-            result_function(i);
+            result_function[i];
       }
     }
   }
@@ -47,7 +47,7 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
 
 // TODO: add coupled function(s)
 // Function is a general function taking a Scalar returning a Scalar
-template <int n_coupled = 1, typename Scalar, typename Function>
+template <int n_coupled, typename Scalar, typename Function>
 void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
                           zisa::array_const_view<Scalar, 2> src,
                           zisa::array_const_view<Scalar, 2> sigma,
@@ -56,6 +56,11 @@ void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
   const zisa::device_type memory_dst = dst.memory_location();
   const zisa::device_type memory_src = src.memory_location();
   const zisa::device_type memory_sigma = sigma.memory_location();
+  // if (memory_dst == zisa::device_type::cpu) {
+  //   std::cout << "convolve_sigma_add_f called with memory_location = cpu" << std::endl;
+  // } else if (memory_dst == zisa::device_type::cuda) {
+  //   std::cout << "convolve_sigma_add_f called with memory_location = cuda" << std::endl;
+  // }
 
   if (!(memory_dst == memory_src && memory_src == memory_sigma)) {
     std::cerr << "Convolve sigma add f: Inputs must be located on the same "
@@ -73,7 +78,7 @@ void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
   }
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
-    // convolve_sigma_add_f_cuda<n_coupled>(dst, src, sigma, del_x_2, f);
+    convolve_sigma_add_f_cuda<n_coupled>(dst, src, sigma, del_x_2, f);
   }
 #endif // CUDA_AVAILABLE
   else {

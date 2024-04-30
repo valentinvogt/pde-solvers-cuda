@@ -98,7 +98,7 @@ TEST(WaveEquationTests, TEST_ZERO) {
   
 
 
-  PDEWave<float, CoupledFunction<float, 1, 1>> pde(
+  PDEWave<1, float, CoupledFunction<float, 1, 1>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view(), data.const_view());
@@ -150,7 +150,7 @@ TEST(WaveEquationTests, TEST_U_CONSTANT) {
   CoupledFunction<float, 1, 1> func(function_scalings);
 #endif
 
-  PDEWave<float, CoupledFunction<float, 1, 1>> pde(
+  PDEWave<1, float, CoupledFunction<float, 1, 1>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),

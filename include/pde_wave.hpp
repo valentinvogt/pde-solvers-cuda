@@ -7,13 +7,13 @@
 #include "zisa/io/hdf5_writer.hpp"
 #include <pde_base.hpp>
 
-template <typename Scalar, typename Function, int n_coupled = 1>
-class PDEWave : public virtual PDEBase<Scalar> {
+template <int n_coupled, typename Scalar, typename Function>
+class PDEWave : public virtual PDEBase<n_coupled, Scalar> {
 public:
   // TODO: add derivative
   PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
-      : PDEBase<Scalar, n_coupled>(Nx, Ny, memory_location, bc, dx, dy),
+      : PDEBase<n_coupled, Scalar>(Nx, Ny, memory_location, bc, dx, dy),
         func_(f),
         deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location) {}
 
@@ -26,16 +26,16 @@ public:
     zisa::array<Scalar, 2> second_deriv(this->data_.shape(),
                                         this->data_.device());
     const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
-    convolve_sigma_add_f(second_deriv.view(), this->data_.const_view(),
+    convolve_sigma_add_f<n_coupled>(second_deriv.view(), this->data_.const_view(),
                          this->sigma_values_.const_view(), del_x_2, func_);
 
     // euler update of derivative
-    add_arrays_interior(this->deriv_data_.view(), second_deriv.const_view(),
+    add_arrays_interior<n_coupled>(this->deriv_data_.view(), second_deriv.const_view(),
                         dt);
 
     // euler update of data
-    add_arrays_interior(this->data_.view(), this->deriv_data_.const_view(), dt);
-    PDEBase<Scalar>::add_bc();
+    add_arrays_interior<n_coupled>(this->data_.view(), this->deriv_data_.const_view(), dt);
+    PDEBase<n_coupled, Scalar>::add_bc();
   }
 
   void read_values(const std::string &filename,
@@ -53,7 +53,7 @@ public:
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
       // do noching as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {
-      periodic_bc<Scalar, n_coupled>(this->data_.view());
+      periodic_bc<n_coupled, Scalar>(this->data_.view());
     }
     this->ready_ = true;
   }
@@ -70,7 +70,7 @@ public:
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
       // do noching as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {
-      periodic_bc<Scalar, n_coupled>(this->data_.view());
+      periodic_bc<n_coupled, Scalar>(this->data_.view());
     }
     this->ready_ = true;
   }

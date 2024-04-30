@@ -22,7 +22,7 @@
 
 enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 
-template <typename Scalar, int n_coupled = 1> class PDEBase {
+template <int n_coupled, typename Scalar> class PDEBase {
 public:
   // note here that Nx and Ny denote the size INSIDE the boundary WITHOUT the
   // boundary so that the total size is Nx + 2 * Ny + 2
@@ -114,10 +114,10 @@ protected:
     } else if (bc_ == BoundaryCondition::Neumann) {
       // TODO: change dt
       Scalar dt = 0.1;
-      neumann_bc<Scalar, n_coupled>(data_.view(),
+      neumann_bc<n_coupled, Scalar>(data_.view(),
                                     bc_neumann_values_.const_view(), dt);
     } else if (bc_ == BoundaryCondition::Periodic) {
-      periodic_bc<Scalar, n_coupled>(data_.view());
+      periodic_bc<n_coupled, Scalar>(data_.view());
     } else {
       std::cout << "boundary condition not implemented yet!" << std::endl;
     }

@@ -56,8 +56,8 @@ int main() {
 
       zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), zisa::device_type::cpu);
       function_scalings(0) = 0.;
-      CoupledFunction<float, 1, 1> func;
-      PDEHeat<float, CoupledFunction<float, 1, 1>> pde_cpu(
+      CoupledFunction<float, 1, 1> func(function_scalings.const_view());
+      PDEHeat<1, float, CoupledFunction<float, 1, 1>> pde_cpu(
           array_size - 2, array_size - 2, zisa::device_type::cpu,
           BoundaryCondition::Dirichlet, func, 1. / array_size, 1. / array_size);
       pde_cpu.read_values(zero_values_cpu.const_view(),
@@ -81,7 +81,7 @@ int main() {
       zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1), zisa::device_type::cuda);
       zisa::copy(function_scalings_cuda, function_scalings);
       CoupledFunction<float, 1, 1> func_cuda(function_scalings_cuda.const_view());
-      PDEHeat<float, CoupledFunction<float, 1, 1>> pde_cuda(
+      PDEHeat<1, float, CoupledFunction<float, 1, 1>> pde_cuda(
           array_size - 2, array_size - 2, zisa::device_type::cuda,
           BoundaryCondition::Dirichlet, func_cuda, 1. / array_size, 1. / array_size);
       pde_cuda.read_values(zero_values_cpu.const_view(),

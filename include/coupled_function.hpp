@@ -39,32 +39,29 @@ public:
     zisa::copy(scalings_, other.scalings_);
   }
 
-  CoupledFunction operator=(const CoupledFunction &other) {
-    CoupledFunction tmp(scalings_.const_view());
-    return tmp;
-  }
-
 #if CUDA_AVAILABLE
   // input: array of size n_coupled, representing all values of one position
   // output: Scalar, f(x, y, z)
   // make shure that if you have memory_location_ == cuda to only call this
   // function from cuda kernels
-  inline __host__ __device__ zisa::array<Scalar, 1>
-  operator()(zisa::array_const_view<Scalar, 1> x, int n_values_left = n_coupled,
+  inline __host__ __device__ void
+  operator()(zisa::array_const_view<Scalar, 1> x,
+             Scalar result_values[n_coupled], int n_values_left = n_coupled,
              int curr_scalings_pos = 0) {
 
-    assert(memory_location_ == zisa::device_type::cpu);
-    assert(x.memory_location() == memory_location_);
+    if (memory_location_ == zisa::device_type::cpu) {
+      assert(x.memory_location() == zisa::device_type::cpu);
+    } else if (memory_location_ == zisa::device_type::cuda) {
+      assert(x.memory_location() == zisa::device_type::cuda);
+    }
+
     assert(scalings_.const_view().memory_location() == memory_location_);
     assert(x.size() > 0);
     assert(n_values_left <= n_coupled);
     assert(x.size() > n_coupled - n_values_left);
-    zisa::shape_t<1> shape(n_coupled);
-    zisa::array<Scalar, 1> result_values(shape, memory_location_);
     // set array to zero
-    // TODO: make this more efficient
     for (int i = 0; i < n_coupled; i++) {
-      result_values(i) = 0;
+      result_values[i] = 0;
     }
     // Scalar result = 0.;
     Scalar curr_pot = 1.;
@@ -73,25 +70,26 @@ public:
       for (int i = 0; i < max_pot; i++) {
         assert(scalings_.size() > curr_scalings_pos + i);
         for (int j = 0; j < n_coupled; j++) {
-          result_values(j) +=
+          result_values[j] +=
               curr_pot * scalings_(curr_scalings_pos + i * n_coupled + j);
         }
         curr_pot *= x(n_coupled - n_values_left);
       }
-      return result_values;
+      return;
     }
     int block_size = n_coupled * std::pow(max_pot, n_values_left - 1);
     for (int i = 0; i < max_pot; i++) {
-      zisa::array<Scalar, 1> rec_res = this->operator()(
-          x, n_values_left - 1, curr_scalings_pos + i * block_size);
+      Scalar rec_res[n_coupled];
+      this->operator()(x, rec_res, n_values_left - 1,
+                       curr_scalings_pos + i * block_size);
       for (int j = 0; j < n_coupled; j++) {
-        result_values(j) += rec_res(j) * curr_pot;
+        result_values[j] += rec_res[j] * curr_pot;
       }
       assert(n_coupled - n_values_left >= 0 &&
              n_coupled - n_values_left < x.size());
       curr_pot *= x(n_coupled - n_values_left);
     }
-    return result_values;
+    return;
   }
   // function overloaded such that you don't have to create an
   // array every time you call this function with n_coupled == 1
@@ -102,17 +100,18 @@ public:
     zisa::array<Scalar, 1> tmp(zisa::shape_t<1>(1), memory_location_);
     if (memory_location_ == zisa::device_type::cpu) {
       tmp(0) = value;
-      return (this->operator()(tmp.const_view()))(0);
+      return (this->operator()(tmp.const_view()))[0];
     } else if (memory_location_ == zisa::device_type::cuda) {
       zisa::array<Scalar, 1> tmp_cpu(zisa::shape_t<1>(1),
                                      zisa::device_type::cpu);
       tmp_cpu(0) = value;
       zisa::copy(tmp, tmp_cpu);
     }
-    return this->operator()(tmp.const_view());
+    Scalar result_values[n_coupled];
+    this->operator()(tmp.const_view());
+    return result_values[0];
   }
 #else
-
   // input: array of size n_coupled, representing all values of one position
   // output: array, f1(x, y, z), f2(x, y, z), f3(x, y, z) of size n_coupled
   inline zisa::array<Scalar, 1> operator()(zisa::array_const_view<Scalar, 1> x,
@@ -169,7 +168,7 @@ public:
     tmp(0) = value;
     return (this->operator()(tmp.const_view()))(0);
   }
-#endif
+#endif // CUDA_AVAILABLE
 
 private:
   // function returns sum_(i, j, k = 0)^max_pot scalings_(i, j, k) x^i y^j z^k

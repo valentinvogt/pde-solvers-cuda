@@ -23,11 +23,11 @@ void small_example() {
   CoupledFunction<float, 3, 2> func_coupled_cuda(
       function_scalings_cuda.const_view());
 
-  PDEHeat<float, CoupledFunction<float, 3, 2>> pde(
+  PDEHeat<3, float, CoupledFunction<float, 3, 2>> pde(
       8, 8, zisa::device_type::cuda, bc, func_coupled_cuda, 0.1, 0.1);
 #else
   std::cout << "case_cpu" << std::endl;
-  PDEHeat<float, CoupledFunction<float, 3, 2>> pde(
+  PDEHeat<3, float, CoupledFunction<float, 3, 2>> pde(
       8, 8, zisa::device_type::cpu, bc, func_coupled_cpu, 0.1, 0.1);
 #endif
   pde.read_values("data/simple_data.nc");

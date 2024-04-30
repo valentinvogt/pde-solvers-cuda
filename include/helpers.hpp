@@ -7,13 +7,12 @@
 #include <cuda/add_arrays_interior_cuda.hpp>
 #endif
 
-// TODO: add n_coupled
 template <int n_coupled, typename Scalar>
 void add_arrays_interior_cpu(zisa::array_view<Scalar, 2> dst,
                              zisa::array_const_view<Scalar, 2> src,
                              Scalar scaling) {
   for (int i = 1; i < dst.shape(0) - 1; i++) {
-    for (int j = 1; j < dst.shape(1) - 1; j++) {
+    for (int j = n_coupled; j < dst.shape(1) - n_coupled; j++) {
       dst(i, j) += scaling * src(i, j);
     }
   }
@@ -44,7 +43,7 @@ void add_arrays_interior(zisa::array_view<Scalar, 2> dst,
   }
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
-    add_arrays_interior_cuda(dst, src, scaling);
+    add_arrays_interior_cuda<n_coupled>(dst, src, scaling);
   }
 #endif // CUDA_AVAILABLE
   else {

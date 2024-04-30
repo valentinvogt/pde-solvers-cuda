@@ -94,7 +94,7 @@ TEST(HeatEquationTests, TEST_ZERO) {
 #endif
   CoupledFunction<float, 1, 1> func(function_scalings.const_view());
 
-  PDEHeat<float, CoupledFunction<float, 1, 1>> pde(
+  PDEHeat<1, float, CoupledFunction<float, 1, 1>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
@@ -148,7 +148,7 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
 #endif
   CoupledFunction<float, 1, 3> func(function_scalings.const_view());
 
-  PDEHeat<float, CoupledFunction<float, 1, 3>> pde(
+  PDEHeat<1, float, CoupledFunction<float, 1, 3>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
@@ -208,7 +208,7 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
   function_scalings(2) = 0.;
 #endif
   CoupledFunction<float, 1, 3> func(function_scalings.const_view());
-  PDEHeat<float, CoupledFunction<float, 1, 3>> pde(
+  PDEHeat<1, float, CoupledFunction<float, 1, 3>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
@@ -284,7 +284,7 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
 #endif
   CoupledFunction<float, 1, 4> func(function_scalings.const_view());
 
-  PDEHeat<float, CoupledFunction<float, 1, 4>> pde(
+  PDEHeat<1, float, CoupledFunction<float, 1, 4>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
