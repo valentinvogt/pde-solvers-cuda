@@ -65,7 +65,7 @@ int main() {
                           zero_values_cpu.const_view());
       // TODO: measure time and add cuda stuff
       auto start = std::chrono::high_resolution_clock::now();
-      for (int i = 0; i < 10000; i++) {
+      for (int i = 0; i < 500; i++) {
         pde_cpu.apply(0.1);
       }
       auto stop = std::chrono::high_resolution_clock::now();

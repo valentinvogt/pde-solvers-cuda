@@ -3,7 +3,6 @@
 
 #include <zisa/memory/array.hpp>
 
-
 template <int n_coupled, typename Scalar>
 void neumann_bc_cuda(zisa::array_view<Scalar, 2> data,
                      zisa::array_const_view<Scalar, 2> bc, Scalar dt);

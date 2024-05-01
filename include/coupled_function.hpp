@@ -44,10 +44,10 @@ public:
   // output: Scalar, f(x, y, z)
   // make shure that if you have memory_location_ == cuda to only call this
   // function from cuda kernels
-  inline __host__ __device__ void
-  operator()(zisa::array_const_view<Scalar, 1> x,
-             Scalar result_values[n_coupled], int n_values_left = n_coupled,
-             int curr_scalings_pos = 0) {
+  inline __device__ void operator()(zisa::array_const_view<Scalar, 1> x,
+                                    Scalar result_values[n_coupled],
+                                    int n_values_left = n_coupled,
+                                    int curr_scalings_pos = 0) {
 
     if (memory_location_ == zisa::device_type::cpu) {
       assert(x.memory_location() == zisa::device_type::cpu);
@@ -55,7 +55,7 @@ public:
       assert(x.memory_location() == zisa::device_type::cuda);
     }
 
-    assert(scalings_.const_view().memory_location() == memory_location_);
+    // assert(scalings_.const_view().memory_location() == memory_location_);
     assert(x.size() > 0);
     assert(n_values_left <= n_coupled);
     assert(x.size() > n_coupled - n_values_left);

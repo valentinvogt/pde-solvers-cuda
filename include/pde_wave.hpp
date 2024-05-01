@@ -26,15 +26,17 @@ public:
     zisa::array<Scalar, 2> second_deriv(this->data_.shape(),
                                         this->data_.device());
     const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
-    convolve_sigma_add_f<n_coupled>(second_deriv.view(), this->data_.const_view(),
-                         this->sigma_values_.const_view(), del_x_2, func_);
+    convolve_sigma_add_f<n_coupled>(
+        second_deriv.view(), this->data_.const_view(),
+        this->sigma_values_.const_view(), del_x_2, func_);
 
     // euler update of derivative
-    add_arrays_interior<n_coupled>(this->deriv_data_.view(), second_deriv.const_view(),
-                        dt);
+    add_arrays_interior<n_coupled>(this->deriv_data_.view(),
+                                   second_deriv.const_view(), dt);
 
     // euler update of data
-    add_arrays_interior<n_coupled>(this->data_.view(), this->deriv_data_.const_view(), dt);
+    add_arrays_interior<n_coupled>(this->data_.view(),
+                                   this->deriv_data_.const_view(), dt);
     PDEBase<n_coupled, Scalar>::add_bc();
   }
 

@@ -21,7 +21,7 @@ __global__ void neumann_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
       // left boundary of size n_coupled
       const int x_idx = linear_idx % Nx;
       const int y_idx = linear_idx / Nx;
-      data(x_idx, y_idx) += dt * bc(x_idx, y_idx); 
+      data(x_idx, y_idx) += dt * bc(x_idx, y_idx);
     } else if (linear_idx < Nx * n_coupled + 2 * Ny - 4 * n_coupled) {
       // upper and lower boundary of size 1
       const int y_idx = n_coupled + (linear_idx - Nx * n_coupled) / 2;
@@ -32,7 +32,8 @@ __global__ void neumann_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
       }
     } else {
       // right boundary of size n_coupled
-      const int shifted_idx = linear_idx - Nx * n_coupled + 2 * Ny - 4 * n_coupled;
+      const int shifted_idx =
+          linear_idx - Nx * n_coupled + 2 * Ny - 4 * n_coupled;
       const int x_idx = shifted_idx % Nx;
       const int y_idx = Ny - 1 - (shifted_idx / Nx);
       data(x_idx, y_idx) += dt * bc(x_idx, y_idx);
@@ -46,7 +47,9 @@ void neumann_bc_cuda(zisa::array_view<Scalar, 2> data,
 #if CUDA_AVAILABLE
   const int thread_dims = THREAD_DIMS;
   const int block_dims =
-      std::ceil((double)(2 * (data.shape(0) * n_coupled + data.shape(1)) - 4 * n_coupled) / THREAD_DIMS);
+      std::ceil((double)(2 * (data.shape(0) * n_coupled + data.shape(1)) -
+                         4 * n_coupled) /
+                THREAD_DIMS);
   neumann_bc_cuda_kernel<n_coupled, Scalar>
       <<<block_dims, thread_dims>>>(data, bc, dt);
   const auto error = cudaDeviceSynchronize();
@@ -55,7 +58,8 @@ void neumann_bc_cuda(zisa::array_view<Scalar, 2> data,
               << std::endl;
   }
 #else
-  std::cout << "Tried to call neumann_bc_cuda without cuda available!" << std::endl;
+  std::cout << "Tried to call neumann_bc_cuda without cuda available!"
+            << std::endl;
 #endif // CUDA_AVAILABLE
 }
 #endif // NEUMANN_BC_CUDA_H_

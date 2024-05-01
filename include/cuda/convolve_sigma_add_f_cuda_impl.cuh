@@ -21,28 +21,11 @@ __global__ void convolve_sigma_add_f_cuda_kernel(
   const int Nx = src.shape(0);
   const int Ny = src.shape(1) / n_coupled;
   if (x_idx < Nx - 1 && y_idx < Ny - 1) {
-    zisa::array_const_view<Scalar, 1> input_1 {zisa ::shape_t<1>(n_coupled),
-                                             &src(x_idx, n_coupled * y_idx),
-                                             zisa ::device_type ::cuda};
-    zisa::array_const_view<Scalar, 1> input = input_1;
-  // if (input.memory_location() == zisa::device_type::cpu) {
-  //   printf("input called with memory_location = cpu\n");
-  // } else if (input.memory_location() == zisa::device_type::cuda) {
-  //   printf("input called with memory_location = cuda\n");
-  // }
-
-    // printf("call function with input: ");
-    for (int i = 0; i < n_coupled; i++) {
-      // printf("%f ", input(i));
-    }
-    // printf("\n");
     Scalar result_function[n_coupled];
-    f(input, result_function);
-    // printf("output: ");
-    for (int i = 0; i < n_coupled; i++) {
-      // printf("%f ", result_function(i));
-    }
-   // printf("\n");
+    f(zisa::array_const_view<Scalar, 1>{zisa ::shape_t<1>(n_coupled),
+                                        &src(x_idx, n_coupled * y_idx),
+                                        zisa ::device_type ::cuda},
+      result_function);
     for (int i = 0; i < n_coupled; i++) {
       dst(x_idx, n_coupled * y_idx + i) =
           del_x_2 *

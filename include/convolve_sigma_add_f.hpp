@@ -26,7 +26,8 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
       // does not work for generic function, calculates all f_1, f_2, ... , fn
       // in one run
       Scalar result_function[n_coupled];
-      f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu), result_function);
+      f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu),
+        result_function);
       for (int i = 0; i < n_coupled; i++) {
         dst(x, y + i) =
             del_x_2 *
@@ -57,9 +58,11 @@ void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
   const zisa::device_type memory_src = src.memory_location();
   const zisa::device_type memory_sigma = sigma.memory_location();
   // if (memory_dst == zisa::device_type::cpu) {
-  //   std::cout << "convolve_sigma_add_f called with memory_location = cpu" << std::endl;
+  //   std::cout << "convolve_sigma_add_f called with memory_location = cpu" <<
+  //   std::endl;
   // } else if (memory_dst == zisa::device_type::cuda) {
-  //   std::cout << "convolve_sigma_add_f called with memory_location = cuda" << std::endl;
+  //   std::cout << "convolve_sigma_add_f called with memory_location = cuda" <<
+  //   std::endl;
   // }
 
   if (!(memory_dst == memory_src && memory_src == memory_sigma)) {
