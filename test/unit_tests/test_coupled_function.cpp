@@ -38,7 +38,6 @@ TEST(CoupledFunctionTests, TEST_ZERO) {
 }
 
 TEST(CoupledFunctionTests, TEST_CONSTANT) {
-#if !CUDA_AVAILABLE
   zisa::array<float, 1> function_scalings(zisa::shape_t<1>(9 * 2),
                                           zisa::device_type::cpu);
   for (int i = 0; i < 9 * 2; i++) {
@@ -59,8 +58,10 @@ TEST(CoupledFunctionTests, TEST_CONSTANT) {
   zisa::array<float, 1> values(zisa::shape_t<1>(2), zisa::device_type::cpu);
   values(0) = 1.;
   values(1) = 0.5;
+  float results[2];
+  func(values.const_view(), results);
 
-  ASSERT_NEAR(2.3, func(values.const_view())(0), tol);
+  ASSERT_NEAR(2.3, results[0], tol);
 
   // #if CUDA_AVAILABLE
   //   zisa::array<float, 1> values_cuda(zisa::shape_t<1>(2),
@@ -71,17 +72,16 @@ TEST(CoupledFunctionTests, TEST_CONSTANT) {
 
   values(0) = 0.;
   values(1) = 0.;
-  ASSERT_NEAR(2.3, func(values.const_view())(1), tol);
+  func(values.const_view(), results);
+  ASSERT_NEAR(2.3, results[1], tol);
 
   // #if CUDA_AVAILABLE
   //   zisa::copy(values_cuda, values);
   //   ASSERT_NEAR(0.0, func_cuda(values_cuda.const_view()), tol);
   // #endif
-#endif
 }
 
 TEST(CoupledFunctionTests, TEST_3_COUPLED_LINEAR) {
-#if !CUDA_AVAILABLE
   zisa::array<float, 1> function_scalings(zisa::shape_t<1>(8 * 3),
                                           zisa::device_type::cpu);
 
@@ -114,7 +114,9 @@ TEST(CoupledFunctionTests, TEST_3_COUPLED_LINEAR) {
   values(1) = 1.;
   values(2) = 1.;
 
-  ASSERT_NEAR(15.0, func(values.const_view())(1), tol);
+  float results[3];
+  func(values.const_view(), results);
+  ASSERT_NEAR(15.0, results[1], tol);
 
   // #if CUDA_AVAILABLE
   //   zisa::array<float, 1> values_cuda(zisa::shape_t<1>(3),
@@ -124,7 +126,8 @@ TEST(CoupledFunctionTests, TEST_3_COUPLED_LINEAR) {
   // #endif
 
   values(0) = 0.;
-  ASSERT_NEAR(4.0, func(values.const_view())(0), tol);
+  func(values.const_view(), results);
+  ASSERT_NEAR(4.0, results[0], tol);
 
   // #if CUDA_AVAILABLE
   //   zisa::copy(values_cuda, values);
@@ -132,7 +135,8 @@ TEST(CoupledFunctionTests, TEST_3_COUPLED_LINEAR) {
   // #endif
 
   values(1) = 0.;
-  ASSERT_NEAR(2.0, func(values.const_view())(1), tol);
+  func(values.const_view(), results);
+  ASSERT_NEAR(2.0, results[1], tol);
 
   // #if CUDA_AVAILABLE
   //   zisa::copy(values_cuda, values);
@@ -140,7 +144,8 @@ TEST(CoupledFunctionTests, TEST_3_COUPLED_LINEAR) {
   // #endif
 
   values(2) = -1.;
-  ASSERT_NEAR(0.0, func(values.const_view())(0), tol);
+  func(values.const_view(), results);
+  ASSERT_NEAR(0.0, results[0], tol);
 
   // #if CUDA_AVAILABLE
   //   zisa::copy(values_cuda, values);
@@ -152,17 +157,16 @@ TEST(CoupledFunctionTests, TEST_3_COUPLED_LINEAR) {
   values(2) = 0.7;
   // f(0.3, 0.6, 0.7) = 1 + 2*0.3 + 0.6 + 0.7 + 3*0.3*0.6 + 2*0.3*0.7 + 0.6*0.7
   // + 4*0.3*0.6*0.7 = 4.784
-  ASSERT_NEAR(4.784, func(values.const_view())(0), tol);
+  func(values.const_view(), results);
+  ASSERT_NEAR(4.784, results[0], tol);
 
-// #if CUDA_AVAILABLE
-//   zisa::copy(values_cuda, values);
-//   ASSERT_NEAR(4.784, func_cuda(values_cuda.const_view()), tol);
-// #endif
-#endif
+  // #if CUDA_AVAILABLE
+  //   zisa::copy(values_cuda, values);
+  //   ASSERT_NEAR(4.784, func_cuda(values_cuda.const_view()), tol);
+  // #endif
 }
 
 TEST(CoupledFunctionTests, TEST_FROM_ARRAY) {
-#if !CUDA_AVAILABLE
   zisa::array<float, 1> function_scalings(zisa::shape_t<1>(8 * 3),
                                           zisa::device_type::cpu);
   for (int i = 0; i < 2; i++) {
@@ -193,29 +197,30 @@ TEST(CoupledFunctionTests, TEST_FROM_ARRAY) {
   zisa::array_const_view<float, 2> values_const = values.const_view();
   zisa::array_const_view<float, 1> curr_values{
       zisa::shape_t<1>(3), &values_const(0, 0), zisa::device_type::cpu};
-  ASSERT_NEAR(15.0, func(curr_values)(1), tol);
-  ASSERT_NEAR(4.0,
-              func(zisa::array_const_view<float, 1>{zisa::shape_t<1>(3),
-                                                    &values_const(0, 3),
-                                                    zisa::device_type::cpu})(0),
-              tol);
-  ASSERT_NEAR(0.0,
-              func(zisa::array_const_view<float, 1>{zisa::shape_t<1>(3),
-                                                    &values_const(1, 0),
-                                                    zisa::device_type::cpu})(1),
-              tol);
-  ASSERT_NEAR(4.784,
-              func(zisa::array_const_view<float, 1>{zisa::shape_t<1>(3),
-                                                    &values_const(1, 3),
-                                                    zisa::device_type::cpu})(0),
-              tol);
-  ASSERT_NEAR(0.,
-              func(zisa::array_const_view<float, 1>{zisa::shape_t<1>(3),
-                                                    &values_const(1, 3),
-                                                    zisa::device_type::cpu})(2),
-              tol);
+  float results[3];
+  func(curr_values, results);
+  ASSERT_NEAR(15.0, results[1], tol);
+  func(zisa::array_const_view<float, 1>{zisa::shape_t<1>(3),
+                                        &values_const(0, 3),
+                                        zisa::device_type::cpu},
+       results);
+  ASSERT_NEAR(4.0, results[0], tol);
 
-#endif
+  func(zisa::array_const_view<float, 1>{zisa::shape_t<1>(3),
+                                        &values_const(1, 0),
+                                        zisa::device_type::cpu},
+       results);
+  ASSERT_NEAR(0.0, results[1], tol);
+  func(zisa::array_const_view<float, 1>{zisa::shape_t<1>(3),
+                                        &values_const(1, 3),
+                                        zisa::device_type::cpu},
+       results);
+  ASSERT_NEAR(4.784, results[0], tol);
+  func(zisa::array_const_view<float, 1>{zisa::shape_t<1>(3),
+                                        &values_const(1, 3),
+                                        zisa::device_type::cpu},
+       results);
+  ASSERT_NEAR(0., results[2], tol);
 }
 
 } // namespace CoupledFunctionTests

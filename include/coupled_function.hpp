@@ -114,9 +114,10 @@ public:
 #else
   // input: array of size n_coupled, representing all values of one position
   // output: array, f1(x, y, z), f2(x, y, z), f3(x, y, z) of size n_coupled
-  inline zisa::array<Scalar, 1> operator()(zisa::array_const_view<Scalar, 1> x,
-                                           int n_values_left = n_coupled,
-                                           int curr_scalings_pos = 0) {
+  inline void operator()(zisa::array_const_view<Scalar, 1> x,
+                         Scalar result_values[n_coupled],
+                         int n_values_left = n_coupled,
+                         int curr_scalings_pos = 0) {
 
     assert(memory_location_ == zisa::device_type::cpu);
     assert(x.memory_location() == memory_location_);
@@ -124,12 +125,9 @@ public:
     assert(x.size() > 0);
     assert(n_values_left <= n_coupled);
     assert(x.size() > n_coupled - n_values_left);
-    zisa::shape_t<1> shape(n_coupled);
-    zisa::array<Scalar, 1> result_values(shape, memory_location_);
     // set array to zero
-    // TODO: make this more efficient
     for (int i = 0; i < n_coupled; i++) {
-      result_values(i) = 0;
+      result_values[i] = 0;
     }
     // Scalar result = 0.;
     Scalar curr_pot = 1.;
@@ -138,25 +136,26 @@ public:
       for (int i = 0; i < max_pot; i++) {
         assert(scalings_.size() > curr_scalings_pos + i);
         for (int j = 0; j < n_coupled; j++) {
-          result_values(j) +=
+          result_values[j] +=
               curr_pot * scalings_(curr_scalings_pos + i * n_coupled + j);
         }
         curr_pot *= x(n_coupled - n_values_left);
       }
-      return result_values;
+      return;
     }
     int block_size = n_coupled * std::pow(max_pot, n_values_left - 1);
     for (int i = 0; i < max_pot; i++) {
-      zisa::array<Scalar, 1> rec_res = this->operator()(
-          x, n_values_left - 1, curr_scalings_pos + i * block_size);
+      Scalar rec_res[n_coupled];
+      this->operator()(
+          x, rec_res, n_values_left - 1, curr_scalings_pos + i * block_size);
       for (int j = 0; j < n_coupled; j++) {
-        result_values(j) += rec_res(j) * curr_pot;
+        result_values[j] += rec_res[j] * curr_pot;
       }
       assert(n_coupled - n_values_left >= 0 &&
              n_coupled - n_values_left < x.size());
       curr_pot *= x(n_coupled - n_values_left);
     }
-    return result_values;
+    return;
   }
   // function overloaded such that you don't have to create an
   // array every time you call this function with n_coupled == 1
@@ -166,7 +165,9 @@ public:
     assert(memory_location_ == zisa::device_type::cpu);
     zisa::array<Scalar, 1> tmp(zisa::shape_t<1>(1), memory_location_);
     tmp(0) = value;
-    return (this->operator()(tmp.const_view()))(0);
+    Scalar result_values[n_coupled];
+    this->operator()(tmp.const_view(), result_values);
+    return result_values[0];
   }
 #endif // CUDA_AVAILABLE
 
