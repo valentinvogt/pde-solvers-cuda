@@ -120,7 +120,7 @@ void run_benchmark_gpu_vs_cpu_n_timesteps(int array_size) {
 #else
   std::cout << "# n_timesteps, time_cpu" << std::endl;
 #endif
-  for (int n_timesteps = 1; n_timesteps < 100; n_timesteps++) {
+  for (int n_timesteps = 0; n_timesteps < 100; n_timesteps++) {
     int n_iters = 5;
     double time_cpu = 0;
 #if CUDA_AVAILABLE
