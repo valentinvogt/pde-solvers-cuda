@@ -3,6 +3,7 @@
 
 // TODO: add initial derivative data, correct apply function
 
+#include "io/netcdf_reader.hpp"
 #include "periodic_bc.hpp"
 #include "zisa/io/hdf5_writer.hpp"
 #include <pde_base.hpp>
@@ -77,6 +78,36 @@ public:
     this->ready_ = true;
   }
 
+  void read_initial_data_from_netcdf(const NetCDFPDEReader &reader) {
+    if (reader.write_variable_to_array("initial_data",
+                                       this->data_.view().raw()) != 0) {
+      std::cout << "error occured in writing initial data from netcdf to array!"
+                << std::endl;
+      exit(-1);
+    }
+    if (reader.write_variable_to_array("sigma_values",
+                                   this->sigma_values_.view().raw()) != 0) {
+      std::cout << "error occured in writing sigma values from netcdt to array!" << std::endl;
+      exit(-1);
+    }
+    if (reader.write_variable_to_array("bc_neumann_values",
+                                   this->bc_neumann_values_.view().raw()) != 0) {
+      std::cout << "error occured in writing sigma values from netcdt to array!" << std::endl;
+      exit(-1);
+    }
+    if (this->bc_ == BoundaryCondition::Neumann) {
+      if (reader.write_variable_to_array("bc_neumann_values",
+                                     this->bc_neumann_values_.view().raw()) != 0) {
+        std::cout << "error occured in writing bc neumann values from netcdt to array!" << std::endl;
+        exit(-1);
+      }
+    } else if (this->bc_ == BoundaryCondition::Dirichlet) {
+      // do noching as long as data on boundary does not change
+    } else if (this->bc_ == BoundaryCondition::Periodic) {
+      periodic_bc<n_coupled, Scalar>(this->data_.view());
+    }
+    this->ready_ = true;
+  }
   void print_deriv() {
     std::cout << "deriv: " << std::endl;
     print_matrix(this->deriv_data_.const_view());

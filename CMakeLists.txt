@@ -68,7 +68,19 @@ target_include_directories(main PUBLIC include)
 
 target_link_libraries(main Zisa::core Zisa::memory)
 ######### main executable end #################
+######### netcdf executable start #############
+add_executable(run_from_netcdf)
+set_target_properties(run_from_netcdf PROPERTIES CXX_STANDARD 17)
 
+if (CUDA_AVAILABLE)
+  target_compile_options(run_from_netcdf PUBLIC -DCUDA_AVAILABLE=1)
+  target_compile_options(run_from_netcdf PUBLIC $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>>)
+endif()
+
+target_include_directories(run_from_netcdf PUBLIC include)
+
+target_link_libraries(run_from_netcdf Zisa::core Zisa::memory)
+######### netcdf executable end ###############
 ######### test executable start ###############
 add_executable(unit_tests)
 set_target_properties(unit_tests PROPERTIES CXX_STANDARD 17)

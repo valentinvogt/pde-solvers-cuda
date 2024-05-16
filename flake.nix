@@ -28,6 +28,7 @@
 
           matplotlib
           pandas
+          netcdf4
         ]))
         ];
         buildInputs = with pkgs; [ 
