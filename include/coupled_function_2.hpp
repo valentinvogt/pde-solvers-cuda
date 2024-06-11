@@ -42,7 +42,7 @@ public:
         max_pot_pow_j *= max_pot_;
       }
       for (int k = 0; k < n_coupled_; k++) {
-        result_values[k] += scalings_(n_coupled_ * i + k) * pot;
+        result_values[k] += scalings_.const_view()(n_coupled_ * i + k) * pot;
       }
     }
   }

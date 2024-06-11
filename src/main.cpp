@@ -20,10 +20,10 @@ void small_example() {
   zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(16),
                                                zisa::device_type::cuda);
   zisa::copy(function_scalings_cuda, function_scalings);
-  CoupledFunction<float, 3, 2> func_coupled_cuda(
-      function_scalings_cuda.const_view());
+  CoupledFunction2<float> func_coupled_cuda(
+      function_scalings_cuda.const_view(), 3, 2);
 
-  PDEHeat<3, float, CoupledFunction<float, 3, 2>> pde(
+  PDEHeat<3, float, CoupledFunction2<float>> pde(
       8, 8, zisa::device_type::cuda, bc, func_coupled_cuda, 0.1, 0.1);
 #else
   std::cout << "case_cpu" << std::endl;

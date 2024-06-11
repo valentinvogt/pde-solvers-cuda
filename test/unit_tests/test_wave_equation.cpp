@@ -267,7 +267,7 @@ TEST(WaveEquationTests, TestConstantF) {
   function_scalings(0) = 2.;
 
 #if CUDA_AVAILABLE
-  zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(4),
+  zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1),
                                                zisa::device_type::cuda);
   zisa::copy(function_scalings_cuda, function_scalings);
   CoupledFunction2<float> func(function_scalings_cuda, 1, 1);

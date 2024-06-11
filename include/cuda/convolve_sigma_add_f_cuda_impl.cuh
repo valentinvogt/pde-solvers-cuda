@@ -21,11 +21,10 @@ __global__ void convolve_sigma_add_f_cuda_kernel(
   const int Nx = src.shape(0);
   const int Ny = src.shape(1) / n_coupled;
   if (x_idx < Nx - 1 && y_idx < Ny - 1) {
-    // printf("ncoupled in impl: %i\n", n_coupled);
     Scalar result_function[n_coupled];
-    f(zisa::array_const_view<Scalar, 1>{zisa ::shape_t<1>(n_coupled),
+    f(zisa::array_const_view<Scalar, 1>{zisa::shape_t<1>(n_coupled),
                                         &src(x_idx, n_coupled * y_idx),
-                                        zisa ::device_type ::cuda},
+                                        zisa::device_type::cuda},
       result_function);
     for (int i = 0; i < n_coupled; i++) {
       dst(x_idx, n_coupled * y_idx + i) =
