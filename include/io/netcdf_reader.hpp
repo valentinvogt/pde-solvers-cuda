@@ -16,7 +16,7 @@ inline void check(int stat) {
 class NetCDFPDEReader {
 public:
   NetCDFPDEReader(std::string filename) : filename_(filename) {
-    check(nc_open(filename.c_str(), NC_NOWRITE, &ncid_));    
+    check(nc_open(filename.c_str(), NC_NOWRITE, &ncid_));
 
     check(nc_get_att(ncid_, NC_GLOBAL, "scalar_type", &scalar_type_));
 
@@ -27,14 +27,14 @@ public:
     check(nc_get_att(ncid_, NC_GLOBAL, "x_length", &x_length_));
     check(nc_get_att(ncid_, NC_GLOBAL, "y_size", &y_size_));
     check(nc_get_att(ncid_, NC_GLOBAL, "y_length", &y_length_));
-    
+
     check(nc_get_att(ncid_, NC_GLOBAL, "boundary_value_type",
-                   &boundary_value_type_));
+                     &boundary_value_type_));
     check(nc_get_att(ncid_, NC_GLOBAL, "scalar_type", &scalar_type_));
 
     check(nc_get_att(ncid_, NC_GLOBAL, "n_coupled", &n_coupled_));
     check(nc_get_att(ncid_, NC_GLOBAL, "coupled_function_order",
-                   &coupled_function_order_));
+                     &coupled_function_order_));
 
     check(nc_get_att(ncid_, NC_GLOBAL, "number_timesteps", &number_timesteps_));
     check(nc_get_att(ncid_, NC_GLOBAL, "final_time", &final_time_));
@@ -45,10 +45,10 @@ public:
     check(nc_inq_attlen(ncid_, NC_GLOBAL, "file_to_save_output",
                         &file_to_save_output_len));
 
-    file_to_save_output_ = (char *)malloc(file_to_save_output_len*sizeof(char));
+    file_to_save_output_ =
+        (char *)malloc(file_to_save_output_len * sizeof(char));
     check(nc_get_att_text(ncid_, NC_GLOBAL, "file_to_save_output",
                           file_to_save_output_));
-    
   }
   NetCDFPDEReader() = delete;
   NetCDFPDEReader(const NetCDFPDEReader &other) = delete;

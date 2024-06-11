@@ -10,7 +10,7 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
 
 #define PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA_2(TYPE, N_COUPLED)    \
   template void                                                                \
-      convolve_sigma_add_f_cuda<N_COUPLED, TYPE, CoupledFunction<TYPE>>(      \
+      convolve_sigma_add_f_cuda<N_COUPLED, TYPE, CoupledFunction<TYPE>>(       \
           zisa::array_view<TYPE, 2>, zisa::array_const_view<TYPE, 2>,          \
           zisa::array_const_view<TYPE, 2>, TYPE, CoupledFunction<TYPE>);
 

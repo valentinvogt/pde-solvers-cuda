@@ -7,9 +7,9 @@
 Function class for coupled function.
 
   function returns a vector f_1, f_2, ... , f_n_coupled
-  where f_n = sum_(i, j, k = 0)^max_pot scalings_(n * (i + j * max_pot +  k * max_pot^2...) + (n-1)) x^i y^j z^k...
-  for example in 2d and max_pot = 2
-  f_1(x, y) = scaling_(0) + scaling(2) * x + scaling(4) * y + scaling(6) * x * y
+  where f_n = sum_(i, j, k = 0)^max_pot scalings_(n * (i + j * max_pot +  k *
+max_pot^2...) + (n-1)) x^i y^j z^k... for example in 2d and max_pot = 2 f_1(x,
+y) = scaling_(0) + scaling(2) * x + scaling(4) * y + scaling(6) * x * y
 
 */
 
@@ -17,7 +17,7 @@ template <typename Scalar> class CoupledFunction {
 public:
   CoupledFunction() = delete;
   CoupledFunction(zisa::array_const_view<Scalar, 1> scalings, int n_coupled,
-                   int max_pot)
+                  int max_pot)
       : scalings_(zisa::shape_t<1>(n_coupled *
                                    (int)std::pow<int>(max_pot, n_coupled))),
         n_coupled_(n_coupled), max_pot_(max_pot) {
@@ -37,7 +37,7 @@ public:
     for (int i = 0; i < std::pow(max_pot_, n_coupled_); i++) {
       Scalar pot = 1.;
       int max_pot_pow_j = 1;
-       for (int j = 0; j < n_coupled_; j++) {
+      for (int j = 0; j < n_coupled_; j++) {
         pot *= std::pow(x(j), (int)(i / max_pot_pow_j) % max_pot_);
         max_pot_pow_j *= max_pot_;
       }

@@ -14,10 +14,10 @@ public:
   // make shure the folder of filename exists, for example if the file
   // has to be savet at out/result.nc, make sure that the out folder is created
   NetCDFPDEWriter(int n_snapshots, Scalar T, int n_members, int n_x,
-                   Scalar x_length, int n_y, Scalar y_length, int type_of_equation,
-                   int boundary_value_type, int n_coupled,
-                   int coupled_function_order, int number_snapshots,
-                   char *filename)
+                  Scalar x_length, int n_y, Scalar y_length,
+                  int type_of_equation, int boundary_value_type, int n_coupled,
+                  int coupled_function_order, int number_snapshots,
+                  char *filename)
       : n_snapshots_(n_snapshots), final_time_(T), n_members_(n_members),
         n_x_(n_x), x_length_(x_length), n_y_(n_y), y_length_(y_length),
         n_coupled_(n_coupled), filename_(filename) {

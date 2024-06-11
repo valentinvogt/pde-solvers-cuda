@@ -13,7 +13,8 @@ public:
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
       : PDEBase<n_coupled, Scalar>(Nx, Ny, memory_location, bc, dx, dy),
         func_(f) {}
-  PDEHeat(const PDEHeat &other) : PDEBase<n_coupled, Scalar>(other), func_(other.func_) {}
+  PDEHeat(const PDEHeat &other)
+      : PDEBase<n_coupled, Scalar>(other), func_(other.func_) {}
   void read_values(const std::string &filename,
                    const std::string &tag_data = "initial_data",
                    const std::string &tag_sigma = "sigma",

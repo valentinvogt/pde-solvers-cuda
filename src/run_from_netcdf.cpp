@@ -12,8 +12,8 @@
 #define INSTANCIATE_PDE_AND_CALCULATE(PDE_TYPE, N_COUPLED)                     \
   case N_COUPLED:                                                              \
     calculate_and_save_snapshots<                                              \
-        PDE_TYPE<N_COUPLED, Scalar, CoupledFunction<Scalar>>, Scalar>(        \
-        std::move(PDE_TYPE<N_COUPLED, Scalar, CoupledFunction<Scalar>>(       \
+        PDE_TYPE<N_COUPLED, Scalar, CoupledFunction<Scalar>>, Scalar>(         \
+        std::move(PDE_TYPE<N_COUPLED, Scalar, CoupledFunction<Scalar>>(        \
             reader.get_x_size(), reader.get_y_size(), zisa::device_type::cpu,  \
             bc, func_coupled, reader.get_x_length() / reader.get_x_size(),     \
             reader.get_x_length() / reader.get_x_size())),                     \
@@ -31,12 +31,11 @@ inline void calculate_and_save_snapshots(PDE pde,
 
   NetCDFPDEWriter<Scalar> writer(
       reader.get_number_snapshots(), reader.get_final_time(),
-      reader.get_n_members(), reader.get_x_size(),
-      reader.get_x_length(), reader.get_y_size(),
-      reader.get_y_length(),
-      reader.get_equation_type(), reader.get_boundary_value(),
-      reader.get_n_coupled(), reader.get_coupled_function_order(),
-      reader.get_number_snapshots(), reader.get_file_to_save_output());
+      reader.get_n_members(), reader.get_x_size(), reader.get_x_length(),
+      reader.get_y_size(), reader.get_y_length(), reader.get_equation_type(),
+      reader.get_boundary_value(), reader.get_n_coupled(),
+      reader.get_coupled_function_order(), reader.get_number_snapshots(),
+      reader.get_file_to_save_output());
   for (int memb = 0; memb < reader.get_n_members(); memb++) {
     pde.read_initial_data_from_netcdf(reader, memb);
     pde.apply_with_snapshots(reader.get_final_time(),
@@ -54,7 +53,7 @@ template <typename Scalar> void run_simulation(const NetCDFPDEReader &reader) {
                                        function_scalings.view().raw());
 
   CoupledFunction<Scalar> func_coupled(function_scalings.const_view(),
-                                        n_coupled, coupled_order);
+                                       n_coupled, coupled_order);
   BoundaryCondition bc;
   int boundary_value = reader.get_boundary_value();
   if (boundary_value == 0) {
@@ -121,4 +120,3 @@ int main(int argc, char **argv) {
   }
   return 0;
 }
-
