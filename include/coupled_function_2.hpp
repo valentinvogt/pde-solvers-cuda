@@ -16,11 +16,12 @@ public:
   }
 #if CUDA_AVAILABLE
 
+  template <typename ARRAY>
   inline __host__ __device__ void
-  operator()(zisa::array_const_view<Scalar, 1> x,
-             zisa::array_view<Scalar, 1> result_values) {
+  operator()(zisa::array_const_view<Scalar, 1> x, ARRAY result_values) {
+    Scalar pot_values[n_coupled_ * max_pot_];
     for (int i = 0; i < n_coupled_; i++) {
-      result_values(i) = 0;
+      result_values[i] = 0;
     }
 
     for (int i = 0; i < std::pow(max_pot_, n_coupled_); i++) {
@@ -30,8 +31,8 @@ public:
         pot *= std::pow(x(j), (int)(i / max_pot_pow_j) % max_pot_);
         max_pot_pow_j *= max_pot_;
       }
-      for (int k = 0; k < n_coupled; k++) {
-        result_values[k] += scalings_(n_coupled * i + k) * pot;
+      for (int k = 0; k < n_coupled_; k++) {
+        result_values[k] += scalings_(n_coupled_ * i + k) * pot;
       }
     }
   }
