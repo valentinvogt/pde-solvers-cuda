@@ -146,7 +146,7 @@ void test_constant_helper(zisa::array_const_view<float, 2> data,
   zisa::array<float, 2> result(result_gpu.shape());
   zisa::copy(result, result_gpu);
   zisa::array<float, 2> data_cpu =
-      create_simple_data<float>(array_size, array_size, zisa::device_type::cpu);
+      create_simple_data<float>(10, 10, zisa::device_type::cpu);
 #else
   zisa::array_const_view<float, 2> result = pde.get_data();
 #endif
@@ -224,7 +224,7 @@ void test_linear_helper(zisa::array_const_view<float, 2> data,
   zisa::array<float, 2> result(result_gpu.shape());
   zisa::copy(result, result_gpu);
   zisa::array<float, 2> data_cpu =
-      create_simple_data<float>(array_size, array_size, zisa::device_type::cpu);
+      create_simple_data<float>(100, 100, zisa::device_type::cpu);
 #else
   zisa::array_const_view<float, 2> result = pde.get_data();
 #endif

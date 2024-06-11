@@ -19,7 +19,6 @@ public:
   template <typename ARRAY>
   inline __host__ __device__ void
   operator()(zisa::array_const_view<Scalar, 1> x, ARRAY result_values) {
-    Scalar pot_values[n_coupled_ * max_pot_];
     for (int i = 0; i < n_coupled_; i++) {
       result_values[i] = 0;
     }
@@ -42,7 +41,6 @@ public:
   template <typename ARRAY>
   inline void operator()(zisa::array_const_view<Scalar, 1> x,
                          ARRAY result_values) {
-    Scalar pot_values[n_coupled_ * max_pot_];
     for (int i = 0; i < n_coupled_; i++) {
       result_values[i] = 0;
     }
@@ -64,8 +62,8 @@ public:
 
 private:
   zisa::array<Scalar, 1> scalings_;
-  int n_coupled_;
-  int max_pot_;
+  const int n_coupled_;
+  const int max_pot_;
 };
 
 #endif // COUPLED_FUNCTION2_HPP_
