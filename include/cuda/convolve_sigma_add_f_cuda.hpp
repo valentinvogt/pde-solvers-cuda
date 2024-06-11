@@ -1,7 +1,7 @@
 #ifndef CONVOLVE_SIGMA_ADD_F_CUDA_H_
 #define CONVOLVE_SIGMA_ADD_F_CUDA_H_
 
-#include <coupled_function_2.hpp>
+#include <coupled_function.hpp>
 #include <zisa/memory/array.hpp>
 
 template <int n_coupled, typename Scalar, typename Function>
@@ -12,9 +12,9 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
 
 #define PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA_2(TYPE, N_COUPLED)    \
   extern template void                                                         \
-      convolve_sigma_add_f_cuda<N_COUPLED, TYPE, CoupledFunction2<TYPE>>(      \
+      convolve_sigma_add_f_cuda<N_COUPLED, TYPE, CoupledFunction<TYPE>>(      \
           zisa::array_view<TYPE, 2>, zisa::array_const_view<TYPE, 2>,          \
-          zisa::array_const_view<TYPE, 2>, TYPE, CoupledFunction2<TYPE>);
+          zisa::array_const_view<TYPE, 2>, TYPE, CoupledFunction<TYPE>);
 
 PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA_2(float, 1)
 PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA_2(double, 1)

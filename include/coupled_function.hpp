@@ -1,5 +1,5 @@
-#ifndef COUPLED_FUNCTION2_HPP_
-#define COUPLED_FUNCTION2_HPP_
+#ifndef COUPLED_FUNCTION_HPP_
+#define COUPLED_FUNCTION_HPP_
 
 #include "zisa/memory/array_view_decl.hpp"
 #include <zisa/memory/array.hpp>
@@ -13,10 +13,10 @@ Function class for coupled function.
 
 */
 
-template <typename Scalar> class CoupledFunction2 {
+template <typename Scalar> class CoupledFunction {
 public:
-  CoupledFunction2() = delete;
-  CoupledFunction2(zisa::array_const_view<Scalar, 1> scalings, int n_coupled,
+  CoupledFunction() = delete;
+  CoupledFunction(zisa::array_const_view<Scalar, 1> scalings, int n_coupled,
                    int max_pot)
       : scalings_(zisa::shape_t<1>(n_coupled *
                                    (int)std::pow<int>(max_pot, n_coupled))),
@@ -77,4 +77,4 @@ private:
   const int max_pot_;
 };
 
-#endif // COUPLED_FUNCTION2_HPP_
+#endif // COUPLED_FUNCTION_HPP_

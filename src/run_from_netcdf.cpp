@@ -1,7 +1,7 @@
 #include "io/netcdf_reader.hpp"
-#include "io/netcdf_writer2.hpp"
+#include "io/netcdf_writer.hpp"
 #include "pde_base.hpp"
-#include <coupled_function_2.hpp>
+#include <coupled_function.hpp>
 #include <iostream>
 #include <netcdf.h>
 #include <pde_heat.hpp>
@@ -12,8 +12,8 @@
 #define INSTANCIATE_PDE_AND_CALCULATE(PDE_TYPE, N_COUPLED)                     \
   case N_COUPLED:                                                              \
     calculate_and_save_snapshots<                                              \
-        PDE_TYPE<N_COUPLED, Scalar, CoupledFunction2<Scalar>>, Scalar>(        \
-        std::move(PDE_TYPE<N_COUPLED, Scalar, CoupledFunction2<Scalar>>(       \
+        PDE_TYPE<N_COUPLED, Scalar, CoupledFunction<Scalar>>, Scalar>(        \
+        std::move(PDE_TYPE<N_COUPLED, Scalar, CoupledFunction<Scalar>>(       \
             reader.get_x_size(), reader.get_y_size(), zisa::device_type::cpu,  \
             bc, func_coupled, reader.get_x_length() / reader.get_x_size(),     \
             reader.get_x_length() / reader.get_x_size())),                     \
@@ -29,7 +29,7 @@ inline void calculate_and_save_snapshots(PDE pde,
   reader.get_number_snapshots();
   reader.get_file_to_save_output();
 
-  NetCDFPDEWriter2<Scalar> writer(
+  NetCDFPDEWriter<Scalar> writer(
       reader.get_number_snapshots(), reader.get_final_time(),
       reader.get_n_members(), reader.get_x_size(),
       reader.get_x_length(), reader.get_y_size(),
@@ -53,7 +53,7 @@ template <typename Scalar> void run_simulation(const NetCDFPDEReader &reader) {
   reader.write_whole_variable_to_array("function_scalings",
                                        function_scalings.view().raw());
 
-  CoupledFunction2<Scalar> func_coupled(function_scalings.const_view(),
+  CoupledFunction<Scalar> func_coupled(function_scalings.const_view(),
                                         n_coupled, coupled_order);
   BoundaryCondition bc;
   int boundary_value = reader.get_boundary_value();

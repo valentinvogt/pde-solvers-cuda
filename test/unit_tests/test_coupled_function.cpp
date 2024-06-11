@@ -1,5 +1,5 @@
 
-#include <coupled_function_2.hpp>
+#include <coupled_function.hpp>
 #include <gtest/gtest.h>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/array_view_decl.hpp>
@@ -12,7 +12,7 @@ TEST(CoupledFunctionTests, TEST_ZERO) {
   for (int i = 0; i < 9 * 2; i++) {
     function_scalings(i) = 0.;
   }
-  CoupledFunction2<float> func(function_scalings.const_view(), 2, 3);
+  CoupledFunction<float> func(function_scalings.const_view(), 2, 3);
   float tol = 1e-10;
   zisa::array<float, 1> values(zisa::shape_t<1>(2), zisa::device_type::cpu);
   values(0) = 1.;
@@ -33,7 +33,7 @@ TEST(CoupledFunctionTests, TEST_CONSTANT) {
   function_scalings(0) = 2.3;
   function_scalings(1) = 2.3;
 
-  CoupledFunction2<float> func(function_scalings.const_view(), 2, 3);
+  CoupledFunction<float> func(function_scalings.const_view(), 2, 3);
 
   float tol = 1e-5;
   zisa::array<float, 1> values(zisa::shape_t<1>(2), zisa::device_type::cpu);
@@ -68,7 +68,7 @@ TEST(CoupledFunctionTests, TEST_3_COUPLED_LINEAR) {
     }
   }
 
-  CoupledFunction2<float> func(function_scalings.const_view(), 3, 2);
+  CoupledFunction<float> func(function_scalings.const_view(), 3, 2);
 
   float tol = 1e-5;
   zisa::array<float, 1> values(zisa::shape_t<1>(3), zisa::device_type::cpu);
@@ -118,7 +118,7 @@ TEST(CoupledFunctionTests, TEST_FROM_ARRAY) {
       }
     }
   }
-  CoupledFunction2<float> func(function_scalings.const_view(), 3, 2);
+  CoupledFunction<float> func(function_scalings.const_view(), 3, 2);
   float tol = 1e-5;
   zisa::array<float, 2> values(zisa::shape_t<2>(2, 6), zisa::device_type::cpu);
   values(0, 0) = 1.;
@@ -169,7 +169,7 @@ TEST(CoupledFunctionTests, TestCoupled2) {
   for (int i = 0; i < 9 * 2; i++) {
     function_scalings(i) = 0.;
   }
-  CoupledFunction2<float> func(function_scalings.const_view(), 2, 3);
+  CoupledFunction<float> func(function_scalings.const_view(), 2, 3);
   float tol = 1e-10;
   zisa::array<float, 1> values(zisa::shape_t<1>(2), zisa::device_type::cpu);
   values(0) = 1.;
@@ -195,7 +195,7 @@ TEST(CoupledFunctionTests, TEST_FROM_ARRAY2) {
       }
     }
   }
-  CoupledFunction2<float> func(function_scalings.const_view(), 3, 2);
+  CoupledFunction<float> func(function_scalings.const_view(), 3, 2);
   float tol = 1e-5;
   zisa::array<float, 2> values(zisa::shape_t<2>(2, 6), zisa::device_type::cpu);
   values(0, 0) = 1.;
@@ -244,7 +244,7 @@ TEST(CoupledFunctionTests, TEST_ZERO_2) {
   for (int i = 0; i < 9 * 2; i++) {
     function_scalings(i) = 0.;
   }
-  CoupledFunction2<float> func(function_scalings.const_view(), 2, 3);
+  CoupledFunction<float> func(function_scalings.const_view(), 2, 3);
   float tol = 1e-10;
   zisa::array<float, 1> values(zisa::shape_t<1>(2), zisa::device_type::cpu);
   values(0) = 1.;

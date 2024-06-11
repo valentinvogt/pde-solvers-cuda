@@ -1,7 +1,7 @@
 #include "pde_base.hpp"
 #include "zisa/memory/device_type.hpp"
 #include <chrono>
-#include <coupled_function_2.hpp>
+#include <coupled_function.hpp>
 #include <pde_heat.hpp>
 #include <cstring>
 // helper function which creates simple data array where all values are set to
@@ -57,8 +57,8 @@ void run_benchmark_gpu_vs_cpu_size(int n_timesteps) {
 
       zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), zisa::device_type::cpu);
       function_scalings(0) = 0.;
-      CoupledFunction2<float> func(function_scalings.const_view(), 1, 1);
-      PDEHeat<1, float, CoupledFunction2<float>> pde_cpu(
+      CoupledFunction<float> func(function_scalings.const_view(), 1, 1);
+      PDEHeat<1, float, CoupledFunction<float>> pde_cpu(
           array_size - 2, array_size - 2, zisa::device_type::cpu,
           BoundaryCondition::Dirichlet, func, 1. / array_size, 1. / array_size);
       pde_cpu.read_values(zero_values_cpu.const_view(),
@@ -84,8 +84,8 @@ void run_benchmark_gpu_vs_cpu_size(int n_timesteps) {
 
       zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1), zisa::device_type::cuda);
       zisa::copy(function_scalings_cuda, function_scalings);
-      CoupledFunction2<float> func_cuda(function_scalings_cuda.const_view(), 1, 1);
-      PDEHeat<1, float, CoupledFunction2<float>> pde_cuda(
+      CoupledFunction<float> func_cuda(function_scalings_cuda.const_view(), 1, 1);
+      PDEHeat<1, float, CoupledFunction<float>> pde_cuda(
           array_size - 2, array_size - 2, zisa::device_type::cuda,
           BoundaryCondition::Dirichlet, func_cuda, 1. / array_size, 1. / array_size);
       pde_cuda.read_values(zero_values_cpu.const_view(),
@@ -134,8 +134,8 @@ void run_benchmark_gpu_vs_cpu_n_timesteps(int array_size) {
 
       zisa::array<float, 1> function_scalings(zisa::shape_t<1>(1), zisa::device_type::cpu);
       function_scalings(0) = 0.;
-      CoupledFunction2<float> func(function_scalings.const_view(), 1,1 );
-      PDEHeat<1, float, CoupledFunction2<float>> pde_cpu(
+      CoupledFunction<float> func(function_scalings.const_view(), 1,1 );
+      PDEHeat<1, float, CoupledFunction<float>> pde_cpu(
           array_size - 2, array_size - 2, zisa::device_type::cpu,
           BoundaryCondition::Dirichlet, func, 1. / array_size, 1. / array_size);
       pde_cpu.read_values(zero_values_cpu.const_view(),
@@ -161,8 +161,8 @@ void run_benchmark_gpu_vs_cpu_n_timesteps(int array_size) {
 
       zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1), zisa::device_type::cuda);
       zisa::copy(function_scalings_cuda, function_scalings);
-      CoupledFunction2<float> func_cuda(function_scalings_cuda.const_view(),1 ,1 );
-      PDEHeat<1, float, CoupledFunction2<float>> pde_cuda(
+      CoupledFunction<float> func_cuda(function_scalings_cuda.const_view(),1 ,1 );
+      PDEHeat<1, float, CoupledFunction<float>> pde_cuda(
           array_size - 2, array_size - 2, zisa::device_type::cuda,
           BoundaryCondition::Dirichlet, func_cuda, 1. / array_size, 1. / array_size);
       pde_cuda.read_values(zero_values_cpu.const_view(),

@@ -4,7 +4,6 @@
 #include <convolution.hpp>
 #include <convolve_sigma_add_f.hpp>
 #include <helpers.hpp>
-#include <io/netcdf_writer.hpp>
 #include <neumann_bc.hpp>
 #include <periodic_bc.hpp>
 #include <string>
