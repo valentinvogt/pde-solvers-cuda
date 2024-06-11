@@ -238,5 +238,37 @@ TEST(CoupledFunctionTests, TEST_FROM_ARRAY2) {
        results.view());
   ASSERT_NEAR(0., results[2], tol);
 }
+TEST(CoupledFunctionTests, TEST_ZERO_2) {
+  zisa::array<float, 1> function_scalings(zisa::shape_t<1>(9 * 2),
+                                          zisa::device_type::cpu);
+  for (int i = 0; i < 9 * 2; i++) {
+    function_scalings(i) = 0.;
+  }
+  CoupledFunction2<float> func(function_scalings.const_view(), 2, 3);
+  float tol = 1e-10;
+  zisa::array<float, 1> values(zisa::shape_t<1>(2), zisa::device_type::cpu);
+  values(0) = 1.;
+  values(1) = 0.5;
+  float result[2];
+  result[0] = -1.;
+  result[1] = -2.;
+  func(values, result);
+  ASSERT_NEAR(0.0, result[0], tol);
+  // #if CUDA_AVAILABLE
+  //   zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(9),
+  //                                                zisa::device_type::cuda);
+  //   zisa::copy(function_scalings_cuda, function_scalings);
+  //   CoupledFunction<float, 2, 3>
+  //   func_cuda(function_scalings_cuda.const_view());
+  //   zisa::array<float, 1> values_cuda(zisa::shape_t<1>(2),
+  //                                     zisa::device_type::cuda);
+  //   zisa::copy(values_cuda, values);
+  //   zisa::array<float, 1> results(zisa::shape_t<1>(2),
+  //   zisa::device_type::cuda); results = func_cuda(values_cuda.const_view());
+
+  //   ASSERT_NEAR(0.0, results(), tol);
+
+  // #endif
+}
 
 } // namespace CoupledFunctionTests

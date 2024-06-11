@@ -33,10 +33,11 @@ public:
       result_values[i] = 0;
     }
 
+    // printf("ncoupled in func: %i\n", n_coupled_);
     for (int i = 0; i < std::pow(max_pot_, n_coupled_); i++) {
       Scalar pot = 1.;
       int max_pot_pow_j = 1;
-      for (int j = 0; j < n_coupled_; j++) {
+       for (int j = 0; j < n_coupled_; j++) {
         pot *= std::pow(x(j), (int)(i / max_pot_pow_j) % max_pot_);
         max_pot_pow_j *= max_pot_;
       }

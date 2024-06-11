@@ -2,11 +2,11 @@
 #define CONVOLVE_SIGMA_ADD_F_CUDA_IMPL_H_
 
 #ifndef NUM_THREAD_X
-#define NUM_THREAD_X 32
+#define NUM_THREAD_X 16
 #endif
 
 #ifndef NUM_THREAD_Y
-#define NUM_THREAD_Y 32
+#define NUM_THREAD_Y 16
 #endif
 
 template <int n_coupled, typename Scalar, typename Function>
@@ -21,6 +21,7 @@ __global__ void convolve_sigma_add_f_cuda_kernel(
   const int Nx = src.shape(0);
   const int Ny = src.shape(1) / n_coupled;
   if (x_idx < Nx - 1 && y_idx < Ny - 1) {
+    // printf("ncoupled in impl: %i\n", n_coupled);
     Scalar result_function[n_coupled];
     f(zisa::array_const_view<Scalar, 1>{zisa ::shape_t<1>(n_coupled),
                                         &src(x_idx, n_coupled * y_idx),
