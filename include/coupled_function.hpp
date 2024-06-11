@@ -146,8 +146,8 @@ public:
     int block_size = n_coupled * std::pow(max_pot, n_values_left - 1);
     for (int i = 0; i < max_pot; i++) {
       Scalar rec_res[n_coupled];
-      this->operator()(
-          x, rec_res, n_values_left - 1, curr_scalings_pos + i * block_size);
+      this->operator()(x, rec_res, n_values_left - 1,
+                       curr_scalings_pos + i * block_size);
       for (int j = 0; j < n_coupled; j++) {
         result_values[j] += rec_res[j] * curr_pot;
       }

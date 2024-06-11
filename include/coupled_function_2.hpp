@@ -9,8 +9,9 @@ public:
   CoupledFunction2() = delete;
   CoupledFunction2(zisa::array_const_view<Scalar, 1> scalings, int n_coupled,
                    int max_pot)
-      : scalings_(zisa::shape_t<1>(n_coupled * (int)std::pow<int>(max_pot, n_coupled))), n_coupled_(n_coupled),
-        max_pot_(max_pot) {
+      : scalings_(zisa::shape_t<1>(n_coupled *
+                                   (int)std::pow<int>(max_pot, n_coupled))),
+        n_coupled_(n_coupled), max_pot_(max_pot) {
     zisa::copy(scalings_, scalings);
   }
 #if CUDA_AVAILABLE
@@ -37,7 +38,7 @@ public:
 
 #else
 
-  template<typename ARRAY>
+  template <typename ARRAY>
   inline void operator()(zisa::array_const_view<Scalar, 1> x,
                          ARRAY result_values) {
     Scalar pot_values[n_coupled_ * max_pot_];

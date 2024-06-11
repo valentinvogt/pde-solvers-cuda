@@ -1,6 +1,7 @@
 #ifndef NETCDF_WRITER_HPP_
 #define NETCDF_WRITER_HPP_
 
+#include "zisa/io/netcdf_file.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -20,8 +21,9 @@ public:
                   const std::string &filename)
       : /* used for compilation (no default constructor), should be changed
            later*/
-        writer_(make_writer(n_snapshots, T, n_members, n_x, x_begin, x_end, n_y,
-                            y_begin, y_end, filename)) {
+        writer_(filename, zisa::NetCDFFileStructure(make_dims(n_snapshots, T, n_members, n_x, x_begin, x_end, n_y,
+                            y_begin, y_end, filename), make_vars(n_snapshots, T, n_members, n_x, x_begin, x_end, n_y,
+                            y_begin, y_end, filename))) {
     std::cout << "writer created!" << std::endl;
     // netcd_put_vara
     // save in chunks
@@ -71,10 +73,11 @@ public:
 private:
   zisa::NetCDFSerialWriter writer_;
 
-  zisa::NetCDFSerialWriter
-  make_writer(unsigned int n_snapshots, Scalar T, unsigned int n_members,
+  inline std::vector<std::tuple<std::string, std::size_t>>
+  make_dims(unsigned int n_snapshots, Scalar T, unsigned int n_members,
               unsigned int n_x, Scalar x_begin, Scalar x_end, unsigned int n_y,
               Scalar y_begin, Scalar y_end, const std::string &filename) {
+    std::cout << "reached make_writer\n";
     std::vector<std::tuple<std::string, std::size_t>> dims = {
         {"member", n_members}, {"time", n_snapshots}, {"x", n_x}, {"y", n_y}};
 
@@ -92,6 +95,7 @@ private:
 
     std::vector<std::string> y_pos_var{"y"};
     vars.emplace_back("y_pos", y_pos_var, zisa::erase_data_type<Scalar>());
+    std::cout << "created vars\n";
 
     // create a variable for every snapshot
     // for example, snapshot of member 2 at 3'rd timestep is called m_2_t_3
@@ -106,8 +110,57 @@ private:
       }
     }
 
+
+    std::cout << "create filestructure\n";
     zisa::NetCDFFileStructure file_structure(dims, vars);
-    return zisa::NetCDFSerialWriter(filename, file_structure);
+    std::cout << "return in make_writer\n";
+    return dims;
+  }  
+  
+  
+  inline std::vector<
+        std::tuple<std::string, std::vector<std::string>, zisa::ErasedDataType>>
+  make_vars(unsigned int n_snapshots, Scalar T, unsigned int n_members,
+              unsigned int n_x, Scalar x_begin, Scalar x_end, unsigned int n_y,
+              Scalar y_begin, Scalar y_end, const std::string &filename) {
+    std::cout << "reached make_writer\n";
+    std::vector<std::tuple<std::string, std::size_t>> dims = {
+        {"member", n_members}, {"time", n_snapshots}, {"x", n_x}, {"y", n_y}};
+
+    std::vector<
+        std::tuple<std::string, std::vector<std::string>, zisa::ErasedDataType>>
+        vars;
+    std::vector<std::string> member_var{"member"};
+    vars.emplace_back("member", member_var, zisa::erase_data_type<int>());
+
+    std::vector<std::string> time_var{"time"};
+    vars.emplace_back("time", time_var, zisa::erase_data_type<Scalar>());
+
+    std::vector<std::string> x_pos_var{"x"};
+    vars.emplace_back("x_pos", x_pos_var, zisa::erase_data_type<Scalar>());
+
+    std::vector<std::string> y_pos_var{"y"};
+    vars.emplace_back("y_pos", y_pos_var, zisa::erase_data_type<Scalar>());
+    std::cout << "created vars\n";
+
+    // create a variable for every snapshot
+    // for example, snapshot of member 2 at 3'rd timestep is called m_2_t_3
+    for (int member = 0; member < n_members; member++) {
+      for (int snapshot = 0; snapshot < n_snapshots; snapshot++) {
+        std::string append =
+            "m_" + std::to_string(member) + "_s_" + std::to_string(snapshot);
+        std::vector<std::string> function_value_var{append};
+        vars.emplace_back(append, function_value_var,
+                          zisa::erase_data_type<Scalar>());
+        dims.emplace_back(append, n_x * n_y);
+      }
+    }
+
+
+    std::cout << "create filestructure\n";
+    zisa::NetCDFFileStructure file_structure(dims, vars);
+    std::cout << "return in make_writer\n";
+    return vars;
   }
 };
 

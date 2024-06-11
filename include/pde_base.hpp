@@ -38,28 +38,44 @@ public:
                            memory_location),
         sigma_values_(zisa::shape_t<2>(2 * Nx + 1, Ny + 1), memory_location),
         memory_location_(memory_location), bc_(bc), dx_(dx), dy_(dy) {}
+  PDEBase(const PDEBase &other)
+      : data_(other.data_.shape(), other.memory_location_),
+        bc_neumann_values_(other.bc_neumann_values_.shape(),
+                           other.memory_location_),
+        sigma_values_(other.sigma_values_.shape(), other.memory_location_),
+        memory_location_(other.memory_location_), bc_(other.bc_),
+        dx_(other.dx_), dy_(other.dy_) {
+    zisa::copy(data_, other.data_);
+    zisa::copy(bc_neumann_values_, other.bc_neumann_values_);
+    zisa::copy(sigma_values_, other.sigma_values_);
+  }
 
   virtual void apply(Scalar dt) = 0;
 
   // apply timesteps and save snapshots at times T/n_snapshots
   // note that for this we sometimes have to change the timestep
+  template <typename WRITER>
   void apply_with_snapshots(Scalar T, unsigned int n_timesteps,
-                            unsigned int n_snapshots,
-                            NetCDFPDEWriter<Scalar> &writer) {
+                            unsigned int n_snapshots, WRITER &writer,
+                            int n_member = 0) {
 
     Scalar dt = T / n_timesteps;
     Scalar time = 0.;
     unsigned int snapshot_counter = 0;
     Scalar dsnapshots = T / (n_snapshots - 1);
     // save initial data
-    writer.save_snapshot(0, snapshot_counter, data_.const_view());
+    writer.save_snapshot(n_member, snapshot_counter, data_.const_view());
     snapshot_counter++;
     for (unsigned int i = 0; i < n_timesteps; ++i) {
       if (time + dt >= dsnapshots * snapshot_counter) {
         Scalar dt_new = dsnapshots * snapshot_counter - time;
+        // std::cout << "dt_new: " <<   dt_new << std::endl;
         apply(dt_new);
-        writer.save_snapshot(0, snapshot_counter, data_.const_view());
+        // print();
+        writer.save_snapshot(n_member, snapshot_counter, data_.const_view());
+        // std::cout << "dt - dt_new: " <<  dt - dt_new << std::endl;
         apply(dt - dt_new);
+        // print();00
         snapshot_counter++;
       } else {
         apply(dt);
@@ -71,7 +87,7 @@ public:
       // total Time doesn't reach T due to numerical errors. Add more timesteps
       Scalar dt_new = T - time;
       apply(dt_new);
-      writer.save_snapshot(0, snapshot_counter, data_.const_view());
+      writer.save_snapshot(n_member, snapshot_counter, data_.const_view());
     }
   }
 

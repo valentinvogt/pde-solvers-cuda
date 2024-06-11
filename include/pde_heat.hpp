@@ -13,7 +13,7 @@ public:
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
       : PDEBase<n_coupled, Scalar>(Nx, Ny, memory_location, bc, dx, dy),
         func_(f) {}
-
+  PDEHeat(const PDEHeat &other) : PDEBase<n_coupled, Scalar>(other), func_(other.func_) {}
   void read_values(const std::string &filename,
                    const std::string &tag_data = "initial_data",
                    const std::string &tag_sigma = "sigma",
@@ -48,22 +48,30 @@ public:
     this->ready_ = true;
   }
 
-  void read_initial_data_from_netcdf(const NetCDFPDEReader &reader) {
-    if (reader.write_variable_to_array("initial_data",
-                                       this->data_.view().raw()) != 0) {
+  void read_initial_data_from_netcdf(const NetCDFPDEReader &reader, int memb) {
+    if (reader.write_variable_of_member_to_array(
+            "initial_data", this->data_.view().raw(), memb,
+            this->data_.shape()[0], this->data_.shape()[1]) != 0) {
       std::cout << "error occured in writing initial data from netcdf to array!"
                 << std::endl;
       exit(-1);
     }
-    if (reader.write_variable_to_array("sigma_values",
-                                   this->sigma_values_.view().raw()) != 0) {
-      std::cout << "error occured in writing sigma values from netcdt to array!" << std::endl;
+    if (reader.write_variable_of_member_to_array(
+            "sigma_values", this->sigma_values_.view().raw(), memb,
+            this->sigma_values_.shape()[0],
+            this->sigma_values_.shape()[1]) != 0) {
+      std::cout << "error occured in writing sigma values from netcdt to array!"
+                << std::endl;
       exit(-1);
     }
     if (this->bc_ == BoundaryCondition::Neumann) {
-      if (reader.write_variable_to_array("bc_neumann_values",
-                                     this->bc_neumann_values_.view().raw()) != 0) {
-        std::cout << "error occured in writing bc neumann values from netcdt to array!" << std::endl;
+      if (reader.write_variable_of_member_to_array(
+              "bc_neumann_values", this->bc_neumann_values_.view().raw(), memb,
+              this->bc_neumann_values_.shape()[0],
+              this->bc_neumann_values_.shape()[1]) != 0) {
+        std::cout << "error occured in writing bc neumann values from netcdt "
+                     "to array!"
+                  << std::endl;
         exit(-1);
       }
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {

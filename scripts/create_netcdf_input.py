@@ -6,25 +6,31 @@ You can also create this files by yourself with another method but the file has 
 NetCDFFile {
     Attributes {
         type_of_equation-> int (0=HeatEquation, 1=WaveEquation)
+        n_members -> int (number of different problems with own initial condition, sigma values and function scalings)
+
         x_size -> int (number of nodes OF ONE PDE in x-direction WITHOUT boundary condition nodes)
-        y_size -> int (number of nodes OF ONE PDE in y-direction WITHOUT boundary condition nodes)
         x_length -> Scalar (length of grid in x-direction)
+        y_size -> int (number of nodes OF ONE PDE in y-direction WITHOUT boundary condition nodes)
         y_length -> Scalar (length of grid in y-direction)
+
         boundary_value_type -> int (0=Dirichlet, 1=Neumann, 2=Periodic)
         scalar_type -> int (0=float, 1=double)
+
         n_coupled -> int (#number coupled PDEs)
         coupled_function_order -> int (order of coupled function, 
                                      example: n_coupled=2, coupled_function_order=2 => f(x, y) = a + bx + cy + dxy)
         number_timesteps -> int (number of timesteps of simulation)
-        final_time -> float (final time after simulation)
+        final_time -> Scalar (final time after simulation)
         number_snapshots -> int (number snapshots to shoot, includes initial time values)
+
         file_to_save_output -> string (file to save output)
     }
+
     Variables {
-        initial_data -> scalar_type^(x_size + 2, n_coupled * (y_size + 2))
-        sigma_values -> scalar_type^(2*x_size - 3, y_size - 1)
-        [bc_neumann_values -> scalar_type^(x_size + 2, n_coupled * (y_size + 2))] (only if Boundary_value_type=1)
-        function_scalings -> scalar_type^(n_coupled * coupled_function_order)
+        initial_data -> scalar_type^(n_members, x_size + 2, n_coupled * (y_size + 2))
+        sigma_values -> scalar_type^(n_members, 2*x_size - 3, y_size - 1)
+        [bc_neumann_values -> scalar_type^(n_members, x_size + 2, n_coupled * (y_size + 2))] (only if Boundary_value_type=1)
+        function_scalings -> scalar_type^(n_members, n_coupled * coupled_function_order)
     }
 }
 
@@ -52,26 +58,54 @@ The data of sigma values is arranged in following way:
 import netCDF4 as nc
 import numpy as np
     
+# function template for initial_values, bc_values and sigma_values
+# note that here the arguments are the member and the x and y-positions in the grid
+def dummy_function_2d(member: int, x_position: float, y_position: float):
+    # if member == 0:
+    #     return x_position * y_position + y_position
+    # else:
+    return 0.001
+
+
+# function template for function_scalings
+# note that here the arguments are the member total amount of funciton variables (n_coupled * max_order)
+def dummy_function_scalings(member, size: int):
+    x_values = np.linspace(0, size-1, num=size)
+    return member * x_values + 2
+
+def function_scalings_zero(member, size: int):
+    x_values = np.linspace(0, size-1, num=size)
+    return 0 * x_values
+    
 def create_input_file(filename, file_to_save_output, type_of_equation=0, 
-                      x_size=8, y_size=8, x_length=1., y_length=1., boundary_value_type=1,
+                      x_size=8, x_length=1., y_size=8, y_length=1., boundary_value_type=1,
                       scalar_type=0, n_coupled=1, 
                       coupled_function_order=2, number_timesteps=1000,
-                      final_time=1., number_snapshots=3):
+                      final_time=1., number_snapshots=3, n_members=2, initial_value_function=dummy_function_2d,
+                      sigma_function=dummy_function_2d, bc_neumann_function=dummy_function_2d, f_value_function=dummy_function_scalings):
+
     # Create a new NetCDF file
     with nc.Dataset(filename, 'w') as root:
         # Define attributes
         root.type_of_equation = type_of_equation  # 0=HeatEquation, 1=WaveEquation
+        root.n_members = n_members # number of different initial_conditions, boundary_values and sigma_values
+
         root.x_size = x_size  # Number of nodes OF ONE PDE in x-direction WITHOUT boundary condition nodes
-        root.y_size = y_size  # Number of nodes OF ONE PDE in y-direction WITHOUT boundary condition nodes
         root.x_length = x_length # length of grid in x-direction
+
+        root.y_size = y_size  # Number of nodes OF ONE PDE in y-direction WITHOUT boundary condition nodes
         root.y_length = y_length # length of grid in y-direction
+
         root.boundary_value_type = boundary_value_type  # 0=Dirichlet, 1=Neumann, 2=Periodic
         root.scalar_type = scalar_type  # 0=float, 1=double
+
         root.n_coupled = n_coupled  # Number of coupled PDEs
         root.coupled_function_order = coupled_function_order  # Order of coupled function
+
         root.number_timesteps = number_timesteps # number of timesteps of simulation
         root.final_time = final_time # final time after simulation
         root.number_snapshots = number_snapshots # number snapshots to shoot, includes initial time values
+
         root.file_to_save_output = file_to_save_output
 
 
@@ -83,27 +117,75 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
         else:
             print("error: only scalar_type 0 or 1 allowed!")
             exit(-1)
+        x_size_sigma = 2 * x_size + 1
+        y_size_sigma = y_size + 1
 
-        x_size = root.createDimension("x_size", root.x_size + 2)
-        y_size = root.createDimension("y_size", root.n_coupled * (root.y_size + 2))
-        x_size = root.createDimension("x_size_sigma", 2 * root.x_size - 3)
-        y_size = root.createDimension("y_size_sigma", root.y_size - 1)
-        function_scalings_x = root.createDimension("function_scaling_size", root.n_coupled * root.coupled_function_order)
+        x_size_dim = root.createDimension("x_size", x_size + 2)
+        y_size_dim = root.createDimension("y_size", n_coupled * (y_size + 2))
+        x_size_sigma_dim = root.createDimension("x_size_sigma", x_size_sigma)
+        y_size_sigma_dim = root.createDimension("y_size_sigma", y_size_sigma)
+        n_members_dim = root.createDimension("n_members", n_members)
+        function_scalings_dim = root.createDimension("function_scaling_size", n_coupled * coupled_function_order)
 
-        initial_data = root.createVariable('initial_data', scalar_type_string, ('x_size', 'y_size'))
-        initial_data[:, :] = 1.
-        sigma_values = root.createVariable('sigma_values', scalar_type_string, ('x_size_sigma', 'y_size_sigma'))
-        sigma_values[:, :] = 2.
-        function_scalings = root.createVariable('function_scalings', scalar_type_string, ("function_scaling_size"))
-        function_scalings[:] = np.linspace(0., 1., root.n_coupled * root.coupled_function_order)
+        # store in right chunksize to enable fast loading of variables
+        initial_data = root.createVariable('initial_data', scalar_type_string, dimensions=('n_members', 'x_size', 'y_size'), chunksizes=(1, x_size, y_size))
+        sigma_values = root.createVariable('sigma_values', scalar_type_string, dimensions=('n_members', 'x_size_sigma', 'y_size_sigma'), chunksizes=(1, x_size_sigma, y_size_sigma))
+        function_scalings = root.createVariable('function_scalings', scalar_type_string, dimensions=('n_members', 'function_scaling_size'), chunksizes=(1, n_coupled * coupled_function_order))
+        if root.boundary_value_type == 1 or root.type_of_equation == 1:
+            bc_neumann_values = root.createVariable('bc_neumann_values', scalar_type_string, ('n_members', 'x_size', 'y_size'))
 
-        # If boundary_value_type is Neumann, define additional variable
-        if root.boundary_value_type == 1:
-            bc_neumann_values = root.createVariable('bc_neumann_values', scalar_type_string, ('x_size', 'y_size'))
-            bc_neumann_values[:, :] = 3.
+        function_scalings[:, :] = np.linspace(0., 1., n_coupled * coupled_function_order)
+
+        # add values on boundary
+        # if you have dirichlet or neumann bc the initial_value_function should evaluate on the boundary too
+        # if you have periodic bc the boundary values will get adjusted later in the algorithm
+        dx = x_length / (x_size - 1)
+        dy = y_length / (y_size - 1)
+        x_positions = np.linspace(- dx, x_length + dx, x_size + 2)
+        y_positions = np.linspace(- dy, y_length + dy, y_size + 2)
+        xx, yy = np.meshgrid(x_positions, y_positions, indexing='ij')
+
+
+        
+        x_positions_sigma = np.linspace(- dx * 0.5, x_length + dx * 0.5, 2 * x_size + 1)
+        y_positions_sigma = np.linspace(- dy * 0.5, y_length + dy * 0.5, y_size + 1)
+        xx_sigma, yy_sigma = np.meshgrid(x_positions_sigma, y_positions_sigma, indexing='ij')
+        # adjust y-values of every second row because those are shifted
+        yy_sigma[::2, :] += dy * .5
+        for member in range(n_members):
+            initial_data[member, :, :] = initial_value_function(member, xx, yy)
+            sigma_values[member, :, :] = sigma_function(member, xx_sigma, yy_sigma)
+            function_scalings[member, :] = f_value_function(member, n_coupled * coupled_function_order)
+            # If boundary_value_type is Neumann, define additional variable
+            if root.boundary_value_type == 1 or root.type_of_equation == 1:
+                bc_neumann_values[member, :, :] = bc_neumann_function(member, xx, yy)
 
 
     print(f"NetCDF file '{filename}' created successfully.")
 
-# Usage example:
-create_input_file('data/example.nc', 'data/example_out.nc')
+def bc_neumann_function(member, x, y):
+    if member == 0:
+        return x * 0.04 + y * 0.01
+    if member == 1:
+        return 0.
+
+
+# dot in the middle
+def dot_function_2d(member: int, x_position: float, y_position: float):
+    return np.exp(- (x_position-0.5)**2 - (y_position-0.5)**2)
+
+def linear_damping(member, size: int):
+    x_values = np.zeros(size)
+    # x_values[1] = -0.001
+    return x_values
+
+
+if __name__ == "__main__":
+    # Usage example:
+    create_input_file('data/example.nc', 'data/example_out.nc', type_of_equation=0, 
+                      x_size=100, x_length=1., y_size=100, y_length=1., boundary_value_type=1,
+                      scalar_type=0, n_coupled=1, 
+                      coupled_function_order=2, number_timesteps=100,
+                      final_time=0.25, number_snapshots=5, n_members=1, initial_value_function=dot_function_2d,
+                      sigma_function=dummy_function_2d, bc_neumann_function=bc_neumann_function, f_value_function=linear_damping)
+    
