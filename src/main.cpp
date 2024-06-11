@@ -1,6 +1,6 @@
 #include "helpers_main.hpp"
 #include <chrono>
-#include <coupled_function.hpp>
+#include <coupled_function_2.hpp>
 #include <io/netcdf_writer.hpp>
 #include <iostream>
 #include <pde_heat.hpp>
@@ -14,7 +14,7 @@ void small_example() {
   for (int i = 0; i < 16; i++) {
     function_scalings(i) = 0;
   }
-  CoupledFunction<float, 3, 2> func_coupled_cpu(function_scalings.const_view());
+  CoupledFunction2<float> func_coupled_cpu(function_scalings.const_view(), 3, 2);
 #if CUDA_AVAILABLE
   std::cout << "case_gpu" << std::endl;
   zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(16),
@@ -27,7 +27,7 @@ void small_example() {
       8, 8, zisa::device_type::cuda, bc, func_coupled_cuda, 0.1, 0.1);
 #else
   std::cout << "case_cpu" << std::endl;
-  PDEHeat<3, float, CoupledFunction<float, 3, 2>> pde(
+  PDEHeat<3, float, CoupledFunction2<float>> pde(
       8, 8, zisa::device_type::cpu, bc, func_coupled_cpu, 0.1, 0.1);
 #endif
   pde.read_values("data/simple_data.nc");

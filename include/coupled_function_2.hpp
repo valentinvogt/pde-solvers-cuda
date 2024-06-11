@@ -3,6 +3,15 @@
 
 #include "zisa/memory/array_view_decl.hpp"
 #include <zisa/memory/array.hpp>
+/*
+Function class for coupled function.
+
+  function returns a vector f_1, f_2, ... , f_n_coupled
+  where f_n = sum_(i, j, k = 0)^max_pot scalings_(n * (i + j * max_pot +  k * max_pot^2...) + (n-1)) x^i y^j z^k...
+  for example in 2d and max_pot = 2
+  f_1(x, y) = scaling_(0) + scaling(2) * x + scaling(4) * y + scaling(6) * x * y
+
+*/
 
 template <typename Scalar> class CoupledFunction2 {
 public:
@@ -12,6 +21,7 @@ public:
       : scalings_(zisa::shape_t<1>(n_coupled *
                                    (int)std::pow<int>(max_pot, n_coupled))),
         n_coupled_(n_coupled), max_pot_(max_pot) {
+    assert(scalings.size() == scalings_.size());
     zisa::copy(scalings_, scalings);
   }
 #if CUDA_AVAILABLE

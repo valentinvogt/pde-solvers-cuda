@@ -1,7 +1,6 @@
 #include "pde_base.hpp"
 #include "zisa/memory/device_type.hpp"
-#include <coupled_function.hpp>
-#include <generic_function.hpp>
+#include <coupled_function_2.hpp>
 #include <gtest/gtest.h>
 #include <pde_heat.hpp>
 #include <zisa/memory/array.hpp>
@@ -92,9 +91,9 @@ TEST(HeatEquationTests, TEST_ZERO) {
 #else
   function_scalings(0) = 0.;
 #endif
-  CoupledFunction<float, 1, 1> func(function_scalings.const_view());
+  CoupledFunction2<float> func(function_scalings.const_view(), 1, 1);
 
-  PDEHeat<1, float, CoupledFunction<float, 1, 1>> pde(
+  PDEHeat<1, float, CoupledFunction2<float>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
@@ -146,9 +145,9 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   function_scalings(1) = 0.;
   function_scalings(2) = 0.;
 #endif
-  CoupledFunction<float, 1, 3> func(function_scalings.const_view());
+  CoupledFunction2<float> func(function_scalings.const_view(), 1, 3);
 
-  PDEHeat<1, float, CoupledFunction<float, 1, 3>> pde(
+  PDEHeat<1, float, CoupledFunction2<float>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
@@ -207,8 +206,8 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
   function_scalings(1) = 0.;
   function_scalings(2) = 0.;
 #endif
-  CoupledFunction<float, 1, 3> func(function_scalings.const_view());
-  PDEHeat<1, float, CoupledFunction<float, 1, 3>> pde(
+  CoupledFunction2<float> func(function_scalings.const_view(), 1, 3);
+  PDEHeat<1, float, CoupledFunction2<float>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
@@ -282,9 +281,9 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
   function_scalings(2) = 0.;
   function_scalings(3) = 0.;
 #endif
-  CoupledFunction<float, 1, 4> func(function_scalings.const_view());
+  CoupledFunction2<float> func(function_scalings.const_view(), 1, 4);
 
-  PDEHeat<1, float, CoupledFunction<float, 1, 4>> pde(
+  PDEHeat<1, float, CoupledFunction2<float>> pde(
       8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),

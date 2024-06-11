@@ -1,6 +1,6 @@
 #include "pde_base.hpp"
 #include "zisa/memory/device_type.hpp"
-#include <coupled_function.hpp>
+#include <coupled_function_2.hpp>
 #include <gtest/gtest.h>
 #include <pde_wave.hpp>
 #include <zisa/memory/array.hpp>
@@ -73,8 +73,8 @@ create_simple_data(int x_size, int y_size, zisa::device_type memory_location) {
 void test_zero_helper(zisa::array_const_view<float, 2> data,
                       zisa::array_const_view<float, 2> sigma,
                       zisa::device_type memory_location,
-                      CoupledFunction<float, 1, 1> func, BoundaryCondition bc) {
-  PDEWave<1, float, CoupledFunction<float, 1, 1>> pde(8, 8, memory_location, bc,
+                      CoupledFunction2<float> func, BoundaryCondition bc) {
+  PDEWave<1, float, CoupledFunction2<float>> pde(8, 8, memory_location, bc,
                                                       func, 0.1, 0.1);
   pde.read_values(data, sigma, data, data);
   for (int i = 0; i < 1000; i++) {
@@ -116,9 +116,9 @@ TEST(WaveEquationTests, TEST_ZERO) {
   zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1),
                                                zisa::device_type::cuda);
   zisa::copy(function_scalings_cuda, function_scalings);
-  CoupledFunction<float, 1, 1> func(function_scalings_cuda);
+  CoupledFunction2<float> func(function_scalings_cuda, 1, 1);
 #else
-  CoupledFunction<float, 1, 1> func(function_scalings);
+  CoupledFunction2<float> func(function_scalings, 1,1 );
 #endif
   test_zero_helper(data.const_view(), sigma_values.const_view(),
                    memory_location, func, BoundaryCondition::Dirichlet);
@@ -131,9 +131,9 @@ void test_constant_helper(zisa::array_const_view<float, 2> data,
                           zisa::array_const_view<float, 2> sigma,
                           zisa::array_const_view<float, 2> deriv_data,
                           zisa::device_type memory_location,
-                          CoupledFunction<float, 1, 1> func,
+                          CoupledFunction2<float> func,
                           BoundaryCondition bc) {
-  PDEWave<1, float, CoupledFunction<float, 1, 1>> pde(8, 8, memory_location, bc,
+  PDEWave<1, float, CoupledFunction2<float>> pde(8, 8, memory_location, bc,
                                                       func, 0.1, 0.1);
 
   pde.read_values(data, sigma, data, deriv_data);
@@ -191,9 +191,9 @@ TEST(WaveEquationTests, TEST_U_CONSTANT) {
   zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(1),
                                                zisa::device_type::cuda);
   zisa::copy(function_scalings_cuda, function_scalings);
-  CoupledFunction<float, 1, 1> func(function_scalings_cuda);
+  CoupledFunction2<float> func(function_scalings_cuda, 1, 1);
 #else
-  CoupledFunction<float, 1, 1> func(function_scalings);
+  CoupledFunction2<float> func(function_scalings, 1,1 );
 #endif
 
   test_constant_helper(data.const_view(), sigma_values.const_view(),
@@ -208,9 +208,9 @@ void test_linear_helper(zisa::array_const_view<float, 2> data,
                         zisa::array_const_view<float, 2> sigma,
                         zisa::array_const_view<float, 2> deriv_data,
                         zisa::device_type memory_location,
-                        CoupledFunction<float, 1, 1> func,
+                        CoupledFunction2<float> func,
                         BoundaryCondition bc) {
-  PDEWave<1, float, CoupledFunction<float, 1, 1>> pde(98, 98, memory_location, bc,
+  PDEWave<1, float, CoupledFunction2<float>> pde(98, 98, memory_location, bc,
                                                       func, 0.01, 0.01);
 
   pde.read_values(data, sigma, data, deriv_data);
@@ -270,9 +270,9 @@ TEST(WaveEquationTests, TestConstantF) {
   zisa::array<float, 1> function_scalings_cuda(zisa::shape_t<1>(4),
                                                zisa::device_type::cuda);
   zisa::copy(function_scalings_cuda, function_scalings);
-  CoupledFunction<float, 1, 1> func(function_scalings_cuda);
+  CoupledFunction2<float> func(function_scalings_cuda, 1, 1);
 #else
-  CoupledFunction<float, 1, 1> func(function_scalings);
+  CoupledFunction2<float> func(function_scalings, 1, 1);
 #endif
 
   test_linear_helper(data.const_view(), sigma_values.const_view(),
