@@ -18,16 +18,15 @@ public:
   CoupledFunction() = delete;
   CoupledFunction(zisa::array_const_view<Scalar, 1> scalings, int n_coupled,
                   int max_pot)
-      : scalings_(scalings),
-        n_coupled_(n_coupled), max_pot_(max_pot) {
+      : scalings_(scalings), n_coupled_(n_coupled), max_pot_(max_pot) {
     assert(scalings.size() == scalings_.size());
   }
 
   CoupledFunction(const CoupledFunction &other)
-      : scalings_(other.scalings_),
-        n_coupled_(other.n_coupled_), max_pot_(other.max_pot_) {
-    // std::cout << "coupled function copied!\n";
-  };
+      : scalings_(other.scalings_), n_coupled_(other.n_coupled_),
+        max_pot_(other.max_pot_){
+            // std::cout << "coupled function copied!\n";
+        };
 
 #if CUDA_AVAILABLE
 

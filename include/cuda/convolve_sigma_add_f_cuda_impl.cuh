@@ -55,8 +55,8 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
       <<<block_dims, thread_dims>>>(dst, src, sigma, del_x_2, f);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
-    std::cout << "Error in convolve_sigma_add_f_cuda: " << cudaGetErrorString(error)
-              << std::endl;
+    std::cout << "Error in convolve_sigma_add_f_cuda: "
+              << cudaGetErrorString(error) << std::endl;
   }
 #endif // CUDA_AVAILABLE
 }
