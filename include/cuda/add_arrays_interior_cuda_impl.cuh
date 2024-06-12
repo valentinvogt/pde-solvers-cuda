@@ -47,7 +47,7 @@ void add_arrays_interior_cuda(zisa::array_view<Scalar, 2> dst,
       <<<block_dims, thread_dims>>>(dst, src, scaling);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
-    std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)
+    std::cout << "Error in add_arrays: " << cudaGetErrorString(error)
               << std::endl;
   }
 #endif // CUDA_AVAILABLE

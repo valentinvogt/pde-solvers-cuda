@@ -54,7 +54,7 @@ void neumann_bc_cuda(zisa::array_view<Scalar, 2> data,
       <<<block_dims, thread_dims>>>(data, bc, dt);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
-    std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)
+    std::cout << "Error in neumann_bc: " << cudaGetErrorString(error)
               << std::endl;
   }
 #else

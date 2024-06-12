@@ -18,17 +18,24 @@ public:
   CoupledFunction() = delete;
   CoupledFunction(zisa::array_const_view<Scalar, 1> scalings, int n_coupled,
                   int max_pot)
-      : scalings_(zisa::shape_t<1>(n_coupled *
-                                   (int)std::pow<int>(max_pot, n_coupled))),
+      : scalings_(scalings),
         n_coupled_(n_coupled), max_pot_(max_pot) {
     assert(scalings.size() == scalings_.size());
-    zisa::copy(scalings_, scalings);
   }
+
+  CoupledFunction(const CoupledFunction &other)
+      : scalings_(other.scalings_),
+        n_coupled_(other.n_coupled_), max_pot_(other.max_pot_) {
+    // std::cout << "coupled function copied!\n";
+  };
+
 #if CUDA_AVAILABLE
 
   template <typename ARRAY>
   inline __host__ __device__ void
-  operator()(zisa::array_const_view<Scalar, 1> x, ARRAY result_values) {
+  operator()(zisa::array_const_view<Scalar, 1> x, ARRAY result_values) const {
+    assert(x.memory_location() == scalings_.memory_location());
+
     for (int i = 0; i < n_coupled_; i++) {
       result_values[i] = 0;
     }
@@ -42,7 +49,7 @@ public:
         max_pot_pow_j *= max_pot_;
       }
       for (int k = 0; k < n_coupled_; k++) {
-        result_values[k] += scalings_.const_view()(n_coupled_ * i + k) * pot;
+        result_values[k] += scalings_(n_coupled_ * i + k) * pot;
       }
     }
   }
@@ -51,7 +58,7 @@ public:
 
   template <typename ARRAY>
   inline void operator()(zisa::array_const_view<Scalar, 1> x,
-                         ARRAY result_values) {
+                         ARRAY result_values) const {
     for (int i = 0; i < n_coupled_; i++) {
       result_values[i] = 0;
     }
@@ -72,7 +79,7 @@ public:
 #endif // CUDA_AVAILABLE
 
 private:
-  zisa::array<Scalar, 1> scalings_;
+  zisa::array_const_view<Scalar, 1> scalings_;
   const int n_coupled_;
   const int max_pot_;
 };

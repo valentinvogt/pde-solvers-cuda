@@ -69,7 +69,7 @@ void periodic_bc_cuda(zisa::array_view<Scalar, 2> data) {
       <<<block_dims, thread_dims>>>(data, data_size);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
-    std::cout << "Error in convolve_cuda: " << cudaGetErrorString(error)
+    std::cout << "Error in periodic_bc: " << cudaGetErrorString(error)
               << std::endl;
   }
 #endif // CUDA_AVAILABLE
