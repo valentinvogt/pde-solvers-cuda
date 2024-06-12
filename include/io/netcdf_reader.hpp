@@ -38,6 +38,7 @@ public:
 
     check(nc_get_att(ncid_, NC_GLOBAL, "number_timesteps", &number_timesteps_));
     check(nc_get_att(ncid_, NC_GLOBAL, "final_time", &final_time_));
+    std::cout << "final time read = " << final_time_ << std::endl;
 
     check(nc_get_att(ncid_, NC_GLOBAL, "number_snapshots", &number_snapshots_));
 

@@ -1,0 +1,2011 @@
+final time read = 0.1
+final time of reader: 0.1
+T: 0.1
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 3.35276e-08
+scalings: 3.35276e-08
+dt = 9.99665e-05
+scalings: 9.99665e-05
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 9.97297e-05
+scalings: 9.97297e-05
+dt = 2.70258e-07
+scalings: 2.70258e-07
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 9.93088e-05
+scalings: 9.93088e-05
+dt = 6.91216e-07
+scalings: 6.91216e-07
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 0.0001
+scalings: 0.0001
+dt = 9.88841e-05
+scalings: 9.88841e-05
+dt = 1.1159e-06
+scalings: 1.1159e-06

@@ -1,8 +1,7 @@
 '''
-TODO: size of sigma values don't match and make shure that sizes of x and y matches everywhere (do not include boundary)
-
 This file should be an easy template to generate netcdf input files for the pde-solvers-cuda function.
 You can also create this files by yourself with another method but the file has to have following structure:
+
 NetCDFFile {
     Attributes {
         type_of_equation-> int (0=HeatEquation, 1=WaveEquation)
@@ -61,11 +60,10 @@ import numpy as np
 # function template for initial_values, bc_values and sigma_values
 # note that here the arguments are the member and the x and y-positions in the grid
 def dummy_function_2d(member: int, x_position: float, y_position: float):
-    # if member == 0:
-    #     return x_position * y_position + y_position
-    # else:
-    return 0.001
-
+    if member == 0:
+        return x_position * y_position + y_position
+    else:
+        return 0.001
 
 # function template for function_scalings
 # note that here the arguments are the member total amount of funciton variables (n_coupled * max_order)
@@ -73,10 +71,8 @@ def dummy_function_scalings(member, size: int):
     x_values = np.linspace(0, size-1, num=size)
     return member * x_values + 2
 
-def function_scalings_zero(member, size: int):
-    x_values = np.linspace(0, size-1, num=size)
-    return 0 * x_values
     
+# make shure that you input the right types, for example in final_time you have to input a float (1. and not 1)
 def create_input_file(filename, file_to_save_output, type_of_equation=0, 
                       x_size=8, x_length=1., y_size=8, y_length=1., boundary_value_type=1,
                       scalar_type=0, n_coupled=1, 
@@ -159,15 +155,21 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
             # If boundary_value_type is Neumann, define additional variable
             if root.boundary_value_type == 1 or root.type_of_equation == 1:
                 bc_neumann_values[member, :, :] = bc_neumann_function(member, xx, yy)
+        # print(sigma_values[0, :, :])
 
 
     print(f"NetCDF file '{filename}' created successfully.")
+
+
 
 def bc_neumann_function(member, x, y):
     if member == 0:
         return x * 0.04 + y * 0.01
     if member == 1:
         return 0.
+def function_scalings_zero(member, size: int):
+    x_values = np.linspace(0, size-1, num=size)
+    return 0 * x_values
 
 
 # dot in the middle
@@ -176,16 +178,21 @@ def dot_function_2d(member: int, x_position: float, y_position: float):
 
 def linear_damping(member, size: int):
     x_values = np.zeros(size)
-    # x_values[1] = -0.001
+    x_values[1] = -5
     return x_values
 
+def zero_f(member, size: int):
+    return np.zeros(size)
+
+def const_function_2d(member: int, x_position: float, y_position: float):
+    return 0.05
 
 if __name__ == "__main__":
     # Usage example:
     create_input_file('data/example.nc', 'data/example_out.nc', type_of_equation=0, 
-                      x_size=100, x_length=1., y_size=100, y_length=1., boundary_value_type=1,
+                      x_size=100, x_length=1., y_size=100, y_length=1., boundary_value_type=0,
                       scalar_type=0, n_coupled=1, 
-                      coupled_function_order=2, number_timesteps=100,
-                      final_time=0.25, number_snapshots=5, n_members=1, initial_value_function=dot_function_2d,
-                      sigma_function=dummy_function_2d, bc_neumann_function=bc_neumann_function, f_value_function=linear_damping)
+                      coupled_function_order=2, number_timesteps=1000,
+                      final_time=0.1, number_snapshots=5, n_members=1, initial_value_function=dot_function_2d,
+                      sigma_function=const_function_2d, bc_neumann_function=bc_neumann_function, f_value_function=linear_damping)
     

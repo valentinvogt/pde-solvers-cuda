@@ -15,6 +15,7 @@ public:
         func_(f) {}
   PDEHeat(const PDEHeat &other)
       : PDEBase<n_coupled, Scalar>(other), func_(other.func_) {}
+
   void read_values(const std::string &filename,
                    const std::string &tag_data = "initial_data",
                    const std::string &tag_sigma = "sigma",

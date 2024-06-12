@@ -58,6 +58,7 @@ public:
                             unsigned int n_snapshots, WRITER &writer,
                             int n_member = 0) {
 
+    std::cout << "T: " << T << std::endl;
     Scalar dt = T / n_timesteps;
     Scalar time = 0.;
     unsigned int snapshot_counter = 0;
