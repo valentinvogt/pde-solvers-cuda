@@ -8,6 +8,10 @@
 #include <pde_wave.hpp>
 #include <string>
 #include <zisa/memory/array.hpp>
+#include <chrono>
+
+#define DURATION(a) std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
+#define NOW std::chrono::high_resolution_clock::now()
 
 #define INSTANCIATE_PDE_AND_CALCULATE(PDE_TYPE, N_COUPLED)                     \
   case N_COUPLED:                                                              \
@@ -38,9 +42,12 @@ inline void calculate_and_save_snapshots(PDE pde,
       reader.get_file_to_save_output());
   for (int memb = 0; memb < reader.get_n_members(); memb++) {
     pde.read_initial_data_from_netcdf(reader, memb);
+    auto start = NOW;
     pde.apply_with_snapshots(reader.get_final_time(),
                              reader.get_number_timesteps(),
                              reader.get_number_snapshots(), writer, memb);
+    auto end = NOW;
+    std::cout << "duration of member " << memb << ": " << DURATION(end - start) << " ms" << std::endl;
   }
 }
 
@@ -100,6 +107,7 @@ template <typename Scalar> void run_simulation(const NetCDFPDEReader &reader) {
 
 // TODO: check if all sizes work (+- 1 boundary or no boundary)
 int main(int argc, char **argv) {
+  auto glob_start = NOW;
   std::string filename;
   if (argc == 1) {
     std::cout << "input filename to read: ";
@@ -118,5 +126,9 @@ int main(int argc, char **argv) {
               << std::endl;
     return -1;
   }
+  auto glob_end = NOW;
+  std::cout << "duration of whole algorithm: " << DURATION(glob_end - glob_start) << " ms" << std::endl;
+  
   return 0;
 }
+#undef DURATION

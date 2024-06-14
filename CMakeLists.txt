@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 project(PDE_SOLVERS_CUDA VERSION 0.1 LANGUAGES C CXX)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Ofast")
 option(ENABLE_CUDA "Enable CUDA Acceleration" OFF)
 
 set(CUDA_AVAILABLE ${ENABLE_CUDA})
@@ -11,7 +11,10 @@ set(ZISA_HAS_CUDA ${ENABLE_CUDA})
 set(ZISA_HAS_NETCDF ON)
 set(ZISA_HAS_HDF5 ON)
 
-message(${ENABLE_CUDA})
+# Print current settings for debugging
+message(STATUS "Enable CUDA: ${ENABLE_CUDA}")
+message(STATUS "C++ Compiler Flags: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CUDA Compiler Flags: ${CMAKE_CUDA_FLAGS}")
 
 if(CUDA_AVAILABLE)
   enable_language(CUDA)

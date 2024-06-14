@@ -7,6 +7,10 @@
 #include <string>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/array_view_decl.hpp>
+#include <chrono>
+
+#define DURATION(a) std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
+#define NOW std::chrono::high_resolution_clock::now()
 
 template <typename Scalar> class NetCDFPDEWriter {
 public:
@@ -86,6 +90,7 @@ public:
 
   void save_snapshot(int member, int snapshot_number,
                      zisa::array_const_view<Scalar, 2> data) {
+    auto start = NOW;
     size_t offsets[4] = {(size_t)member, (size_t)snapshot_number, 0, 0};
     size_t counts[4] = {1, 1, (size_t)n_x_ + 2,
                         (size_t)n_coupled_ * (n_y_ + 2)};
@@ -98,6 +103,8 @@ public:
     } else {
       nc_put_vara_double(ncid_, varid_data_, offsets, counts, &data[0]);
     }
+    auto end = NOW;
+    std::cout << "time to save snapshot: " << DURATION(end - start) << " ms" << std::endl;
   }
 
 private:
@@ -118,4 +125,5 @@ private:
   std::string filename_;
 };
 
+#undef DURATION
 #endif // NETCDF_WRITER2_HPP_

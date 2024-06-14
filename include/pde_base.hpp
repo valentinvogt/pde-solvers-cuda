@@ -18,6 +18,10 @@
 #include <zisa/memory/device_type.hpp>
 #include <zisa/memory/memory_location.hpp>
 #include <zisa/memory/shape.hpp>
+#include <chrono>
+
+#define DURATION(a) std::chrono::duration_cast<std::chrono::microseconds>(a).count()
+#define NOW std::chrono::high_resolution_clock::now()
 
 enum BoundaryCondition { Dirichlet, Neumann, Periodic };
 
@@ -66,19 +70,34 @@ public:
     // save initial data
     writer.save_snapshot(n_member, snapshot_counter, data_.const_view());
     snapshot_counter++;
+    Scalar total_comp_time_count = 0.;
+    int tot_comp_count = 0;
     for (unsigned int i = 0; i < n_timesteps; ++i) {
       if (time + dt >= dsnapshots * snapshot_counter) {
         Scalar dt_new = dsnapshots * snapshot_counter - time;
         // std::cout << "dt_new: " <<   dt_new << std::endl;
+        auto start = NOW;
         apply(dt_new);
+        auto end = NOW;
+        total_comp_time_count += DURATION(end - start);
+        tot_comp_count++;
+
         // print();
         writer.save_snapshot(n_member, snapshot_counter, data_.const_view());
         // std::cout << "dt - dt_new: " <<  dt - dt_new << std::endl;
+        start = NOW;
         apply(dt - dt_new);
+        end = NOW;
+        total_comp_time_count += DURATION(end - start);
+        tot_comp_count++;
         // print();00
         snapshot_counter++;
       } else {
+        auto start = NOW;
         apply(dt);
+        auto end = NOW;
+        total_comp_time_count += DURATION(end - start);
+        tot_comp_count++;
       }
       time += dt;
     }
@@ -86,9 +105,16 @@ public:
     if (snapshot_counter < n_snapshots) {
       // total Time doesn't reach T due to numerical errors. Add more timesteps
       Scalar dt_new = T - time;
+      auto start = NOW;
       apply(dt_new);
+        auto end = NOW;
+        total_comp_time_count += DURATION(end - start);
+        tot_comp_count++;
       writer.save_snapshot(n_member, snapshot_counter, data_.const_view());
     }
+    std::cout << "number steps: " << tot_comp_count << std::endl;
+    std::cout << "total time: " << total_comp_time_count << " micros" << std::endl;
+    std::cout << "avg time per step: " << total_comp_time_count / tot_comp_count << " micros" << std::endl;
   }
 
   // for testing, does this work if on gpu?
@@ -150,5 +176,6 @@ protected:
   const Scalar dy_;
   bool ready_ = false;
 };
+#undef DURATION
 
 #endif // PDE_BASE_HPP_
