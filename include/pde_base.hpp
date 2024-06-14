@@ -32,11 +32,12 @@ public:
   // note that sigma_values is independent of n_coupled
   PDEBase(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Scalar dx, Scalar dy)
-      : data_(zisa::shape_t<2>(n_coupled * (Nx + 2), Ny + 2), memory_location),
+      : data_(zisa::shape_t<2>(Nx + 2, n_coupled * (Ny + 2)), memory_location),
         bc_neumann_values_(zisa::shape_t<2>(n_coupled * (Nx + 2), Ny + 2),
                            memory_location),
         sigma_values_(zisa::shape_t<2>(2 * Nx + 1, Ny + 1), memory_location),
         memory_location_(memory_location), bc_(bc), dx_(dx), dy_(dy) {}
+
   PDEBase(const PDEBase &other)
       : data_(other.data_.shape(), other.memory_location_),
         bc_neumann_values_(other.bc_neumann_values_.shape(),

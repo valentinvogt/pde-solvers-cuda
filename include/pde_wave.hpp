@@ -80,39 +80,25 @@ public:
 
   void read_initial_data_from_netcdf(const NetCDFPDEReader &reader,
                                      int member) {
-    if (reader.write_variable_of_member_to_array(
-            "initial_data", this->data_.view().raw(), member,
-            this->data_.shape()[0], this->data_.shape()[1]) != 0) {
-      std::cout << "error occured in writing initial data from netcdf to array!"
-                << std::endl;
-      exit(-1);
-    }
-    if (reader.write_variable_of_member_to_array(
-            "sigma_values", this->sigma_values_.view().raw(), member,
-            this->sigma_values_.shape()[0],
-            this->sigma_values_.shape()[1]) != 0) {
-      std::cout << "error occured in writing sigma values from netcdf to array!"
-                << std::endl;
-      exit(-1);
-    }
-    if (reader.write_variable_of_member_to_array(
-            "bc_neumann_values", this->bc_neumann_values_.view().raw(), member,
-            this->bc_neumann_values_.shape()[0],
-            this->bc_neumann_values_.shape()[1]) != 0) {
-      std::cout << "error occured in writing deriv data from netcdf to array!"
-                << std::endl;
-      exit(-1);
-    }
+    reader.write_variable_of_member_to_array(
+        "initial_data", this->data_.view().raw(), member,
+        this->data_.shape()[0], this->data_.shape()[1]);
+
+    reader.write_variable_of_member_to_array(
+        "sigma_values", this->sigma_values_.view().raw(), member,
+        this->sigma_values_.shape()[0], this->sigma_values_.shape()[1]);
+
+    reader.write_variable_of_member_to_array(
+        "bc_neumann_values", this->bc_neumann_values_.view().raw(), member,
+        this->bc_neumann_values_.shape()[0],
+        this->bc_neumann_values_.shape()[1]);
+
     if (this->bc_ == BoundaryCondition::Neumann) {
-      if (reader.write_variable_of_member_to_array(
-              "bc_neumann_values", this->bc_neumann_values_.view().raw(),
-              member, this->bc_neumann_values_.shape()[0],
-              this->bc_neumann_values_.shape()[1]) != 0) {
-        std::cout << "error occured in writing bc neumann values from netcdf"
-                     "to array!"
-                  << std::endl;
-        exit(-1);
-      }
+      reader.write_variable_of_member_to_array(
+          "bc_neumann_values", this->bc_neumann_values_.view().raw(), member,
+          this->bc_neumann_values_.shape()[0],
+          this->bc_neumann_values_.shape()[1]);
+
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
       // do noching as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {

@@ -41,7 +41,7 @@ cbar = fig.colorbar(im, ax=axes, orientation='vertical', fraction=0.02, pad=0.04
 cbar.set_label('Data Value')
 
 # Adjust layout to prevent overlap
-plt.savefig('out/'+ os.path.splitext(filename)[0] + '.svg')  # Save the figure to a file
+plt.savefig('out/'+ os.path.splitext(filename)[0] + "_" + str(member) + '.svg')  # Save the figure to a file
 plt.show()
 
 # Close the dataset

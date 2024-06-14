@@ -83,72 +83,57 @@ public:
 
   char *get_file_to_save_output() const { return file_to_save_output_; }
 
-  int write_whole_variable_to_array(std::string varname, void *arr_ptr) const {
+  void write_whole_variable_to_array(std::string varname, void *arr_ptr) const {
     if (scalar_type_ == 0) {
-      return write_variable_to_array_generic(varname, (float *)arr_ptr);
+      write_variable_to_array_generic(varname, (float *)arr_ptr);
     } else if (scalar_type_ == 1) {
-      return write_variable_to_array_generic(varname, (double *)arr_ptr);
+      write_variable_to_array_generic(varname, (double *)arr_ptr);
     } else {
       std::cout
           << "error in write variable, scalar_type_ is not defined properly"
           << std::endl;
-      return -1;
     }
   }
 
-  int write_variable_of_member_to_array(std::string varname, void *arr_ptr,
+  void write_variable_of_member_to_array(std::string varname, void *arr_ptr,
                                         size_t member, size_t chunksize_x,
                                         size_t chunksize_y) const {
     if (scalar_type_ == 0) {
-      return write_variable_of_member_to_array_generic(
+      write_variable_of_member_to_array_generic(
           varname, (float *)arr_ptr, member, chunksize_x, chunksize_y);
     } else if (scalar_type_ == 1) {
-      return write_variable_of_member_to_array_generic(
+      write_variable_of_member_to_array_generic(
           varname, (double *)arr_ptr, member, chunksize_x, chunksize_y);
     } else {
       std::cout
           << "error in write variable, scalar_type_ is not defined properly"
           << std::endl;
-      return -1;
+      exit(-1);
     }
   }
 
 private:
   template <typename Scalar>
-  int write_variable_to_array_generic(std::string varname,
+    void write_variable_to_array_generic(std::string varname,
                                       Scalar *arr_ptr) const {
 
     int varid;
-    if (nc_inq_varid(ncid_, varname.c_str(), &varid) != NC_NOERR) {
-      std::cout << "error in getting varid of " << varname << std::endl;
-      return -1;
-    }
-    if (nc_get_var(ncid_, varid, arr_ptr) != NC_NOERR) {
-      std::cout << "error in getting data of " << varname << std::endl;
-      return -1;
-    }
-    return 0;
+    check(nc_inq_varid(ncid_, varname.c_str(), &varid));
+    check(nc_get_var(ncid_, varid, arr_ptr));
   }
 
   template <typename Scalar>
-  int write_variable_of_member_to_array_generic(std::string varname,
+  void write_variable_of_member_to_array_generic(std::string varname,
                                                 Scalar *arr_ptr, size_t member,
                                                 size_t chunksize_x,
                                                 size_t chunksize_y) const {
 
     int varid;
-    if (nc_inq_varid(ncid_, varname.c_str(), &varid) != NC_NOERR) {
-      std::cout << "error in getting varid of " << varname << std::endl;
-      return -1;
-    }
+    check(nc_inq_varid(ncid_, varname.c_str(), &varid));
     // TODO: this could be faster, for example use nc_get_var_float
     size_t startp[3] = {member, 0, 0};
     size_t countp[3] = {1, chunksize_x, chunksize_y};
-    if (nc_get_vara(ncid_, varid, startp, countp, arr_ptr) != NC_NOERR) {
-      std::cout << "error in getting data of " << varname << std::endl;
-      return -1;
-    }
-    return 0;
+    check(nc_get_vara(ncid_, varid, startp, countp, arr_ptr));
   }
 
   std::string filename_;

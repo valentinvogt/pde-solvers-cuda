@@ -59,7 +59,7 @@ import numpy as np
     
 # function template for initial_values, bc_values and sigma_values
 # note that here the arguments are the member and the x and y-positions in the grid
-def dummy_function_2d(member: int, x_position: float, y_position: float):
+def dummy_function_2d(member: int, coupled_idx: int, x_position: float, y_position: float):
     if member == 0:
         return x_position * y_position + y_position
     else:
@@ -148,51 +148,72 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
         xx_sigma, yy_sigma = np.meshgrid(x_positions_sigma, y_positions_sigma, indexing='ij')
         # adjust y-values of every second row because those are shifted
         yy_sigma[::2, :] += dy * .5
+
         for member in range(n_members):
-            initial_data[member, :, :] = initial_value_function(member, xx, yy)
-            sigma_values[member, :, :] = sigma_function(member, xx_sigma, yy_sigma)
             function_scalings[member, :] = f_value_function(member, n_coupled * coupled_function_order)
-            # If boundary_value_type is Neumann, define additional variable
-            if root.boundary_value_type == 1 or root.type_of_equation == 1:
-                bc_neumann_values[member, :, :] = bc_neumann_function(member, xx, yy)
-        # print(sigma_values[0, :, :])
+            for coupled_idx in range(n_coupled):
+                initial_data[member, :, coupled_idx::n_coupled] = initial_value_function(member, coupled_idx, xx, yy)
+                sigma_values[member, :, coupled_idx::n_coupled] = sigma_function(member, coupled_idx, xx_sigma, yy_sigma)
+                # If boundary_value_type is Neumann, define additional variable
+                if root.boundary_value_type == 1 or root.type_of_equation == 1:
+                    bc_neumann_values[member, :, coupled_idx::n_coupled] = bc_neumann_function(member, xx, yy)
+        # print(initial_data[0, :, :])
 
 
     print(f"NetCDF file '{filename}' created successfully.")
 
 
 
-def bc_neumann_function(member, x, y):
+def bc_neumann_function(member: int, coupled_idx: int, x: float, y: float):
     if member == 0:
         return x * 0.04 + y * 0.01
     if member == 1:
         return 0.
-def function_scalings_zero(member, size: int):
+
+def function_scalings_zero(member: int, size: int):
     x_values = np.linspace(0, size-1, num=size)
     return 0 * x_values
 
 
 # dot in the middle
-def dot_function_2d(member: int, x_position: float, y_position: float):
-    return np.exp(- (x_position-0.5)**2 - (y_position-0.5)**2)
+def dot_function_2d(member: int, coupled_idx: int, x_position: float, y_position: float):
+    if member == 0:
+        return np.exp(- (x_position-0.5)**2 - (y_position-0.5)**2)
+    else:
+        return x_position * y_position  + y_position
 
-def linear_damping(member, size: int):
-    x_values = np.zeros(size)
-    x_values[1] = -5
-    return x_values
+def linear_damping(member: int, size: int):
+    f_values = np.zeros(size)
+    if member == 0:
+        f_values[1] = -5
+    if member == 1:
+        f_values[0] = 10
+    return f_values
 
-def zero_f(member, size: int):
+def zero_f(member: int, size: int):
     return np.zeros(size)
 
-def const_function_2d(member: int, x_position: float, y_position: float):
-    return 0.05
+def const_function_2d(member: int, coupled_idx: int, x_position: float, y_position: float):
+    return 0.1
+
+def hat_functions_2d(member: int, coupled_idx: int, x_position: float, y_position: float):
+    u = 0. * x_position
+    nx = x_position.shape[0]
+    ny = x_position.shape[1]
+
+    u[ nx//4:nx//4+10 , ny//4:ny//4+10 ] = 2
+    u[ 3*nx//4:3*nx//4+10 , ny//4:ny//4+10 ] = 3
+    u[ nx//4:nx//4+10 , 3*ny//4:3*ny//4+10 ] = 4
+    u[ 3*ny//4:3*ny//4+10 , 3*ny//4:3*ny//4+10 ] = 5    
+
+    return u
 
 if __name__ == "__main__":
     # Usage example:
     create_input_file('data/example.nc', 'data/example_out.nc', type_of_equation=0, 
-                      x_size=100, x_length=1., y_size=100, y_length=1., boundary_value_type=0,
+                      x_size=160, x_length=2., y_size=160, y_length=2., boundary_value_type=0,
                       scalar_type=0, n_coupled=1, 
-                      coupled_function_order=2, number_timesteps=1000,
-                      final_time=0.1, number_snapshots=5, n_members=1, initial_value_function=dot_function_2d,
-                      sigma_function=const_function_2d, bc_neumann_function=bc_neumann_function, f_value_function=linear_damping)
+                      coupled_function_order=1, number_timesteps=5000,
+                      final_time=0.2, number_snapshots=6, n_members=1, initial_value_function=hat_functions_2d,
+                      sigma_function=const_function_2d, bc_neumann_function=bc_neumann_function, f_value_function=function_scalings_zero)
     

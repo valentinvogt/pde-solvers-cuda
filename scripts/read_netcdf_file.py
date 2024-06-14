@@ -6,5 +6,5 @@ def read_file(filename):
         print(root)
 
 
-read_file('data/example_out.nc')
+read_file('data/example.nc')
     
