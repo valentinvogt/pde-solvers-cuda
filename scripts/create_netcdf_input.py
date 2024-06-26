@@ -59,7 +59,7 @@ import numpy as np
     
 # function template for initial_values, bc_values and sigma_values
 # note that here the arguments are the member and the x and y-positions in the grid
-def dummy_function_2d(member: int, coupled_idx: int, x_position, y_position):
+def dummy_function_2d(member, coupled_idx, x_position, y_position):
     if member == 0:
         return x_position * y_position + y_position
     else:
@@ -70,7 +70,7 @@ def dummy_sigma_2d(member, x_position, y_position):
 
 # function template for function_scalings
 # note that here the arguments are the member total amount of funciton variables (n_coupled * max_order)
-def dummy_function_scalings(member, size: int):
+def dummy_function_scalings(member, size):
     x_values = np.linspace(0, size-1, num=size)
     return member * x_values + 2
 
@@ -164,89 +164,13 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
 
     print(f"NetCDF file '{filename}' created successfully.")
 
-
-
-def bc_neumann_function(member: int, coupled_idx: int, x: float, y: float):
-    if member == 0:
-        return x * 0.04 + y * 0.01
-    if member == 1:
-        return 0.
-
-def function_scalings_zero(member: int, size: int):
-    x_values = np.linspace(0, size-1, num=size)
-    return 0 * x_values
-
-
-# dot in the middle
-def dot_function_2d(member: int, coupled_idx: int, x_position: float, y_position: float):
-    if member == 0:
-        return np.exp(- (x_position-0.5)**2 - (y_position-0.5)**2)
-    else:
-        return x_position * y_position  + y_position
-
-def linear_damping(member: int, size: int):
-    f_values = np.zeros(size)
-    if member == 0:
-        f_values[1] = -5
-    if member == 1:
-        f_values[0] = 10
-    return f_values
-
-def zero_f(member: int, size: int):
-    return np.zeros(size)
-
-def const_function_2d(member: int, coupled_idx: int, x_position: float, y_position: float):
-    return 0.1
-
-def hat_functions_2d(member: int, coupled_idx: int, x_position: float, y_position: float):
-    u = 0. * x_position
-    nx = x_position.shape[0]
-    ny = x_position.shape[1]
-
-    u[ nx//4:nx//4+10 , ny//4:ny//4+10 ] = 2
-    u[ 3*nx//4:3*nx//4+10 , ny//4:ny//4+10 ] = 3
-    u[ nx//4:nx//4+10 , 3*ny//4:3*ny//4+10 ] = 4
-    u[ 3*ny//4:3*ny//4+10 , 3*ny//4:3*ny//4+10 ] = 5    
-
-    return u
-
-def initial_noisy_function(member, coupled_idx, x_position, y_position):
-    A = 2.
-    B = 5.5
-    if coupled_idx == 0:
-        u = A * np.ones(shape=x_position.shape) + np.random.normal(0., 0.1, size=x_position.shape)
-    elif coupled_idx == 1:
-        u = (B / A) * np.ones(shape=x_position.shape) - np.random.normal(0., 0.1, size=x_position.shape)
-    else:
-        print("initial_noisy_function is only meant for n_coupled == 2!")
-        u = 0. * x_position
-    return u  
-
-def zero_func(member, coupled_idx, x_position, y_position):
-    return np.zeros(shape=x_position.shape)
-
-def const_sigma(member, x_position, y_position):
-    return np.ones(x_position.shape) * 0.002
-
-def f_scalings_gray_scott(member, size):
-    A = 2.
-    B = 5.5
-    assert(size == 18)
-    f = np.zeros(size)
-    f[0] = A        # constant in first function
-    f[2] = - B - 1.  # u-term in first function
-    f[10] = 1. # u^2v in first function
-    f[7] = B #u term in second function
-    f[11] = -1.     #u^2v in second function
-    return f
-
 if __name__ == "__main__":
     # Usage example:
     create_input_file('data/example.nc', 'data/example_out.nc', type_of_equation=0, 
                       x_size=160, x_length=2., y_size=160, y_length=2., boundary_value_type=1,
                       scalar_type=0, n_coupled=2, 
-                      coupled_function_order=3, number_timesteps=10000,
-                      final_time=5., number_snapshots=5, n_members=1, initial_value_function=initial_noisy_function,
+                      coupled_function_order=3, number_timesteps=20000,
+                      final_time=10., number_snapshots=5, n_members=1, initial_value_function=initial_noisy_function,
                       sigma_function=const_sigma, bc_neumann_function=zero_func, f_value_function=f_scalings_gray_scott)
 
     
