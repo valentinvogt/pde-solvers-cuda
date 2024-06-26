@@ -13,14 +13,13 @@ template <int n_coupled, typename Scalar, typename Function>
 __global__ void convolve_sigma_add_f_cuda_kernel(
     zisa::array_view<Scalar, 2> dst, zisa::array_const_view<Scalar, 2> src,
     zisa::array_const_view<Scalar, 2> sigma, Scalar del_x_2, Function f) {
-  // printf("reached kernel\n");
   const int x_idx =
       threadIdx.x + 1 + blockIdx.x * NUM_THREAD_X; // cannot be on boundary
-  const int y_idx = threadIdx.y + 1 + blockIdx.y * NUM_THREAD_Y;
+  const int y_idx = threadIdx.y + n_coupled + blockIdx.y * NUM_THREAD_Y;
 
   const int Nx = src.shape(0);
   const int Ny = src.shape(1) / n_coupled;
-  if (x_idx < Nx - 1 && y_idx < Ny - 1) {
+  if (x_idx < Nx - 1 && y_idx < Ny - n_coupled) {
     Scalar result_function[n_coupled];
     f(zisa::array_const_view<Scalar, 1>{zisa::shape_t<1>(n_coupled),
                                         &src(x_idx, n_coupled * y_idx),
@@ -50,7 +49,6 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
   const dim3 thread_dims(NUM_THREAD_X, NUM_THREAD_Y);
   const dim3 block_dims(std::ceil((src.shape(0) - 2) / (double)thread_dims.x),
                         std::ceil((src.shape(1) - 2) / (double)thread_dims.y));
-  // std::cout << "reached convolve_sigma" << std::endl;
   convolve_sigma_add_f_cuda_kernel<n_coupled, Scalar, Function>
       <<<block_dims, thread_dims>>>(dst, src, sigma, del_x_2, f);
   const auto error = cudaDeviceSynchronize();

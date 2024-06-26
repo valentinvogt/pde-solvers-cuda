@@ -20,6 +20,9 @@
         netcdf
         hdf5
         gdb
+        valgrind
+        kcachegrind
+        graphviz
 
         (python3.withPackages (ps: with ps;
         [

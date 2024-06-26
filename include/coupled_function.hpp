@@ -54,6 +54,17 @@ public:
   }
 
 #else
+  inline Scalar pow_fun(Scalar val, unsigned int pot) const {
+    Scalar result = 1.;
+    while (pot != 0) {
+      if (pot & 1) {
+        result *= val;
+      }
+      val *= val;
+      pot >>= 1;
+    }
+    return result;
+  }
 
   template <typename ARRAY>
   inline void operator()(zisa::array_const_view<Scalar, 1> x,
@@ -62,11 +73,11 @@ public:
       result_values[i] = 0;
     }
 
-    for (int i = 0; i < std::pow(max_pot_, n_coupled_); i++) {
+    for (int i = 0; i < std::pow(max_pot_,n_coupled_); i++) {
       Scalar pot = 1.;
       int max_pot_pow_j = 1;
       for (int j = 0; j < n_coupled_; j++) {
-        pot *= std::pow(x(j), (int)(i / max_pot_pow_j) % max_pot_);
+        pot *= pow_fun(x(j), (unsigned int)(i / max_pot_pow_j) % max_pot_);
         max_pot_pow_j *= max_pot_;
       }
       for (int k = 0; k < n_coupled_; k++) {

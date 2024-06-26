@@ -55,7 +55,7 @@ template <typename Scalar> void run_simulation(const NetCDFPDEReader &reader) {
   int n_coupled = reader.get_n_coupled();
   int coupled_order = reader.get_coupled_function_order();
   zisa::array<Scalar, 1> function_scalings(
-      zisa::shape_t<1>(n_coupled * coupled_order), zisa::device_type::cpu);
+      zisa::shape_t<1>(n_coupled * (unsigned int)std::pow(coupled_order, n_coupled)), zisa::device_type::cpu);
   reader.write_whole_variable_to_array("function_scalings",
                                        function_scalings.view().raw());
 

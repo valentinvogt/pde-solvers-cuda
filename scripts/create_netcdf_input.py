@@ -59,11 +59,14 @@ import numpy as np
     
 # function template for initial_values, bc_values and sigma_values
 # note that here the arguments are the member and the x and y-positions in the grid
-def dummy_function_2d(member: int, coupled_idx: int, x_position: float, y_position: float):
+def dummy_function_2d(member: int, coupled_idx: int, x_position, y_position):
     if member == 0:
         return x_position * y_position + y_position
     else:
         return 0.001
+
+def dummy_sigma_2d(member, x_position, y_position):
+    return np.ones(x_position.shape) * 0.01
 
 # function template for function_scalings
 # note that here the arguments are the member total amount of funciton variables (n_coupled * max_order)
@@ -78,7 +81,7 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
                       scalar_type=0, n_coupled=1, 
                       coupled_function_order=2, number_timesteps=1000,
                       final_time=1., number_snapshots=3, n_members=2, initial_value_function=dummy_function_2d,
-                      sigma_function=dummy_function_2d, bc_neumann_function=dummy_function_2d, f_value_function=dummy_function_scalings):
+                      sigma_function=dummy_sigma_2d, bc_neumann_function=dummy_function_2d, f_value_function=dummy_function_scalings):
 
     # Create a new NetCDF file
     with nc.Dataset(filename, 'w') as root:
@@ -117,20 +120,20 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
         y_size_sigma = y_size + 1
 
         x_size_dim = root.createDimension("x_size", x_size + 2)
-        y_size_dim = root.createDimension("y_size", n_coupled * (y_size + 2))
+        y_size_coupled_dim = root.createDimension("y_size_coupled", n_coupled * (y_size + 2))
         x_size_sigma_dim = root.createDimension("x_size_sigma", x_size_sigma)
         y_size_sigma_dim = root.createDimension("y_size_sigma", y_size_sigma)
         n_members_dim = root.createDimension("n_members", n_members)
-        function_scalings_dim = root.createDimension("function_scaling_size", n_coupled * coupled_function_order)
+        function_scalings_dim = root.createDimension("function_scaling_size", n_coupled * (coupled_function_order**n_coupled))
 
         # store in right chunksize to enable fast loading of variables
-        initial_data = root.createVariable('initial_data', scalar_type_string, dimensions=('n_members', 'x_size', 'y_size'), chunksizes=(1, x_size, y_size))
+        initial_data = root.createVariable('initial_data', scalar_type_string, dimensions=('n_members', 'x_size', 'y_size_coupled'), chunksizes=(1, x_size, y_size))
         sigma_values = root.createVariable('sigma_values', scalar_type_string, dimensions=('n_members', 'x_size_sigma', 'y_size_sigma'), chunksizes=(1, x_size_sigma, y_size_sigma))
-        function_scalings = root.createVariable('function_scalings', scalar_type_string, dimensions=('n_members', 'function_scaling_size'), chunksizes=(1, n_coupled * coupled_function_order))
+        function_scalings = root.createVariable('function_scalings', scalar_type_string, dimensions=('n_members', 'function_scaling_size'), chunksizes=(1, n_coupled * (coupled_function_order ** n_coupled)))
         if root.boundary_value_type == 1 or root.type_of_equation == 1:
-            bc_neumann_values = root.createVariable('bc_neumann_values', scalar_type_string, ('n_members', 'x_size', 'y_size'))
+            bc_neumann_values = root.createVariable('bc_neumann_values', scalar_type_string, ('n_members', 'x_size', 'y_size_coupled'))
 
-        function_scalings[:, :] = np.linspace(0., 1., n_coupled * coupled_function_order)
+        function_scalings[:, :] = np.linspace(0., 1., n_coupled * (coupled_function_order**n_coupled))
 
         # add values on boundary
         # if you have dirichlet or neumann bc the initial_value_function should evaluate on the boundary too
@@ -150,14 +153,13 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
         yy_sigma[::2, :] += dy * .5
 
         for member in range(n_members):
-            function_scalings[member, :] = f_value_function(member, n_coupled * coupled_function_order)
+            function_scalings[member, :] = f_value_function(member, n_coupled * (coupled_function_order**n_coupled))
+            sigma_values[member, :, :] = sigma_function(member, xx_sigma, yy_sigma)
             for coupled_idx in range(n_coupled):
                 initial_data[member, :, coupled_idx::n_coupled] = initial_value_function(member, coupled_idx, xx, yy)
-                sigma_values[member, :, coupled_idx::n_coupled] = sigma_function(member, coupled_idx, xx_sigma, yy_sigma)
                 # If boundary_value_type is Neumann, define additional variable
                 if root.boundary_value_type == 1 or root.type_of_equation == 1:
-                    bc_neumann_values[member, :, coupled_idx::n_coupled] = bc_neumann_function(member, xx, yy)
-        # print(initial_data[0, :, :])
+                    bc_neumann_values[member, :, coupled_idx::n_coupled] = bc_neumann_function(member, coupled_idx, xx, yy)
 
 
     print(f"NetCDF file '{filename}' created successfully.")
@@ -208,12 +210,43 @@ def hat_functions_2d(member: int, coupled_idx: int, x_position: float, y_positio
 
     return u
 
+def initial_noisy_function(member, coupled_idx, x_position, y_position):
+    A = 2.
+    B = 5.5
+    if coupled_idx == 0:
+        u = A * np.ones(shape=x_position.shape) + np.random.normal(0., 0.1, size=x_position.shape)
+    elif coupled_idx == 1:
+        u = (B / A) * np.ones(shape=x_position.shape) - np.random.normal(0., 0.1, size=x_position.shape)
+    else:
+        print("initial_noisy_function is only meant for n_coupled == 2!")
+        u = 0. * x_position
+    return u  
+
+def zero_func(member, coupled_idx, x_position, y_position):
+    return np.zeros(shape=x_position.shape)
+
+def const_sigma(member, x_position, y_position):
+    return np.ones(x_position.shape) * 0.002
+
+def f_scalings_gray_scott(member, size):
+    A = 2.
+    B = 5.5
+    assert(size == 18)
+    f = np.zeros(size)
+    f[0] = A        # constant in first function
+    f[2] = - B - 1.  # u-term in first function
+    f[10] = 1. # u^2v in first function
+    f[7] = B #u term in second function
+    f[11] = -1.     #u^2v in second function
+    return f
+
 if __name__ == "__main__":
     # Usage example:
     create_input_file('data/example.nc', 'data/example_out.nc', type_of_equation=0, 
-                      x_size=160, x_length=2., y_size=160, y_length=2., boundary_value_type=0,
-                      scalar_type=0, n_coupled=1, 
-                      coupled_function_order=1, number_timesteps=5000,
-                      final_time=0.2, number_snapshots=6, n_members=1, initial_value_function=hat_functions_2d,
-                      sigma_function=const_function_2d, bc_neumann_function=bc_neumann_function, f_value_function=function_scalings_zero)
+                      x_size=160, x_length=2., y_size=160, y_length=2., boundary_value_type=1,
+                      scalar_type=0, n_coupled=2, 
+                      coupled_function_order=3, number_timesteps=10000,
+                      final_time=5., number_snapshots=5, n_members=1, initial_value_function=initial_noisy_function,
+                      sigma_function=const_sigma, bc_neumann_function=zero_func, f_value_function=f_scalings_gray_scott)
+
     

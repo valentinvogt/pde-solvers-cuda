@@ -22,7 +22,7 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
   const unsigned Nx = src.shape(0);
   const unsigned Ny = src.shape(1);
   for (int x = 1; x < Nx - 1; x++) {
-    for (int y = 1; y < Ny - 1; y += n_coupled) {
+    for (int y = n_coupled; y < Ny - n_coupled; y += n_coupled) {
       // does not work for generic function, calculates all f_1, f_2, ... , fn
       // in one run
       Scalar result_function[n_coupled];

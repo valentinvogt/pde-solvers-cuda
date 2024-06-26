@@ -12,7 +12,7 @@ inline void check(int stat) {
     exit(1);
   }
 }
-// TODO: add checks
+
 class NetCDFPDEReader {
 public:
   NetCDFPDEReader(std::string filename) : filename_(filename) {
