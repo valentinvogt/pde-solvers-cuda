@@ -31,7 +31,7 @@ __global__ void convolve_sigma_add_f_cuda_kernel(
           del_x_2 *
               (sigma(2 * x_idx - 1, y_idx - 1) * src(x_idx, y_idx * n_coupled + i - n_coupled) +
                sigma(2 * x_idx - 1, y_idx + 1) * src(x_idx, y_idx * n_coupled + i + n_coupled) +
-               sigma(2 * x_idx - 2, y_idx) * src(x_idx - 1, y_idxi * n_coupled + i) +
+               sigma(2 * x_idx - 2, y_idx) * src(x_idx - 1, y_idx * n_coupled + i) +
                sigma(2 * x_idx, y_idx) * src(x_idx + 1, y_idx * n_coupled + i) -
                (sigma(2 * x_idx - 1, y_idx - 1) + sigma(2 * x_idx - 1, y_idx + 1) +
                 sigma(2 * x_idx - 2, y_idx) + sigma(2 * x_idx, y_idx)) *
