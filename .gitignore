@@ -47,3 +47,4 @@ slurm*
 dummy
 out/*
 data
+scripts/__pycache__

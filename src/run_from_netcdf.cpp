@@ -42,12 +42,12 @@ inline void calculate_and_save_snapshots(PDE pde,
       reader.get_file_to_save_output());
   for (int memb = 0; memb < reader.get_n_members(); memb++) {
     pde.read_initial_data_from_netcdf(reader, memb);
-    auto start = NOW;
+    // auto start = NOW;
     pde.apply_with_snapshots(reader.get_final_time(),
                              reader.get_number_timesteps(),
                              reader.get_number_snapshots(), writer, memb);
-    auto end = NOW;
-    std::cout << "duration of member " << memb << ": " << DURATION(end - start) << " ms" << std::endl;
+    // auto end = NOW;
+    // std::cout << "duration of member " << memb << ": " << DURATION(end - start) << " ms" << std::endl;
   }
 }
 
@@ -107,7 +107,6 @@ template <typename Scalar> void run_simulation(const NetCDFPDEReader &reader) {
 
 // TODO: check if all sizes work (+- 1 boundary or no boundary)
 int main(int argc, char **argv) {
-  auto glob_start = NOW;
   std::string filename;
   if (argc == 1) {
     std::cout << "input filename to read: ";
@@ -117,6 +116,8 @@ int main(int argc, char **argv) {
   }
   NetCDFPDEReader reader(filename);
   int scalar_type = reader.get_scalar_type();
+
+  auto glob_start = NOW;
   if (scalar_type == 0) {
     run_simulation<float>(reader);
   } else if (scalar_type == 1) {
@@ -127,7 +128,8 @@ int main(int argc, char **argv) {
     return -1;
   }
   auto glob_end = NOW;
-  std::cout << "duration of whole algorithm: " << DURATION(glob_end - glob_start) << " ms" << std::endl;
+  // std::cout << "duration of whole algorithm: " << DURATION(glob_end - glob_start) << " ms" << std::endl;
+  std::cout << DURATION(glob_end - glob_start) << std::endl;
   
   return 0;
 }

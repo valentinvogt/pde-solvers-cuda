@@ -1,4 +1,6 @@
+
 from create_netcdf_input import *
+import sys
 
 def initial_noisy_function(member, coupled_idx, x_position, y_position):
     A = 2.5
@@ -32,9 +34,19 @@ def f_scalings_brusselator(member, size):
     f[11] = -1.      # u^2v in second function
     return f
 
-create_input_file('data/b2.nc', 'data/b2_out.nc', type_of_equation=0, 
-                      x_size=160, x_length=160., y_size=160, y_length=160., boundary_value_type=2,
+
+
+
+if len(sys.argv) != 2:
+    print("input size of grid as command line argument!")
+    print("example: python scripts/benchmark_brusselator.py 100")
+
+size = int(sys.argv[1])
+print(size)
+
+create_input_file('data/benchmark.nc', 'data/bench_out.nc', type_of_equation=0, 
+                      x_size=size, x_length=float(size), y_size=size, y_length=float(size), boundary_value_type=2,
                       scalar_type=0, n_coupled=2, 
                       coupled_function_order=3, number_timesteps=1000,
-                      final_time=0.1, number_snapshots=32, n_members=1, initial_value_function=initial_noisy_function,
+                      final_time=0.1, number_snapshots=2, n_members=1, initial_value_function=initial_noisy_function,
                       sigma_function=const_sigma, bc_neumann_function=zero_func, f_value_function=f_scalings_brusselator)
