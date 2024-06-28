@@ -23,7 +23,7 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
   const unsigned Ny = src.shape(1);
   for (int x = 1; x < Nx - 1; x++) {
     for (int y = n_coupled; y < Ny - n_coupled; y += n_coupled) {
-      // does not work for generic function, calculates all f_1, f_2, ... , fn
+      // calculates all f_1, f_2, ... , fn
       // in one run
       Scalar result_function[n_coupled];
       f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu),
@@ -31,14 +31,14 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
       for (int i = 0; i < n_coupled; i++) {
         dst(x, y + i) =
             del_x_2 *
-                (sigma(2 * x - 1, (y - 1) / n_coupled) * src(x, y + i - 1) +
-                 sigma(2 * x - 1, (y - 1) / n_coupled + 2) * src(x, y + i + 1) +
-                 sigma(2 * x - 2, (y - 1) / n_coupled + 1) * src(x - 1, y + i) +
-                 sigma(2 * x, (y - 1) / n_coupled + 1) * src(x + 1, y + i) -
-                 (sigma(2 * x - 1, (y - 1) / n_coupled) +
-                  sigma(2 * x - 1, (y - 1) / n_coupled + 2) +
-                  sigma(2 * x - 2, (y - 1) / n_coupled + 1) +
-                  sigma(2 * x, (y - 1) / n_coupled + 1)) *
+                (sigma(2 * x - 1, y / n_coupled - 1) * src(x, y + i - n_coupled) +
+                 sigma(2 * x - 1, y /  n_coupled + 1) * src(x, y + i + n_coupled) +
+                 sigma(2 * x - 2, y / n_coupled) * src(x - 1, y + i) +
+                 sigma(2 * x, y / n_coupled) * src(x + 1, y + i) -
+                 (sigma(2 * x - 1, y  / n_coupled) +
+                  sigma(2 * x - 1, y / n_coupled + 1) +
+                  sigma(2 * x - 2, y  / n_coupled) +
+                  sigma(2 * x, y / n_coupled)) *
                      src(x, y + i)) +
             result_function[i];
       }

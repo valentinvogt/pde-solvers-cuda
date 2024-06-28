@@ -28,6 +28,7 @@
         [
           python-lsp-server
           numpy
+          scipy
 
           matplotlib
           pandas
