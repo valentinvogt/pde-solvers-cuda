@@ -1,6 +1,7 @@
 #include "io/netcdf_reader.hpp"
 #include "io/netcdf_writer.hpp"
 #include "pde_base.hpp"
+#include <chrono>
 #include <coupled_function.hpp>
 #include <iostream>
 #include <netcdf.h>
@@ -8,17 +9,17 @@
 #include <pde_wave.hpp>
 #include <string>
 #include <zisa/memory/array.hpp>
-#include <chrono>
 
-#define DURATION(a) std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
+#define DURATION(a)                                                            \
+  std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
 #define NOW std::chrono::high_resolution_clock::now()
 
-#define INSTANCIATE_PDE_AND_CALCULATE(PDE_TYPE, N_COUPLED)                     \
+#define INSTANCIATE_PDE_AND_CALCULATE(PDE_TYPE, N_COUPLED, MEMORY_LOCATION)                     \
   case N_COUPLED:                                                              \
     calculate_and_save_snapshots<                                              \
         PDE_TYPE<N_COUPLED, Scalar, CoupledFunction<Scalar>>, Scalar>(         \
         std::move(PDE_TYPE<N_COUPLED, Scalar, CoupledFunction<Scalar>>(        \
-            reader.get_x_size(), reader.get_y_size(), zisa::device_type::cpu,  \
+            reader.get_x_size(), reader.get_y_size(), MEMORY_LOCATION,  \
             bc, func_coupled, reader.get_x_length() / reader.get_x_size(),     \
             reader.get_x_length() / reader.get_x_size())),                     \
         reader);                                                               \
@@ -47,17 +48,36 @@ inline void calculate_and_save_snapshots(PDE pde,
                              reader.get_number_timesteps(),
                              reader.get_number_snapshots(), writer, memb);
     // auto end = NOW;
-    // std::cout << "duration of member " << memb << ": " << DURATION(end - start) << " ms" << std::endl;
+    // std::cout << "duration of member " << memb << ": " << DURATION(end -
+    // start) << " ms" << std::endl;
   }
 }
 
 template <typename Scalar> void run_simulation(const NetCDFPDEReader &reader) {
   int n_coupled = reader.get_n_coupled();
   int coupled_order = reader.get_coupled_function_order();
-  zisa::array<Scalar, 1> function_scalings(
-      zisa::shape_t<1>(n_coupled * (unsigned int)std::pow(coupled_order, n_coupled)), zisa::device_type::cpu);
+  zisa::device_type memory_location = zisa::device_type::cpu;
+
+#if CUDA_AVAILABLE
+  if (argc > 2 && std::strcmp(argv[2], "1") == 0) {
+    memory_location = zisa::device_type::cuda;
+    std::cout << "running on gpu" << std::endl;
+  }
+#endif
+
+  zisa::array<Scalar, 1> function_scalings_tmp(
+      zisa::shape_t<1>(n_coupled *
+                       (unsigned int)std::pow(coupled_order, n_coupled)),
+      zisa::device_type::cpu);
   reader.write_whole_variable_to_array("function_scalings",
-                                       function_scalings.view().raw());
+                                       function_scalings_tmp.view().raw());
+  zisa::array<Scalar, 1> function_scalings(
+      zisa::shape_t<1>(n_coupled *
+                       (unsigned int)std::pow(coupled_order, n_coupled)),
+      memory_location);
+  zisa::copy(function_scalings, function_scalings_tmp);
+
+  
 
   CoupledFunction<Scalar> func_coupled(function_scalings.const_view(),
                                        n_coupled, coupled_order);
@@ -74,26 +94,27 @@ template <typename Scalar> void run_simulation(const NetCDFPDEReader &reader) {
     exit(-1);
   }
 
+
   // 0->Heat, 1->Wave
   int pde_type = reader.get_equation_type();
   if (pde_type == 0) {
     switch (reader.get_n_coupled()) {
-      INSTANCIATE_PDE_AND_CALCULATE(PDEHeat, 1)
-      INSTANCIATE_PDE_AND_CALCULATE(PDEHeat, 2)
-      INSTANCIATE_PDE_AND_CALCULATE(PDEHeat, 3)
-      INSTANCIATE_PDE_AND_CALCULATE(PDEHeat, 4)
-      INSTANCIATE_PDE_AND_CALCULATE(PDEHeat, 5)
+      INSTANCIATE_PDE_AND_CALCULATE(PDEHeat, 1, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDEHeat, 2, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDEHeat, 3, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDEHeat, 4, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDEHeat, 5, memory_location)
     default:
       std::cout << "only implemented for n_coupled <= 5 yet" << std::endl;
       exit(-1);
     }
   } else if (pde_type == 1) {
     switch (reader.get_n_coupled()) {
-      INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 1)
-      INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 2)
-      INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 3)
-      INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 4)
-      INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 5)
+      INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 1, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 2, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 3, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 4, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 5, memory_location)
     default:
       std::cout << "only implemented for n_coupled <= 5 yet" << std::endl;
       exit(-1);
@@ -128,9 +149,10 @@ int main(int argc, char **argv) {
     return -1;
   }
   auto glob_end = NOW;
-  // std::cout << "duration of whole algorithm: " << DURATION(glob_end - glob_start) << " ms" << std::endl;
+  // std::cout << "duration of whole algorithm: " << DURATION(glob_end -
+  // glob_start) << " ms" << std::endl;
   std::cout << DURATION(glob_end - glob_start) << std::endl;
-  
+
   return 0;
 }
 #undef DURATION

@@ -1,0 +1,36 @@
+Grid size: 32
+  Run 1 duration: 117
+  Run 2 duration: 115
+  Run 3 duration: 115
+  Run 4 duration: 115
+
+Grid size: 64
+  Run 1 duration: 453
+  Run 2 duration: 449
+  Run 3 duration: 449
+  Run 4 duration: 449
+
+Grid size: 128
+  Run 1 duration: 1796
+  Run 2 duration: 1814
+  Run 3 duration: 1816
+  Run 4 duration: 1814
+
+Grid size: 256
+  Run 1 duration: 7196
+  Run 2 duration: 7277
+  Run 3 duration: 7417
+  Run 4 duration: 7239
+
+Grid size: 512
+  Run 1 duration: 31149
+  Run 2 duration: 31387
+  Run 3 duration: 31401
+  Run 4 duration: 33160
+
+Grid size: 1024
+  Run 1 duration: 129654
+  Run 2 duration: 142223
+  Run 3 duration: 141491
+  Run 4 duration: 138403
+
