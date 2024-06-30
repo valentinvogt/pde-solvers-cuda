@@ -35,6 +35,6 @@ def f_scalings_brusselator(member, size):
 create_input_file('data/b2.nc', 'data/b2_out.nc', type_of_equation=0, 
                       x_size=512, x_length=160., y_size=512, y_length=160, boundary_value_type=2,
                       scalar_type=0, n_coupled=2, 
-                      coupled_function_order=3, number_timesteps=20000,
-                      final_time=40., number_snapshots=32, n_members=1, initial_value_function=initial_noisy_function,
+                      coupled_function_order=3, number_timesteps=10000,
+                      final_time=10., number_snapshots=32, n_members=1, initial_value_function=initial_noisy_function,
                       sigma_function=const_sigma, bc_neumann_function=zero_func, f_value_function=f_scalings_brusselator)
