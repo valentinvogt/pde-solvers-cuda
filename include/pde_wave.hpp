@@ -79,28 +79,54 @@ public:
   }
 
   void read_initial_data_from_netcdf(const NetCDFPDEReader &reader,
-                                     int member) {
+                                     int memb) {
+#if CUDA_AVAILABLE
+    zisa::array<Scalar, 2> tmp(
+        zisa::shape_t<2>(this->data_.shape()[0], this->data_.shape()[1]),
+        zisa::device_type::cpu);
+    reader.write_variable_of_member_to_array("initial_data", tmp.view().raw(),
+                                             memb, this->data_.shape()[0],
+                                             this->data_.shape()[1]);
+    zisa::copy(this->data_, tmp);
+#else
     reader.write_variable_of_member_to_array(
-        "initial_data", this->data_.view().raw(), member,
-        this->data_.shape()[0], this->data_.shape()[1]);
+        "initial_data", this->data_.view().raw(), memb, this->data_.shape()[0],
+        this->data_.shape()[1]);
+#endif
 
+#if CUDA_AVAILABLE
+    zisa::array<Scalar, 2> tmp_sigma(
+        zisa::shape_t<2>(this->sigma_values_.shape()[0],
+                         this->sigma_values_.shape()[1]),
+        zisa::device_type::cpu);
     reader.write_variable_of_member_to_array(
-        "sigma_values", this->sigma_values_.view().raw(), member,
+        "sigma_values", tmp_sigma.view().raw(), memb,
         this->sigma_values_.shape()[0], this->sigma_values_.shape()[1]);
+    zisa::copy(this->sigma_values_, tmp_sigma);
 
+#else
     reader.write_variable_of_member_to_array(
-        "bc_neumann_values", this->bc_neumann_values_.view().raw(), member,
-        this->bc_neumann_values_.shape()[0],
-        this->bc_neumann_values_.shape()[1]);
+        "sigma_values", this->sigma_values_.view().raw(), memb,
+        this->sigma_values_.shape()[0], this->sigma_values_.shape()[1]);
+#endif
 
-    if (this->bc_ == BoundaryCondition::Neumann) {
+#if CUDA_AVAILABLE
       reader.write_variable_of_member_to_array(
-          "bc_neumann_values", this->bc_neumann_values_.view().raw(), member,
+          "bc_neumann_values", tmp.view().raw(), memb,
           this->bc_neumann_values_.shape()[0],
           this->bc_neumann_values_.shape()[1]);
+      zisa::copy(this->bc_neumann_values_, tmp);
+#else
+      reader.write_variable_of_member_to_array(
+          "bc_neumann_values", this->bc_neumann_values_.view().raw(), memb,
+          this->bc_neumann_values_.shape()[0],
+          this->bc_neumann_values_.shape()[1]);
+#endif
 
+    if (this->bc_ == BoundaryCondition::Neumann) {
+      // do nothing as bc_data is already loaded
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
-      // do noching as long as data on boundary does not change
+      // do nothing as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {
       periodic_bc<n_coupled, Scalar>(this->data_.view());
     }

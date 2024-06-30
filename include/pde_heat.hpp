@@ -51,19 +51,46 @@ public:
   }
 
   void read_initial_data_from_netcdf(const NetCDFPDEReader &reader, int memb) {
+
+#if CUDA_AVAILABLE
+    zisa::array<Scalar, 2> tmp(this->data_.shape(), zisa::device_type::cpu);
+    reader.write_variable_of_member_to_array("initial_data", tmp.view().raw(),
+                                             memb, this->data_.shape()[0],
+                                             this->data_.shape()[1]);
+    zisa::copy(this->data_, tmp);
+#else
     reader.write_variable_of_member_to_array(
         "initial_data", this->data_.view().raw(), memb, this->data_.shape()[0],
         this->data_.shape()[1]);
+#endif
 
+#if CUDA_AVAILABLE
+    zisa::array<Scalar, 2> tmp_sigma(this->sigma_values_.shape(),
+                                     zisa::device_type::cpu);
+    reader.write_variable_of_member_to_array(
+        "sigma_values", tmp_sigma.view().raw(), memb,
+        this->sigma_values_.shape()[0], this->sigma_values_.shape()[1]);
+    zisa::copy(this->sigma_values_, tmp_sigma);
+
+#else
     reader.write_variable_of_member_to_array(
         "sigma_values", this->sigma_values_.view().raw(), memb,
         this->sigma_values_.shape()[0], this->sigma_values_.shape()[1]);
+#endif
 
     if (this->bc_ == BoundaryCondition::Neumann) {
+#if CUDA_AVAILABLE
+      reader.write_variable_of_member_to_array(
+          "bc_neumann_values", tmp.view().raw(), memb,
+          this->bc_neumann_values_.shape()[0],
+          this->bc_neumann_values_.shape()[1]);
+      zisa::copy(this->bc_neumann_values_, tmp);
+#else
       reader.write_variable_of_member_to_array(
           "bc_neumann_values", this->bc_neumann_values_.view().raw(), memb,
           this->bc_neumann_values_.shape()[0],
           this->bc_neumann_values_.shape()[1]);
+#endif
 
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
       // do noching as long as data on boundary does not change
@@ -85,8 +112,16 @@ public:
                                     this->sigma_values_.const_view(), del_x_2,
                                     func_);
 
+    // zisa::array<Scalar, 2> tmp_cpu(this->data_.shape(), zisa::device_type::cpu);
+    // zisa::copy(tmp_cpu, tmp);
+    // std::cout << tmp_cpu(20, 20) << std::endl;
+    // zisa::copy(tmp_cpu, this->data_);
+    // std::cout << tmp_cpu(20, 20) << std::endl;
+
     // euler update of data
     add_arrays_interior<n_coupled>(this->data_.view(), tmp.const_view(), dt);
+    // zisa::copy(tmp_cpu, this->data_);
+    // std::cout << tmp_cpu(20, 20) << std::endl;
     PDEBase<n_coupled, Scalar>::add_bc();
   }
 

@@ -2,14 +2,15 @@
 #define NETCDF_WRITER2_HPP_
 
 #include "netcdf_reader.hpp"
+#include <chrono>
 #include <iostream>
 #include <netcdf.h>
 #include <string>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/array_view_decl.hpp>
-#include <chrono>
 
-#define DURATION(a) std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
+#define DURATION(a)                                                            \
+  std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
 #define NOW std::chrono::high_resolution_clock::now()
 
 template <typename Scalar> class NetCDFPDEWriter {
@@ -97,14 +98,38 @@ public:
 
     assert(n_x_ + 2 == data.shape(0));
     assert(n_coupled_ * (n_y_ + 2) == data.shape(1));
-
-    if constexpr (std::is_same<Scalar, float>::value) {
-      nc_put_vara_float(ncid_, varid_data_, offsets, counts, &data[0]);
-    } else {
-      nc_put_vara_double(ncid_, varid_data_, offsets, counts, &data[0]);
+    if (data.memory_location() == zisa::device_type::cpu) {
+      if constexpr (std::is_same<Scalar, float>::value) {
+        nc_put_vara_float(ncid_, varid_data_, offsets, counts, &data[0]);
+      } else {
+        nc_put_vara_double(ncid_, varid_data_, offsets, counts, &data[0]);
+      }
     }
+#if CUDA_AVAILABLE
+    else if (data.memory_location() == zisa::device_type::cuda) {
+      zisa::array<Scalar, 2> tmp(
+          zisa::shape_t<2>(data.shape()[0], data.shape()[1]),
+          zisa::device_type::cpu);
+      zisa::copy(tmp, data);
+
+      if constexpr (std::is_same<Scalar, float>::value) {
+        nc_put_vara_float(ncid_, varid_data_, offsets, counts,
+                          &(tmp.const_view()[0]));
+      } else {
+        nc_put_vara_double(ncid_, varid_data_, offsets, counts,
+                           &(tmp.const_view()[0]));
+      }
+
+    }
+#endif
+    else {
+      std::cout << "error in writer, unknown memory location!\n";
+      exit(-1);
+    }
+
     // auto end = NOW;
-    // std::cout << "time to save snapshot: " << DURATION(end - start) << " ms" << std::endl;
+    // std::cout << "time to save snapshot: " << DURATION(end - start) << " ms"
+    // << std::endl;
   }
 
 private:

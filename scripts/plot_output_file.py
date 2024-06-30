@@ -41,7 +41,7 @@ for member in range(n_members):
             ax = axes[coupled_idx]
 
             # Extract the 2D matrix for the current member, snapshot, and coupled index
-            matrix = data[member, snapshot, :, coupled_idx + 1::n_coupled]
+            matrix = data[member, snapshot, :, coupled_idx::n_coupled]
 
             # Plot the matrix
             im = ax.imshow(matrix, cmap='viridis', aspect='equal', vmin=global_min, vmax=global_max)

@@ -13,6 +13,7 @@ inline void check(int stat) {
   }
 }
 
+// note that this reader can only write to arrays on the cpu!
 class NetCDFPDEReader {
 public:
   NetCDFPDEReader(std::string filename) : filename_(filename) {

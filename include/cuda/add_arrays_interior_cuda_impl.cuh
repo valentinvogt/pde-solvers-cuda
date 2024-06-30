@@ -25,7 +25,8 @@ add_arrays_interior_cuda_kernel(zisa::array_view<Scalar, 2> dst,
 
   const int Nx = src.shape(0);
   const int Ny = src.shape(1);
-  if (x_idx < Nx - 1 && y_idx < Ny - 1) {
+
+  if (x_idx < Nx - 1 && y_idx < Ny - n_coupled) {
     dst(x_idx, y_idx) += scaling * src(x_idx, y_idx);
   }
 }

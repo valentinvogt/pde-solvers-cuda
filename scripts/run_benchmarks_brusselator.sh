@@ -28,7 +28,20 @@ for SIZE in "${SIZES[@]}"; do
         DURATION=$(./build/run_from_netcdf data/benchmark.nc)
         
         # Append the duration to the results file
-        echo "  Run $i duration: $DURATION" >> $RESULTS_FILE
+        echo "  Run $i duration cpu: $DURATION" >> $RESULTS_FILE
+    done
+
+    echo "" >> $RESULTS_FILE
+    for ((i=1; i<=REPETITIONS; i++)); do
+        echo "  Run $i for size $SIZE"
+
+        # Generate the parameters using the Python script
+        
+        # Run the solver and capture the output
+        DURATION=$(./build/run_from_netcdf data/benchmark.nc 1)
+        
+        # Append the duration to the results file
+        echo "  Run $i duration gpu: $DURATION" >> $RESULTS_FILE
     done
 
     echo "" >> $RESULTS_FILE

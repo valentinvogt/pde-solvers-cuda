@@ -9,6 +9,7 @@
 #include <pde_wave.hpp>
 #include <string>
 #include <zisa/memory/array.hpp>
+#include <string.h>
 
 #define DURATION(a)                                                            \
   std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
@@ -53,17 +54,10 @@ inline void calculate_and_save_snapshots(PDE pde,
   }
 }
 
-template <typename Scalar> void run_simulation(const NetCDFPDEReader &reader) {
+template <typename Scalar> void run_simulation(const NetCDFPDEReader &reader, zisa::device_type memory_location) {
   int n_coupled = reader.get_n_coupled();
   int coupled_order = reader.get_coupled_function_order();
-  zisa::device_type memory_location = zisa::device_type::cpu;
 
-#if CUDA_AVAILABLE
-  if (argc > 2 && std::strcmp(argv[2], "1") == 0) {
-    memory_location = zisa::device_type::cuda;
-    std::cout << "running on gpu" << std::endl;
-  }
-#endif
 
   zisa::array<Scalar, 1> function_scalings_tmp(
       zisa::shape_t<1>(n_coupled *
@@ -135,14 +129,22 @@ int main(int argc, char **argv) {
   } else {
     filename = argv[1];
   }
+
+  zisa::device_type memory_location = zisa::device_type::cpu;
+#if CUDA_AVAILABLE
+  if (argc > 2 && strcmp(argv[2], "1") == 0) {
+    memory_location = zisa::device_type::cuda;
+  }
+#endif
+
   NetCDFPDEReader reader(filename);
   int scalar_type = reader.get_scalar_type();
 
   auto glob_start = NOW;
   if (scalar_type == 0) {
-    run_simulation<float>(reader);
+    run_simulation<float>(reader, memory_location);
   } else if (scalar_type == 1) {
-    run_simulation<double>(reader);
+    run_simulation<double>(reader, memory_location);
   } else {
     std::cout << "Only double or float (scalar_type {0,1}) allowed"
               << std::endl;
