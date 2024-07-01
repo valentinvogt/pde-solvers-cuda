@@ -20,8 +20,15 @@ def f_scalings_ring(member, size):
     return f
 
 
+if len(sys.argv) != 2:
+    print("input size of grid as command line argument!")
+    print("example: python scripts/benchmark_brusselator.py 100")
+
+size = int(sys.argv[1])
+print(size)
+
 create_input_file('data/example_devito.nc', 'data/example_devito_out.nc', type_of_equation=0, 
-                      x_size=100, x_length=1., y_size=100, y_length=1., boundary_value_type=0,
+                      x_size=size, x_length=1., y_size=size, y_length=1., boundary_value_type=0,
                       scalar_type=0, n_coupled=1, 
                       coupled_function_order=2, number_timesteps=10000,
                       final_time=0.25, number_snapshots=5, n_members=1, initial_value_function=initial_ring_function,
