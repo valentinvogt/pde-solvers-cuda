@@ -1,5 +1,6 @@
 
 from create_netcdf_input import *
+import sys
 
 def initial_ring_function(member, coupled_idx, x_position, y_position):
     r = (x_position - .5)**2. + (y_position - .5)**2.
