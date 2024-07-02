@@ -15,6 +15,8 @@ n_snapshots = dataset.dimensions['n_snapshots'].size
 x_size_and_boundary = dataset.dimensions['x_size_and_boundary'].size
 n_coupled_and_y_size_and_boundary = dataset.dimensions['n_coupled_and_x_size_and_boundary'].size
 n_coupled = dataset.getncattr('n_coupled')
+x_size = dataset.getncattr('x_length')
+y_size = dataset.getncattr('y_length')
 
 # Extract the data variable
 data = dataset.variables['data'][:]
@@ -46,9 +48,10 @@ for member in range(n_members):
             # Plot the matrix
             im = ax.imshow(matrix, cmap='viridis', aspect='equal', vmin=global_min, vmax=global_max)
             ax.set_title(f'Member {member + 1}, Snapshot {snapshot + 1}, Coupled Index {coupled_idx + 1}')
-            ax.set_xlabel('x')
-            ax.set_ylabel('y')
-
+            ax.set_xlabel('y')
+            ax.set_ylabel('x')
+            ax.set_xlim(0, y_size)
+            ax.set_ylim(x_size, 0)
         # Add a colorbar to the figure
         cbar = fig.colorbar(im, ax=axes, orientation='vertical', fraction=0.02, pad=0.04)
         cbar.set_label('Data Value')
@@ -57,8 +60,8 @@ for member in range(n_members):
         # plt.tight_layout(rect=[0, 0, 0.95, 1])  # Adjust rect to make room for colorbar
 
         # Save the figure to a file
-        output_filename = f'out/{os.path.splitext(filename)[0]}_member{member + 1}_snapshot{snapshot + 1}.png'
-        plt.savefig(output_filename)
+        output_filename = f'out/{os.path.splitext(filename)[0]}_member{member + 1}_snapshot{snapshot + 1}.pdf'
+        plt.savefig(output_filename, bbox_inches='tight')
         plt.close(fig)  # Close the figure to free memory
 
 # Close the dataset

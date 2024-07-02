@@ -46,7 +46,7 @@ def plot_loglog(data):
     plt.xticks([8, 16, 32, 64, 128, 256, 512], [8, 16, 32, 64, 128, 256, 512])
     plt.legend()
     plt.grid(True, which="both", ls="--")
-    plt.show()
+    plt.savefig("out/brusselator_benchmark.pdf", bbox_inches='tight')
 
 file_path = 'out/benchmark_results.txt'
 data = read_data_from_file(file_path)
