@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Array of grid sizes to benchmark
-SIZES=(32 64 128 256 512 1024)
+SIZES=(8 16 32 64 128 256 512)
 
 # Number of repetitions for each size
-REPETITIONS=4
+REPETITIONS=10
 
 # File to save the benchmarking results
 RESULTS_FILE="out/benchmark_results.txt"
@@ -28,7 +28,7 @@ for SIZE in "${SIZES[@]}"; do
         DURATION=$(./build/run_from_netcdf data/benchmark.nc)
         
         # Append the duration to the results file
-        echo "  Run $i duration cpu: $DURATION" >> $RESULTS_FILE
+        echo "$DURATION" >> $RESULTS_FILE
     done
 
     echo "" >> $RESULTS_FILE
@@ -41,7 +41,7 @@ for SIZE in "${SIZES[@]}"; do
         DURATION=$(./build/run_from_netcdf data/benchmark.nc 1)
         
         # Append the duration to the results file
-        echo "  Run $i duration gpu: $DURATION" >> $RESULTS_FILE
+        echo "$DURATION" >> $RESULTS_FILE
     done
 
     echo "" >> $RESULTS_FILE

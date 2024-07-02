@@ -29,6 +29,7 @@
           python-lsp-server
           numpy
           scipy
+          seaborn
 
           matplotlib
           pandas

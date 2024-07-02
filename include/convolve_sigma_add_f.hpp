@@ -35,7 +35,7 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
                  sigma(2 * x - 1, y /  n_coupled + 1) * src(x, y + i + n_coupled) +
                  sigma(2 * x - 2, y / n_coupled) * src(x - 1, y + i) +
                  sigma(2 * x, y / n_coupled) * src(x + 1, y + i) -
-                 (sigma(2 * x - 1, y  / n_coupled) +
+                 (sigma(2 * x - 1, y  / n_coupled - 1) +
                   sigma(2 * x - 1, y / n_coupled + 1) +
                   sigma(2 * x - 2, y  / n_coupled) +
                   sigma(2 * x, y / n_coupled)) *

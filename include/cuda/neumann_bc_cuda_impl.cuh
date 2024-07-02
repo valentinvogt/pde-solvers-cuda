@@ -33,7 +33,7 @@ __global__ void neumann_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
     } else {
       // right boundary of size n_coupled
       const int shifted_idx =
-          linear_idx - Nx * n_coupled + 2 * Ny - 4 * n_coupled;
+          linear_idx - (Nx * n_coupled + 2 * Ny - 4 * n_coupled);
       const int x_idx = shifted_idx % Nx;
       const int y_idx = Ny - 1 - (shifted_idx / Nx);
       data(x_idx, y_idx) += dt * bc(x_idx, y_idx);
