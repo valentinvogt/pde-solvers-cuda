@@ -77,8 +77,7 @@ public:
     this->ready_ = true;
   }
 
-  void read_initial_data_from_netcdf(const NetCDFPDEReader &reader,
-                                     int memb) {
+  void read_initial_data_from_netcdf(const NetCDFPDEReader &reader, int memb) {
 #if CUDA_AVAILABLE
     zisa::array<Scalar, 2> tmp(
         zisa::shape_t<2>(this->data_.shape()[0], this->data_.shape()[1]),
@@ -110,16 +109,16 @@ public:
 #endif
 
 #if CUDA_AVAILABLE
-      reader.write_variable_of_member_to_array(
-          "bc_neumann_values", tmp.view().raw(), memb,
-          this->bc_neumann_values_.shape()[0],
-          this->bc_neumann_values_.shape()[1]);
-      zisa::copy(this->bc_neumann_values_, tmp);
+    reader.write_variable_of_member_to_array(
+        "bc_neumann_values", tmp.view().raw(), memb,
+        this->bc_neumann_values_.shape()[0],
+        this->bc_neumann_values_.shape()[1]);
+    zisa::copy(this->bc_neumann_values_, tmp);
 #else
-      reader.write_variable_of_member_to_array(
-          "bc_neumann_values", this->bc_neumann_values_.view().raw(), memb,
-          this->bc_neumann_values_.shape()[0],
-          this->bc_neumann_values_.shape()[1]);
+    reader.write_variable_of_member_to_array(
+        "bc_neumann_values", this->bc_neumann_values_.view().raw(), memb,
+        this->bc_neumann_values_.shape()[0],
+        this->bc_neumann_values_.shape()[1]);
 #endif
 
     if (this->bc_ == BoundaryCondition::Neumann) {

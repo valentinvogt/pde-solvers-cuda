@@ -73,7 +73,7 @@ public:
       result_values[i] = 0;
     }
 
-    for (int i = 0; i < std::pow(max_pot_,n_coupled_); i++) {
+    for (int i = 0; i < std::pow(max_pot_, n_coupled_); i++) {
       Scalar pot = 1.;
       int max_pot_pow_j = 1;
       for (int j = 0; j < n_coupled_; j++) {

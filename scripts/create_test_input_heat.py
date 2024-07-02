@@ -28,21 +28,9 @@ def f_lin(member, size):
     f[2] = -0.5
     return f
 
-def f_scalings_brusselator(member, size):
-
-    A = 2.5
-    B = 5.5
-    assert(size == 18)
-    f = np.zeros(size)
-    f[0] = A         # constant in first function
-    f[2] = - B - 1.  # u-term in first function
-    f[10] = 1.       # u^2v in first function
-    f[7] = B         # u term in second function
-    f[11] = -1.      # u^2v in second function
-    return f
 
 create_input_file('data/test.nc', 'data/test_out.nc', type_of_equation=0, 
-                      x_size=256, x_length=1., y_size=256, y_length=1., boundary_value_type=1,
+                      x_size=128, x_length=1., y_size=128, y_length=1., boundary_value_type=1,
                       scalar_type=0, n_coupled=2, 
                       coupled_function_order=3, number_timesteps=5000,
                       final_time=0.01, number_snapshots=4, n_members=1, initial_value_function=initial_noisy_function,

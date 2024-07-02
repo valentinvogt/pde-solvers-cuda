@@ -30,16 +30,17 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
         result_function);
       for (int i = 0; i < n_coupled; i++) {
         dst(x, y + i) =
-            del_x_2 *
-                (sigma(2 * x - 1, y / n_coupled - 1) * src(x, y + i - n_coupled) +
-                 sigma(2 * x - 1, y /  n_coupled + 1) * src(x, y + i + n_coupled) +
-                 sigma(2 * x - 2, y / n_coupled) * src(x - 1, y + i) +
-                 sigma(2 * x, y / n_coupled) * src(x + 1, y + i) -
-                 (sigma(2 * x - 1, y  / n_coupled - 1) +
-                  sigma(2 * x - 1, y / n_coupled + 1) +
-                  sigma(2 * x - 2, y  / n_coupled) +
-                  sigma(2 * x, y / n_coupled)) *
-                     src(x, y + i)) +
+            del_x_2 * (sigma(2 * x - 1, y / n_coupled - 1) *
+                           src(x, y + i - n_coupled) +
+                       sigma(2 * x - 1, y / n_coupled + 1) *
+                           src(x, y + i + n_coupled) +
+                       sigma(2 * x - 2, y / n_coupled) * src(x - 1, y + i) +
+                       sigma(2 * x, y / n_coupled) * src(x + 1, y + i) -
+                       (sigma(2 * x - 1, y / n_coupled - 1) +
+                        sigma(2 * x - 1, y / n_coupled + 1) +
+                        sigma(2 * x - 2, y / n_coupled) +
+                        sigma(2 * x, y / n_coupled)) *
+                           src(x, y + i)) +
             result_function[i];
       }
     }

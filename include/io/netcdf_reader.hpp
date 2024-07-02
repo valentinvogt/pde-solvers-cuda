@@ -31,7 +31,6 @@ public:
 
     check(nc_get_att(ncid_, NC_GLOBAL, "boundary_value_type",
                      &boundary_value_type_));
-    check(nc_get_att(ncid_, NC_GLOBAL, "scalar_type", &scalar_type_));
 
     check(nc_get_att(ncid_, NC_GLOBAL, "n_coupled", &n_coupled_));
     check(nc_get_att(ncid_, NC_GLOBAL, "coupled_function_order",
@@ -97,8 +96,8 @@ public:
   }
 
   void write_variable_of_member_to_array(std::string varname, void *arr_ptr,
-                                        size_t member, size_t chunksize_x,
-                                        size_t chunksize_y) const {
+                                         size_t member, size_t chunksize_x,
+                                         size_t chunksize_y) const {
     if (scalar_type_ == 0) {
       write_variable_of_member_to_array_generic(
           varname, (float *)arr_ptr, member, chunksize_x, chunksize_y);
@@ -115,8 +114,8 @@ public:
 
 private:
   template <typename Scalar>
-    void write_variable_to_array_generic(std::string varname,
-                                      Scalar *arr_ptr) const {
+  void write_variable_to_array_generic(std::string varname,
+                                       Scalar *arr_ptr) const {
 
     int varid;
     check(nc_inq_varid(ncid_, varname.c_str(), &varid));
@@ -125,9 +124,9 @@ private:
 
   template <typename Scalar>
   void write_variable_of_member_to_array_generic(std::string varname,
-                                                Scalar *arr_ptr, size_t member,
-                                                size_t chunksize_x,
-                                                size_t chunksize_y) const {
+                                                 Scalar *arr_ptr, size_t member,
+                                                 size_t chunksize_x,
+                                                 size_t chunksize_y) const {
 
     int varid;
     check(nc_inq_varid(ncid_, varname.c_str(), &varid));

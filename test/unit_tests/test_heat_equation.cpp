@@ -1,4 +1,5 @@
 #include "pde_base.hpp"
+#include "run_from_netcdf.hpp"
 #include "zisa/memory/device_type.hpp"
 #include <coupled_function.hpp>
 #include <gtest/gtest.h>
@@ -314,5 +315,76 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
 #endif
     }
   }
+}
+
+void check_results(int nx, int ny) {
+
+  int ncid;
+  ASSERT_TRUE(nc_open("data/test_out.nc", NC_NOWRITE, &ncid) == NC_NOERR);
+  int type_of_equation;
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "type_of_equation",
+                         &type_of_equation) == NC_NOERR);
+  ASSERT_TRUE(type_of_equation == 0);
+
+  int n_members;
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "n_members", &n_members) == NC_NOERR);
+  ASSERT_TRUE(n_members == 1);
+
+  int x_size, y_size;
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "n_x", &x_size) == NC_NOERR);
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "n_y", &y_size) == NC_NOERR);
+  ASSERT_TRUE(x_size == nx);
+  ASSERT_TRUE(y_size == ny);
+
+  zisa::array<float, 2> final_value(zisa::shape_t<2>(130, 260));
+  int varid;
+  ASSERT_TRUE(nc_inq_varid(ncid, "data", &varid) == NC_NOERR);
+  size_t startp[4] = {0, 3, 0, 0};
+  size_t countp[4] = {1, 1, (size_t)nx + 2, (size_t)2 * (ny + 2)};
+  ASSERT_TRUE(nc_get_vara(ncid, varid, startp, countp,
+                          final_value.view().raw()) == NC_NOERR);
+
+  // ensure correct final funciton values
+  double tol = 1e-1;
+  float max = 0;
+  float err = 0;
+  for (int i = 0; i < nx + 2; i++) {
+    for (int j = 0; j < ny + 2; j++) {
+      ASSERT_NEAR(
+          final_value(i, 2 * j),
+          std::exp((i - 1) / (float)(nx - 1) + (j - 1) / (float)(ny - 1)) + 10,
+          tol);
+    }
+  }
+}
+
+TEST(HeatEquationTests, TEST_FROM_NC) {
+  ASSERT_TRUE(std::system("python scripts/create_test_input_heat.py") == 0);
+
+  int nx = 128, ny = 128;
+  NetCDFPDEReader reader("data/test.nc");
+  zisa::array<float, 2> init_data(zisa::shape_t<2>(nx + 2, 2 * (ny + 2)),
+                                  zisa::device_type::cpu);
+  reader.write_variable_of_member_to_array(
+      "initial_data", init_data.view().raw(), 0, nx + 2, 2 * (ny + 2));
+
+  // ensure correct initial conditions
+  double tol = 1e-5;
+  for (int i = 0; i < nx + 2; i++) {
+    for (int j = 0; j < ny + 2; j++) {
+      ASSERT_NEAR(
+          init_data(i, 2 * j),
+          std::exp((i - 1) / (float)(nx - 1) + (j - 1) / (float)(ny - 1)), tol);
+    }
+  }
+
+  ASSERT_TRUE(reader.get_scalar_type() == 0);
+  run_simulation<float>(reader, zisa::device_type::cpu);
+  check_results(nx, ny);
+// calculate on cuda
+#if CUDA_AVAILABLE
+  run_simulation<float>(reader, zisa::device_type::cuda);
+  check_results(nx, ny);
+#endif // CUDA_AVAILABLE
 }
 } // namespace HeatEquationTests

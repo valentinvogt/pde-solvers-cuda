@@ -36,9 +36,10 @@ __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
         const int y_idx = loc_idx % n_coupled;
         data(x_idx, y_idx) = data(x_idx, y_length - 2 * n_coupled + y_idx);
       } else {
-        const int x_idx = loc_idx  / (2 * n_coupled) + 1;
+        const int x_idx = loc_idx / (2 * n_coupled) + 1;
         const int y_idx = loc_idx % n_coupled;
-        data(x_idx, y_length - n_coupled + y_idx) = data(x_idx, y_idx + n_coupled);
+        data(x_idx, y_length - n_coupled + y_idx) =
+            data(x_idx, y_idx + n_coupled);
       }
       return;
     } else {
@@ -49,7 +50,8 @@ __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
       } else if (idx >= data_size - n_coupled) {
         // lower right corner
         const int y_idx = idx - (data_size - n_coupled);
-        data(x_length - 1, y_length - n_coupled + y_idx) = data(1, n_coupled + y_idx);
+        data(x_length - 1, y_length - n_coupled + y_idx) =
+            data(1, n_coupled + y_idx);
       } else {
         const int loc_y_idx = data_size - idx;
         data(x_length - 1, loc_y_idx) = data(1, loc_y_idx);
@@ -64,7 +66,8 @@ void periodic_bc_cuda(zisa::array_view<Scalar, 2> data) {
 #if CUDA_AVAILABLE
   const unsigned thread_dims = THREAD_DIMS;
   // size of whole boundary where periodic bc has to be applied
-  const unsigned data_size = data.shape(0) * n_coupled * 2 + (data.shape(1) - 2 * n_coupled) * 2;
+  const unsigned data_size =
+      data.shape(0) * n_coupled * 2 + (data.shape(1) - 2 * n_coupled) * 2;
   const unsigned block_dims = std::ceil((double)data_size / thread_dims);
   // std::cout << "should reach cuda " << block_dims << " "
   //           << "thread_dims" << std::endl;

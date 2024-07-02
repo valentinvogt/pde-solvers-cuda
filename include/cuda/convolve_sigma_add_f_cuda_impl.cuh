@@ -29,12 +29,16 @@ __global__ void convolve_sigma_add_f_cuda_kernel(
     for (int i = 0; i < n_coupled; i++) {
       dst(x_idx, n_coupled * y_idx + i) =
           del_x_2 *
-              (sigma(2 * x_idx - 1, y_idx - 1) * src(x_idx, y_idx * n_coupled + i - n_coupled) +
-               sigma(2 * x_idx - 1, y_idx + 1) * src(x_idx, y_idx * n_coupled + i + n_coupled) +
-               sigma(2 * x_idx - 2, y_idx) * src(x_idx - 1, y_idx * n_coupled + i) +
+              (sigma(2 * x_idx - 1, y_idx - 1) *
+                   src(x_idx, y_idx * n_coupled + i - n_coupled) +
+               sigma(2 * x_idx - 1, y_idx + 1) *
+                   src(x_idx, y_idx * n_coupled + i + n_coupled) +
+               sigma(2 * x_idx - 2, y_idx) *
+                   src(x_idx - 1, y_idx * n_coupled + i) +
                sigma(2 * x_idx, y_idx) * src(x_idx + 1, y_idx * n_coupled + i) -
-               (sigma(2 * x_idx - 1, y_idx - 1) + sigma(2 * x_idx - 1, y_idx + 1) +
-                sigma(2 * x_idx - 2, y_idx) + sigma(2 * x_idx, y_idx)) *
+               (sigma(2 * x_idx - 1, y_idx - 1) +
+                sigma(2 * x_idx - 1, y_idx + 1) + sigma(2 * x_idx - 2, y_idx) +
+                sigma(2 * x_idx, y_idx)) *
                    src(x_idx, y_idx * n_coupled + i)) +
           result_function[i];
     }
@@ -48,8 +52,10 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
                                Scalar del_x_2, const Function &f) {
 #if CUDA_AVAILABLE
   const dim3 thread_dims(NUM_THREAD_X, NUM_THREAD_Y);
-  const dim3 block_dims(std::ceil((src.shape(0) - 2) / (double)thread_dims.x),
-                        std::ceil((src.shape(1) - 2 * n_coupled) / (double)thread_dims.y) * n_coupled);
+  const dim3 block_dims(
+      std::ceil((src.shape(0) - 2) / (double)thread_dims.x),
+      std::ceil((src.shape(1) - 2 * n_coupled) / (double)thread_dims.y) *
+          n_coupled);
   convolve_sigma_add_f_cuda_kernel<n_coupled, Scalar, Function>
       <<<block_dims, thread_dims>>>(dst, src, sigma, del_x_2, f);
   const auto error = cudaDeviceSynchronize();

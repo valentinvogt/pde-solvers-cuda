@@ -1,6 +1,7 @@
 #ifndef PDE_BASE_HPP_
 #define PDE_BASE_HPP_
 
+#include <chrono>
 #include <convolution.hpp>
 #include <convolve_sigma_add_f.hpp>
 #include <helpers.hpp>
@@ -18,9 +19,9 @@
 #include <zisa/memory/device_type.hpp>
 #include <zisa/memory/memory_location.hpp>
 #include <zisa/memory/shape.hpp>
-#include <chrono>
 
-#define DURATION(a) std::chrono::duration_cast<std::chrono::microseconds>(a).count()
+#define DURATION(a)                                                            \
+  std::chrono::duration_cast<std::chrono::microseconds>(a).count()
 #define NOW std::chrono::high_resolution_clock::now()
 
 enum BoundaryCondition { Dirichlet, Neumann, Periodic };
@@ -37,7 +38,7 @@ public:
   PDEBase(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Scalar dx, Scalar dy)
       : data_(zisa::shape_t<2>(Nx + 2, n_coupled * (Ny + 2)), memory_location),
-        bc_neumann_values_(zisa::shape_t<2>(Nx + 2,n_coupled * (Ny + 2)),
+        bc_neumann_values_(zisa::shape_t<2>(Nx + 2, n_coupled * (Ny + 2)),
                            memory_location),
         sigma_values_(zisa::shape_t<2>(2 * Nx + 1, Ny + 1), memory_location),
         memory_location_(memory_location), bc_(bc), dx_(dx), dy_(dy) {}
@@ -105,14 +106,15 @@ public:
       Scalar dt_new = T - time;
       // auto start = NOW;
       apply(dt_new);
-        // auto end = NOW;
-        // total_comp_time_count += DURATION(end - start);
-        // tot_comp_count++;
+      // auto end = NOW;
+      // total_comp_time_count += DURATION(end - start);
+      // tot_comp_count++;
       writer.save_snapshot(n_member, snapshot_counter, data_.const_view());
     }
     // std::cout << "number steps: " << tot_comp_count << std::endl;
-    // std::cout << "total time: " << total_comp_time_count << " micros" << std::endl;
-    // std::cout << "avg time per step: " << total_comp_time_count / tot_comp_count << " micros" << std::endl;
+    // std::cout << "total time: " << total_comp_time_count << " micros" <<
+    // std::endl; std::cout << "avg time per step: " << total_comp_time_count /
+    // tot_comp_count << " micros" << std::endl;
   }
 
   // for testing, does this work if on gpu?

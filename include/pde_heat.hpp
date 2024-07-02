@@ -112,11 +112,10 @@ public:
                                     this->sigma_values_.const_view(), del_x_2,
                                     func_);
 
-    // zisa::array<Scalar, 2> tmp_cpu(this->data_.shape(), zisa::device_type::cpu);
-    // zisa::copy(tmp_cpu, tmp);
-    // std::cout << tmp_cpu(20, 20) << std::endl;
-    // zisa::copy(tmp_cpu, this->data_);
-    // std::cout << tmp_cpu(20, 20) << std::endl;
+    // zisa::array<Scalar, 2> tmp_cpu(this->data_.shape(),
+    // zisa::device_type::cpu); zisa::copy(tmp_cpu, tmp); std::cout <<
+    // tmp_cpu(20, 20) << std::endl; zisa::copy(tmp_cpu, this->data_); std::cout
+    // << tmp_cpu(20, 20) << std::endl;
 
     // euler update of data
     add_arrays_interior<n_coupled>(this->data_.view(), tmp.const_view(), dt);
