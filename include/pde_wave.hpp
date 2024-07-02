@@ -11,7 +11,6 @@
 template <int n_coupled, typename Scalar, typename Function>
 class PDEWave : public virtual PDEBase<n_coupled, Scalar> {
 public:
-  // TODO: add derivative
   PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
       : PDEBase<n_coupled, Scalar>(Nx, Ny, memory_location, bc, dx, dy),
@@ -38,7 +37,7 @@ public:
     // euler update of data
     add_arrays_interior<n_coupled>(this->data_.view(),
                                    this->deriv_data_.const_view(), dt);
-    PDEBase<n_coupled, Scalar>::add_bc();
+    PDEBase<n_coupled, Scalar>::add_bc(dt);
   }
 
   void read_values(const std::string &filename,

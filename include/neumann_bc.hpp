@@ -21,7 +21,7 @@ void neumann_bc_cpu(zisa::array_view<Scalar, 2> data,
   }
 
   // add boundary on top and botton without corners
-  for (int y_idx = 1; y_idx < y_length - 1; y_idx++) {
+  for (int y_idx = n_coupled; y_idx < y_length - n_coupled; y_idx++) {
     data(0, y_idx) += dt * bc(0, y_idx);
     data(x_length - 1, y_idx) += dt * bc(x_length - 1, y_idx);
   }

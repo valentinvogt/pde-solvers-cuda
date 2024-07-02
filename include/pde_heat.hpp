@@ -122,7 +122,7 @@ public:
     add_arrays_interior<n_coupled>(this->data_.view(), tmp.const_view(), dt);
     // zisa::copy(tmp_cpu, this->data_);
     // std::cout << tmp_cpu(20, 20) << std::endl;
-    PDEBase<n_coupled, Scalar>::add_bc();
+    PDEBase<n_coupled, Scalar>::add_bc(dt);
   }
 
 protected:

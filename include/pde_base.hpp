@@ -147,13 +147,11 @@ protected:
   // apply boundary conditions
   // for cuda implementation, this should probably be done in the same step as
   // applying the convolution to avoid copying data back and forth
-  void add_bc() {
+  void add_bc(Scalar dt) {
     if (bc_ == BoundaryCondition::Dirichlet) {
       // do nothing as long as data on boundary does not change
       // dirichlet_bc(data_.view(), bc_neumann_values_.const_view());
     } else if (bc_ == BoundaryCondition::Neumann) {
-      // TODO: change dt
-      Scalar dt = 0.1;
       neumann_bc<n_coupled, Scalar>(data_.view(),
                                     bc_neumann_values_.const_view(), dt);
     } else if (bc_ == BoundaryCondition::Periodic) {

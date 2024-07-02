@@ -29,7 +29,6 @@ def read_data_from_file(file_path, scale=False):
         if grid_size is not None:
             data['Grid Size'].extend([grid_size] * len(times))
             data['Duration'].extend(times)
-    print(data)
     return pd.DataFrame(data)
 
 def plot_loglog(data, label):
@@ -58,5 +57,5 @@ plt.title('Brusselator Algorithm Duration vs Grid Size')
 plt.xticks([8, 16, 32, 64, 128, 256, 512, 1024, 2048], [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
 plt.legend()
 plt.grid(True, which="both", ls="--")
-plt.show()
+plt.savefig("out/bench_devito.png")
 
