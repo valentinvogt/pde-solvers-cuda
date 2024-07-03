@@ -494,7 +494,7 @@ TEST(HeatEquationTests, TEST_FROM_NC_PERIODIC) {
   check_results_periodic(nx, ny);
 // calculate on cuda
 #if CUDA_AVAILABLE
-  std::remove("data/test_out_periodic.nc");
+  std::remove("data/test_periodic_out.nc");
   run_simulation<float>(reader, zisa::device_type::cuda);
   check_results_periodic(nx, ny);
 #endif // CUDA_AVAILABLE
