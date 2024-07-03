@@ -25,10 +25,11 @@ public:
 
     zisa::array<Scalar, 2> second_deriv(this->data_.shape(),
                                         this->data_.device());
-    const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
+    const Scalar del_x_2 = 1. / (this->dx_ * this->dx_);
+    const Scalar del_y_2 = 1. / (this->dy_ * this->dy_);
     convolve_sigma_add_f<n_coupled>(
         second_deriv.view(), this->data_.const_view(),
-        this->sigma_values_.const_view(), del_x_2, func_);
+        this->sigma_values_.const_view(), del_x_2, del_y_2, func_);
 
     // euler update of derivative
     add_arrays_interior<n_coupled>(this->deriv_data_.view(),

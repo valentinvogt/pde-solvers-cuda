@@ -107,10 +107,11 @@ public:
     }
 
     zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
-    const Scalar del_x_2 = 1. / (this->dx_ * this->dy_);
+    const Scalar del_x_2 = 1. / (this->dx_ * this->dx_);
+    const Scalar del_y_2 = 1. / (this->dy_ * this->dy_);
     convolve_sigma_add_f<n_coupled>(tmp.view(), this->data_.const_view(),
                                     this->sigma_values_.const_view(), del_x_2,
-                                    func_);
+                                    del_y_2, func_);
 
     // zisa::array<Scalar, 2> tmp_cpu(this->data_.shape(),
     // zisa::device_type::cpu); zisa::copy(tmp_cpu, tmp); std::cout <<
