@@ -4,11 +4,8 @@
 #include <gtest/gtest.h>
 #include <pde_wave.hpp>
 #include <zisa/memory/array.hpp>
+#include "run_from_netcdf.hpp"
 
-// TODO: add tests for neumann and periodic bc, larger and nonsymmetric grids
-//       add tests for sigma != constant (how to get solution)
-
-// TODO: implement for coupled function class
 namespace WaveEquationTests {
 
 // helper function which creates simple data array where all values are set to
@@ -280,4 +277,119 @@ TEST(WaveEquationTests, TestConstantF) {
                      BoundaryCondition::Dirichlet);
 }
 
+
+void check_results(int nx, int ny) {
+  int ncid;
+  ASSERT_TRUE(nc_open("data/test_wave_out.nc", NC_NOWRITE, &ncid) ==
+              NC_NOERR);
+  int type_of_equation;
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "type_of_equation",
+                         &type_of_equation) == NC_NOERR);
+  ASSERT_TRUE(type_of_equation == 1);
+
+  int n_members;
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "n_members", &n_members) == NC_NOERR);
+  ASSERT_TRUE(n_members == 2);
+
+  int x_size, y_size;
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "n_x", &x_size) == NC_NOERR);
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "n_y", &y_size) == NC_NOERR);
+  ASSERT_TRUE(x_size == nx);
+  ASSERT_TRUE(y_size == ny);
+
+  zisa::array<float, 2> final_value(zisa::shape_t<2>(nx + 2, 3 * (ny + 2)));
+  int varid;
+  ASSERT_TRUE(nc_inq_varid(ncid, "data", &varid) == NC_NOERR);
+  size_t startp[4] = {0, 2, 0, 0};
+  size_t countp[4] = {1, 1, (size_t)nx + 2, (size_t)3 * (ny + 2)};
+  ASSERT_TRUE(nc_get_vara(ncid, varid, startp, countp,
+                          final_value.view().raw()) == NC_NOERR);
+
+  // ensure correct final function values of first member
+  float tol = 1e-1;
+  float sol_2 = 1.5 * std::exp(2.) + 0.5 * std::exp(-2.) - 6.;
+  for (int i = 0; i < nx + 2; i++) {
+    for (int j = 0; j < ny + 2; j++) {
+      //  f_1(x, y, z) = 1 => x(t) = t^2/2, x'(0) = 0
+      ASSERT_NEAR(final_value(i, 3 * j), 2., tol);
+      // f_2(x, y, z) = 2x + y = t^2 + y => y(t) = 1.5exp(t) + 0.5exp(-t) - t^2 - 2, y'(0) = 1
+      ASSERT_NEAR(final_value(i, 3 * j + 1), sol_2, tol);
+      // f_3(x, y, z) = 6x = 3t^2 => z(t) = t^4/4, z'(0) = 0
+      ASSERT_NEAR(final_value(i, 3 * j + 2), 4., tol);
+    }
+  }
+  startp[0] = 1;
+  ASSERT_TRUE(nc_get_vara(ncid, varid, startp, countp,
+                          final_value.view().raw()) == NC_NOERR);
+  float sol_3 = 0.75 * std::exp(2.) + 0.25 * std::exp(-2.);
+  for (int i = 0; i < nx + 2; i++) {
+    for (int j = 0; j < ny + 2; j++) {
+      // x(t) = 0.5 + t
+      ASSERT_NEAR(final_value(i, 3 * j), 2.5, tol);
+      // z(t) = 0.75 exp(t) + 0.25 exp(-t)
+      ASSERT_NEAR(final_value(i, 3 * j + 2), sol_3, tol);
+    }
+  }
+  // test periodicity
+  for (int i = 0; i < ny + 2; i++) {
+    // upper boundary
+    ASSERT_NEAR(final_value(1, 3 * i + 1), final_value(nx - 1, 3 * i + 1), tol);
+    // lower boundary
+    ASSERT_NEAR(final_value(nx - 2, 3 * i + 1), final_value(0, 3 * i + 1), tol);
+  }
+  for (int i = 1; i < nx + 1; i++) {
+    // left boundary
+    ASSERT_NEAR(final_value(i, 4), final_value(i, 3*(ny+2) - 2), tol);
+    // right boundary
+    ASSERT_NEAR(final_value(i, 3*ny + 1), final_value(i, 1), tol);
+  }
+}
+
+// This test is designed to test if the implementatino
+// can handle more than one member and more than one coupled functions
+// simultaneously and if the periodic boundary conditions are right.
+TEST(WaveEquationTests, TEST_FROM_NC) {
+  ASSERT_TRUE(
+      std::system("python scripts/create_test_input_wave_periodic.py") == 0);
+  
+  int nx = 64, ny = 64;
+  NetCDFPDEReader reader("data/test_wave.nc");
+
+  zisa::array<float, 2> init_data_1(zisa::shape_t<2>(nx + 2, 3 * (ny + 2)),
+                                    zisa::device_type::cpu);
+  reader.write_variable_of_member_to_array(
+      "initial_data", init_data_1.view().raw(), 0, nx + 2, 3 * (ny + 2));
+
+
+  // ensure correct initial conditions for member 1
+  float tol = 1e-5;
+  for (int i = 0; i < nx + 2; i++) {
+    for (int j = 0; j < 3 * (ny + 2); j++) {
+      ASSERT_NEAR(init_data_1(i, j), 0, tol);
+    }
+  }
+
+  zisa::array<float, 2> init_data_2(zisa::shape_t<2>(nx + 2, 3 * (ny + 2)),
+                                    zisa::device_type::cpu);
+  reader.write_variable_of_member_to_array(
+      "initial_data", init_data_2.view().raw(), 1, nx + 2, 3 * (ny + 2));
+
+  // ensure correct initial conditions for member 2
+  for (int i = 0; i < nx + 2; i++) {
+    for (int j = 0; j < (ny + 2); j++) {
+      ASSERT_NEAR(init_data_2(i, 3 * j), 0.5, tol);
+      ASSERT_NEAR(init_data_2(i, 3 * j + 2), 1., tol);
+    }
+  }
+
+  run_simulation<float>(reader, zisa::device_type::cpu);
+  check_results(nx, ny);
+
+// calculate on cuda
+#if CUDA_AVAILABLE
+  std::remove("data/test_wave_out.nc");
+  run_simulation<float>(reader, zisa::device_type::cuda);
+  check_results_periodic(nx, ny);
+#endif // CUDA_AVAILABLE
+}
 } // namespace WaveEquationTests

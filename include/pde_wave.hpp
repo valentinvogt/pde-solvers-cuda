@@ -1,7 +1,6 @@
 #ifndef PDE_WAVE_HPP_
 #define PDE_WAVE_HPP_
 
-// TODO: add initial derivative data, correct apply function
 
 #include "io/netcdf_reader.hpp"
 #include "periodic_bc.hpp"
@@ -14,8 +13,7 @@ public:
   PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
       : PDEBase<n_coupled, Scalar>(Nx, Ny, memory_location, bc, dx, dy),
-        func_(f),
-        deriv_data_(zisa::shape_t<2>(Nx + 2, Ny + 2), memory_location) {}
+        func_(f) {}
 
   void apply(Scalar dt) override {
     if (!this->ready_) {
@@ -31,13 +29,13 @@ public:
         second_deriv.view(), this->data_.const_view(),
         this->sigma_values_.const_view(), del_x_2, del_y_2, func_);
 
-    // euler update of derivative
-    add_arrays_interior<n_coupled>(this->deriv_data_.view(),
+    // update of derivative
+    add_arrays_interior<n_coupled>(this->bc_neumann_values_.view(),
                                    second_deriv.const_view(), dt);
 
-    // euler update of data
+    // update of data
     add_arrays_interior<n_coupled>(this->data_.view(),
-                                   this->deriv_data_.const_view(), dt);
+                                   this->bc_neumann_values_.const_view(), dt);
     PDEBase<n_coupled, Scalar>::add_bc(dt);
   }
 
@@ -49,10 +47,10 @@ public:
 
     read_data(reader, this->data_, tag_data);
     read_data(reader, this->sigma_values_, tag_sigma);
-    read_data(reader, this->deriv_data_, tag_initial_derivative);
+    read_data(reader, this->bc_neumann_values_, tag_initial_derivative);
 
     if (this->bc_ == BoundaryCondition::Neumann) {
-      zisa::copy(this->bc_neumann_values_, this->deriv_data_);
+      zisa::copy(this->bc_neumann_values_, this->bc_neumann_values_);
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
       // do noching as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {
@@ -67,7 +65,8 @@ public:
                    zisa::array_const_view<Scalar, 2> initial_derivative) {
     zisa::copy(this->data_, data);
     zisa::copy(this->sigma_values_, sigma);
-    zisa::copy(this->deriv_data_, initial_derivative);
+    zisa::copy(this->bc_neumann_values_, initial_derivative);
+
     if (this->bc_ == BoundaryCondition::Neumann) {
       zisa::copy(this->bc_neumann_values_, initial_derivative);
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
@@ -137,7 +136,7 @@ public:
   }
   void print_deriv() {
     std::cout << "deriv: " << std::endl;
-    print_matrix(this->deriv_data_.const_view());
+    print_matrix(this->bc_neumann_values_.const_view());
   }
   void print_func() {
     std::cout << "function: " << std::endl;
@@ -146,8 +145,6 @@ public:
 
 protected:
   Function func_;
-  // add
-  zisa::array<Scalar, 2> deriv_data_;
 };
 
 #endif // PDE_WAVE_HPP_

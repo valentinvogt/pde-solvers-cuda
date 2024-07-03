@@ -35,7 +35,6 @@ inline void calculate_and_save_snapshots(PDE pde,
                                          const NetCDFPDEReader &reader) {
 
   reader.get_number_snapshots();
-    // TODO: create variables for sigma_values and function_scalings
   reader.get_file_to_save_output();
 
   NetCDFPDEWriter<Scalar> writer(

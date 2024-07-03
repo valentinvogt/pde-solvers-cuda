@@ -41,7 +41,6 @@ void neumann_bc(zisa::array_view<Scalar, 2> data,
   }
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
-    // TODO
     neumann_bc_cuda<n_coupled, Scalar>(data, bc, dt);
   }
 #endif // CUDA_AVAILABLE

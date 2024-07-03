@@ -21,7 +21,6 @@ void add_arrays_interior_cpu(zisa::array_view<Scalar, 2> dst,
 // PRE: dimensions of src and dst match, both are stored on same device type
 // POST: dst(i, j) = dst(i, j) + scaling * src(i, j) in interior
 //       dst(i, j) = dst(i, j)                       on boundary
-// TODO: add n_coupled
 template <int n_coupled = 1, typename Scalar>
 void add_arrays_interior(zisa::array_view<Scalar, 2> dst,
                          zisa::array_const_view<Scalar, 2> src,

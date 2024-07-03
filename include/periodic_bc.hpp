@@ -5,7 +5,6 @@
 #include <cuda/periodic_bc_cuda.hpp>
 #endif
 
-// TODO: add n_coupled
 template <int n_coupled, typename Scalar>
 void periodic_bc_cpu(zisa::array_view<Scalar, 2> data) {
   const unsigned x_length = data.shape(0);
@@ -60,7 +59,6 @@ void periodic_bc(zisa::array_view<Scalar, 2> data) {
   }
 #if CUDA_AVAILABLE
   else if (memory_location == zisa::device_type::cuda) {
-    // TODO
     periodic_bc_cuda<n_coupled, Scalar>(data);
   }
 #endif // CUDA_AVAILABLE
