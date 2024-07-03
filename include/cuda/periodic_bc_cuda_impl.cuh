@@ -43,18 +43,16 @@ __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
       }
       return;
     } else {
-      if (idx < data_size - y_length + n_coupled) {
+      const int loc_idx = idx - (y_length + (x_length - 2) * 2 * n_coupled);
+      if (loc_idx < n_coupled) {
         // lower left corner
-        const int y_idx = idx - (data_size - y_length);
-        data(x_length - 1, y_idx) = data(1, y_length - 2 * n_coupled + y_idx);
-      } else if (idx >= data_size - n_coupled) {
+        data(x_length - 1, loc_idx) = data(1, y_length - 2 * n_coupled + loc_idx);
+      } else if (loc_idx >= y_length - n_coupled) {
         // lower right corner
-        const int y_idx = idx - (data_size - n_coupled);
-        data(x_length - 1, y_length - n_coupled + y_idx) =
-            data(1, n_coupled + y_idx);
+        data(x_length - 1, loc_idx) =
+            data(1, loc_idx+ n_coupled - y_length);
       } else {
-        const int loc_y_idx = data_size - idx;
-        data(x_length - 1, loc_y_idx) = data(1, loc_y_idx);
+        data(x_length - 1, loc_idx) = data(1, loc_idx);
       }
       return;
     }

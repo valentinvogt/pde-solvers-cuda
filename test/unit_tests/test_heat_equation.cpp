@@ -493,6 +493,7 @@ TEST(HeatEquationTests, TEST_FROM_NC_PERIODIC) {
   run_simulation<float>(reader, zisa::device_type::cpu);
   check_results_periodic(nx, ny);
 // calculate on cuda
+std::cout << "cpu finished!!!\n" << std::endl;
 #if CUDA_AVAILABLE
   std::remove("data/test_periodic_out.nc");
   run_simulation<float>(reader, zisa::device_type::cuda);
