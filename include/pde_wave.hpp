@@ -129,11 +129,19 @@ public:
     } else if (this->bc_ == BoundaryCondition::Periodic) {
       periodic_bc<n_coupled, Scalar>(this->data_.view());
     }
+
+    // update function scalings
+    func_.update_values(reader.get_function<Scalar>(memb).const_view());
+
     this->ready_ = true;
   }
   void print_deriv() {
     std::cout << "deriv: " << std::endl;
     print_matrix(this->deriv_data_.const_view());
+  }
+  void print_func() {
+    std::cout << "function: " << std::endl;
+    func_.print();
   }
 
 protected:

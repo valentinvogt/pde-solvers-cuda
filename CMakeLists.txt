@@ -58,19 +58,6 @@ find_package(ZisaCore REQUIRED)
 find_package(ZisaMemory REQUIRED)
 find_package(googletest REQUIRED)
 
-######### main executable start ###############
-add_executable(main)
-set_target_properties(main PROPERTIES CXX_STANDARD 17)
-
-if (CUDA_AVAILABLE)
-  target_compile_options(main PUBLIC -DCUDA_AVAILABLE=1)
-  target_compile_options(main PUBLIC $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>>)
-endif()
-
-target_include_directories(main PUBLIC include)
-
-target_link_libraries(main Zisa::core Zisa::memory)
-######### main executable end #################
 ######### netcdf executable start #############
 add_executable(run_from_netcdf)
 set_target_properties(run_from_netcdf PROPERTIES CXX_STANDARD 17)

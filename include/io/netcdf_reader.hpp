@@ -1,6 +1,8 @@
 #ifndef NETCDF_READER_HPP_
 #define NETCDF_READER_HPP_
 
+#include "coupled_function.hpp"
+#include "zisa/memory/array_decl.hpp"
 #include <condition_variable>
 #include <iostream>
 #include <netcdf.h>
@@ -110,6 +112,22 @@ public:
           << std::endl;
       exit(-1);
     }
+  }
+
+  template <typename Scalar>
+  zisa::array<Scalar, 1> get_function(size_t member) const {
+    size_t len =
+        n_coupled_ * (size_t)std::pow(coupled_function_order_, n_coupled_);
+    zisa::array<Scalar, 1> scalings(zisa::shape_t<1>(len),
+                                    zisa::device_type::cpu);
+
+    int varid;
+    check(nc_inq_varid(ncid_, "function_scalings", &varid));
+    // TODO: this could be faster, for example use nc_get_var_float
+    size_t startp[3] = {member, 0};
+    size_t countp[3] = {1, len};
+    check(nc_get_vara(ncid_, varid, startp, countp, scalings.view().raw()));
+    return scalings;
   }
 
 private:

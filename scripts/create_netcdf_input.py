@@ -133,8 +133,6 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
         if root.boundary_value_type == 1 or root.type_of_equation == 1:
             bc_neumann_values = root.createVariable('bc_neumann_values', scalar_type_string, ('n_members', 'x_size', 'y_size_coupled'))
 
-        function_scalings[:, :] = np.linspace(0., 1., n_coupled * (coupled_function_order**n_coupled))
-
         # add values on boundary
         # if you have dirichlet or neumann bc the initial_value_function should evaluate on the boundary too
         # if you have periodic bc the boundary values will get adjusted later in the algorithm

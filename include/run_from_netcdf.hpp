@@ -29,13 +29,13 @@
         reader);                                                               \
     break;
 
-// TODO:
 // read initial data, apply steps and save them to a output file
 template <typename PDE, typename Scalar>
 inline void calculate_and_save_snapshots(PDE pde,
                                          const NetCDFPDEReader &reader) {
 
   reader.get_number_snapshots();
+    // TODO: create variables for sigma_values and function_scalings
   reader.get_file_to_save_output();
 
   NetCDFPDEWriter<Scalar> writer(
@@ -47,6 +47,8 @@ inline void calculate_and_save_snapshots(PDE pde,
       reader.get_file_to_save_output());
   for (int memb = 0; memb < reader.get_n_members(); memb++) {
     pde.read_initial_data_from_netcdf(reader, memb);
+    // pde.print();
+    // pde.print_func();
     // auto start = NOW;
     pde.apply_with_snapshots(reader.get_final_time(),
                              reader.get_number_timesteps(),
@@ -63,17 +65,10 @@ void run_simulation(const NetCDFPDEReader &reader,
   int n_coupled = reader.get_n_coupled();
   int coupled_order = reader.get_coupled_function_order();
 
-  zisa::array<Scalar, 1> function_scalings_tmp(
-      zisa::shape_t<1>(n_coupled *
-                       (unsigned int)std::pow(coupled_order, n_coupled)),
-      zisa::device_type::cpu);
-  reader.write_whole_variable_to_array("function_scalings",
-                                       function_scalings_tmp.view().raw());
   zisa::array<Scalar, 1> function_scalings(
       zisa::shape_t<1>(n_coupled *
                        (unsigned int)std::pow(coupled_order, n_coupled)),
       memory_location);
-  zisa::copy(function_scalings, function_scalings_tmp);
 
   CoupledFunction<Scalar> func_coupled(function_scalings.const_view(),
                                        n_coupled, coupled_order);

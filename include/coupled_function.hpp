@@ -18,8 +18,10 @@ public:
   CoupledFunction() = delete;
   CoupledFunction(zisa::array_const_view<Scalar, 1> scalings, int n_coupled,
                   int max_pot)
-      : scalings_(scalings), n_coupled_(n_coupled), max_pot_(max_pot) {
+      : scalings_(scalings.shape(), scalings.memory_location()),
+        n_coupled_(n_coupled), max_pot_(max_pot) {
     assert(scalings.size() == scalings_.size());
+    zisa::copy(scalings_, scalings);
   }
 
   CoupledFunction(const CoupledFunction &other)
@@ -28,6 +30,9 @@ public:
             // std::cout << "coupled function copied!\n";
         };
 
+  void update_values(zisa::array_const_view<Scalar, 1> scalings) {
+    zisa::copy(this->scalings_, scalings);
+  }
 #if CUDA_AVAILABLE
 
   template <typename ARRAY>
@@ -88,8 +93,15 @@ public:
 
 #endif // CUDA_AVAILABLE
 
+  void print() const {
+    for (int i = 0; i < scalings_.size(); i++) {
+      std::cout << scalings_(i) << " ";
+    }
+    std::cout << std::endl;
+  }
+
 private:
-  zisa::array_const_view<Scalar, 1> scalings_;
+  zisa::array<Scalar, 1> scalings_;
   const int n_coupled_;
   const int max_pot_;
 };

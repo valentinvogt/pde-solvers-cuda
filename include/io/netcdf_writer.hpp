@@ -84,8 +84,6 @@ public:
       check(nc_def_var(ncid_, "data", NC_DOUBLE, 4, dims_data, &varid_data_));
     }
     check(nc_def_var_chunking(ncid_, varid_data_, NC_CHUNKED, chunk_sizes));
-
-    // TODO: create variables for sigma_values and function_scalings
   }
   ~NetCDFPDEWriter() { nc_close(ncid_); }
 

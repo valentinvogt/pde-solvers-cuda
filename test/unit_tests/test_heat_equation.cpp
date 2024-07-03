@@ -317,7 +317,7 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
   }
 }
 
-void check_results(int nx, int ny) {
+void check_results_exp(int nx, int ny) {
 
   int ncid;
   ASSERT_TRUE(nc_open("data/test_out.nc", NC_NOWRITE, &ncid) == NC_NOERR);
@@ -336,7 +336,7 @@ void check_results(int nx, int ny) {
   ASSERT_TRUE(x_size == nx);
   ASSERT_TRUE(y_size == ny);
 
-  zisa::array<float, 2> final_value(zisa::shape_t<2>(130, 260));
+  zisa::array<float, 2> final_value(zisa::shape_t<2>(nx + 2, 2 * (ny + 2)));
   int varid;
   ASSERT_TRUE(nc_inq_varid(ncid, "data", &varid) == NC_NOERR);
   size_t startp[4] = {0, 3, 0, 0};
@@ -380,12 +380,124 @@ TEST(HeatEquationTests, TEST_FROM_NC) {
 
   ASSERT_TRUE(reader.get_scalar_type() == 0);
   run_simulation<float>(reader, zisa::device_type::cpu);
-  check_results(nx, ny);
+  check_results_exp(nx, ny);
 // calculate on cuda
 #if CUDA_AVAILABLE
-  std::remove("data/test_out.nc");  
+  std::remove("data/test_out.nc");
   run_simulation<float>(reader, zisa::device_type::cuda);
-  check_results(nx, ny);
+  check_results_exp(nx, ny);
 #endif // CUDA_AVAILABLE
 }
+
+void check_results_periodic(int nx, int ny) {
+
+  int ncid;
+  ASSERT_TRUE(nc_open("data/test_periodic_out.nc", NC_NOWRITE, &ncid) ==
+              NC_NOERR);
+  int type_of_equation;
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "type_of_equation",
+                         &type_of_equation) == NC_NOERR);
+  ASSERT_TRUE(type_of_equation == 0);
+
+  int n_members;
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "n_members", &n_members) == NC_NOERR);
+  ASSERT_TRUE(n_members == 2);
+
+  int x_size, y_size;
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "n_x", &x_size) == NC_NOERR);
+  ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "n_y", &y_size) == NC_NOERR);
+  ASSERT_TRUE(x_size == nx);
+  ASSERT_TRUE(y_size == ny);
+
+  zisa::array<float, 2> final_value(zisa::shape_t<2>(nx + 2, 3 * (ny + 2)));
+  int varid;
+  ASSERT_TRUE(nc_inq_varid(ncid, "data", &varid) == NC_NOERR);
+  size_t startp[4] = {0, 2, 0, 0};
+  size_t countp[4] = {1, 1, (size_t)nx + 2, (size_t)3 * (ny + 2)};
+  ASSERT_TRUE(nc_get_vara(ncid, varid, startp, countp,
+                          final_value.view().raw()) == NC_NOERR);
+
+  // ensure correct final function values of first member
+  double tol = 1e-1;
+  float sol_2 = 2. * std::exp(2.) - 10.;
+  for (int i = 0; i < nx + 2; i++) {
+    for (int j = 0; j < ny + 2; j++) {
+      // f_1(t) = t
+      ASSERT_NEAR(final_value(i, 3 * j), 2., tol);
+      // f_2(t) = 2exp(t) - t^2 - 2t -2
+      ASSERT_NEAR(final_value(i, 3 * j + 1), sol_2, tol);
+      // f_3(t) = t^2
+      ASSERT_NEAR(final_value(i, 3 * j + 2), 4., tol);
+    }
+  }
+  startp[0] = 1;
+  ASSERT_TRUE(nc_get_vara(ncid, varid, startp, countp,
+                          final_value.view().raw()) == NC_NOERR);
+  for (int i = 0; i < nx + 2; i++) {
+    for (int j = 0; j < ny + 2; j++) {
+      // f_1(t) = t
+      ASSERT_NEAR(final_value(i, 3 * j), 0.5, tol);
+      // f_3(t) = t^2
+      ASSERT_NEAR(final_value(i, 3 * j + 2), 0., tol);
+    }
+  }
+  // test periodicity
+  for (int i = 0; i < ny + 2; i++) {
+    // upper boundary
+    ASSERT_NEAR(final_value(1, 3 * i + 1), final_value(nx - 1, 3 * i + 1), tol);
+    // lower boundary
+    ASSERT_NEAR(final_value(nx - 2, 3 * i + 1), final_value(0, 3 * i + 1), tol);
+  }
+  for (int i = 1; i < nx + 1; i++) {
+    // left boundary
+    ASSERT_NEAR(final_value(i, 4), final_value(i, 3*(ny+2) - 2), tol);
+    // right boundary
+    ASSERT_NEAR(final_value(i, 3*ny + 1), final_value(i, 1), tol);
+  }
+}
+
+// This test is designed to test if the implementatino
+// can handle more than one member and more than one coupled functions
+// simultaneously and if the periodic boundary conditions are right.
+TEST(HeatEquationTests, TEST_FROM_NC_PERIODIC) {
+  ASSERT_TRUE(
+      std::system("python scripts/create_test_input_heat_periodic.py") == 0);
+
+  int nx = 64, ny = 64;
+  NetCDFPDEReader reader("data/test_periodic.nc");
+  zisa::array<float, 2> init_data_1(zisa::shape_t<2>(nx + 2, 3 * (ny + 2)),
+                                    zisa::device_type::cpu);
+  reader.write_variable_of_member_to_array(
+      "initial_data", init_data_1.view().raw(), 0, nx + 2, 3 * (ny + 2));
+
+  // ensure correct initial conditions for member 1
+  double tol = 1e-5;
+  for (int i = 0; i < nx + 2; i++) {
+    for (int j = 0; j < 3 * (ny + 2); j++) {
+      ASSERT_NEAR(init_data_1(i, j), 0, tol);
+    }
+  }
+
+  zisa::array<float, 2> init_data_2(zisa::shape_t<2>(nx + 2, 3 * (ny + 2)),
+                                    zisa::device_type::cpu);
+  reader.write_variable_of_member_to_array(
+      "initial_data", init_data_2.view().raw(), 1, nx + 2, 3 * (ny + 2));
+
+  // ensure correct initial conditions for member 2
+  for (int i = 0; i < nx + 2; i++) {
+    for (int j = 0; j < (ny + 2); j++) {
+      ASSERT_NEAR(init_data_2(i, 3 * j), 0.5, tol);
+      ASSERT_NEAR(init_data_2(i, 3 * j + 2), 0., tol);
+    }
+  }
+  run_simulation<float>(reader, zisa::device_type::cpu);
+  check_results_periodic(nx, ny);
+// calculate on cuda
+#if CUDA_AVAILABLE
+  std::remove("data/test_out_periodic.nc");
+  run_simulation<float>(reader, zisa::device_type::cuda);
+  check_results_periodic(nx, ny);
+#endif // CUDA_AVAILABLE
+}
+
 } // namespace HeatEquationTests

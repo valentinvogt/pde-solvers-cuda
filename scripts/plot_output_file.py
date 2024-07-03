@@ -29,17 +29,19 @@ print(global_max)
 for member in range(n_members):
     for snapshot in range(n_snapshots):
         # Create a figure for each snapshot
-        # fig, axes = plt.subplots(nrows=n_coupled, ncols=1, figsize=(10, 10 * n_coupled),
-        #                          gridspec_kw={'width_ratios': [1], 'height_ratios': [1] * n_coupled, 'wspace': 0.1, 'hspace': 0.1})
+        fig, axes = plt.subplots(nrows=n_coupled, ncols=1, figsize=(10, 10 * n_coupled),
+                                 gridspec_kw={'width_ratios': [1], 'height_ratios': [1] * n_coupled, 'wspace': 0.1, 'hspace': 0.1})
 
         # plot only first functions
-        fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(10, 10),
-                                 gridspec_kw={'width_ratios': [1], 'height_ratios': [1], 'wspace': 0.1, 'hspace': 0.1})
-        # if n_coupled == 1:
-        axes = [axes]  # Ensure axes is iterable if there's only one coupled variable
+        # fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(10, 10),
+                                 # gridspec_kw={'width_ratios': [1], 'height_ratios': [1], 'wspace': 0.1, 'hspace': 0.1})
+        if n_coupled == 1:
+            axes = [axes]  # Ensure axes is iterable if there's only one coupled variable
 
-        # for coupled_idx in range(n_coupled):
-        for coupled_idx in range(1):
+
+        for coupled_idx in range(n_coupled):
+        # for coupled_idx in range(1):
+
             ax = axes[coupled_idx]
 
             # Extract the 2D matrix for the current member, snapshot, and coupled index
@@ -50,8 +52,8 @@ for member in range(n_members):
             ax.set_title(f'Member {member + 1}, Snapshot {snapshot + 1}, Coupled Index {coupled_idx + 1}')
             ax.set_xlabel('y')
             ax.set_ylabel('x')
-            ax.set_xlim(0, y_size)
-            ax.set_ylim(x_size, 0)
+            # ax.set_xlim(0, y_size)
+            # ax.set_ylim(x_size, 0)
         # Add a colorbar to the figure
         cbar = fig.colorbar(im, ax=axes, orientation='vertical', fraction=0.02, pad=0.04)
         cbar.set_label('Data Value')
