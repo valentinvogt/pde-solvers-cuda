@@ -64,7 +64,6 @@ void run_benchmark_gpu_vs_cpu_size(int n_timesteps) {
       pde_cpu.read_values(zero_values_cpu.const_view(),
                           sigma_values_cpu.const_view(),
                           zero_values_cpu.const_view());
-      // TODO: measure time and add cuda stuff
       auto start = std::chrono::high_resolution_clock::now();
       for (int i = 0; i < n_timesteps; i++) {
         pde_cpu.apply(0.1);
@@ -91,7 +90,6 @@ void run_benchmark_gpu_vs_cpu_size(int n_timesteps) {
       pde_cuda.read_values(zero_values_cpu.const_view(),
                            sigma_values_cpu.const_view(),
                            zero_values_cpu.const_view());
-      // TODO: measure time and add cuda stuff
       start = std::chrono::high_resolution_clock::now();
       for (int i = 0; i < n_timesteps; i++) {
         pde_cuda.apply(0.1);
@@ -141,7 +139,6 @@ void run_benchmark_gpu_vs_cpu_n_timesteps(int array_size) {
       pde_cpu.read_values(zero_values_cpu.const_view(),
                           sigma_values_cpu.const_view(),
                           zero_values_cpu.const_view());
-      // TODO: measure time and add cuda stuff
       auto start = std::chrono::high_resolution_clock::now();
       for (int i = 0; i < n_timesteps * n_timesteps_base; i++) {
         pde_cpu.apply(0.1);

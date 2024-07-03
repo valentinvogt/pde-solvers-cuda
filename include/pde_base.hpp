@@ -1,8 +1,6 @@
 #ifndef PDE_BASE_HPP_
 #define PDE_BASE_HPP_
 
-#include <chrono>
-#include <convolution.hpp>
 #include <convolve_sigma_add_f.hpp>
 #include <helpers.hpp>
 #include <neumann_bc.hpp>
