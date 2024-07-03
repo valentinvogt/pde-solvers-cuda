@@ -37,9 +37,9 @@ def f(member, size):
         # f_3(x, y, z) = 6x = 3t^2 => z(t) = t^4/4, z'(0) = 0
         f = np.zeros(size)
         f[0] = 1.  # f_1 += 1
-        f[7] = 1.  # f_2 += x^2
-        f[10] = 1. # f_2 += 1
-        f[5] = 2.  # f_3 += 6x
+        f[4] = 1.  # f_2 += x^2
+        f[10] = 1. # f_2 += y
+        f[5] = 6.  # f_3 += 6x
         return f
     else:
         return np.zeros(size)
@@ -49,5 +49,5 @@ create_input_file('data/test_wave.nc', 'data/test_wave.nc', type_of_equation=1,
                       x_size=64, x_length=1., y_size=64, y_length=1., boundary_value_type=2,
                       scalar_type=0, n_coupled=3, 
                       coupled_function_order=3, number_timesteps=5000,
-                      final_time=2., number_snapshots=3, n_members=2, initial_value_function=initial_function,
+                      final_time=2., number_snapshots=3, n_members=1, initial_value_function=initial_function,
                       sigma_function=sigma, bc_neumann_function=is_ignored, f_value_function=f)

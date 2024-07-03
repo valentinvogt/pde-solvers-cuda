@@ -37,7 +37,7 @@ def f(member, size):
         f = np.zeros(size)
         f[0] = 1.  # f_1 += 1
         f[7] = 1.  # f_2 += x^2
-        f[10] = 1. # f_2 += 1
+        f[10] = 1. # f_2 += y
         f[5] = 2.  # f_3 += 2x
         return f
     else:

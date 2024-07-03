@@ -38,7 +38,6 @@ public:
   template <typename ARRAY>
   inline __host__ __device__ void
   operator()(zisa::array_const_view<Scalar, 1> x, ARRAY result_values) const {
-    assert(x.memory_location() == scalings_.memory_location());
 
     for (int i = 0; i < n_coupled_; i++) {
       result_values[i] = 0;
