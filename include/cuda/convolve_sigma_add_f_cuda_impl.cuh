@@ -35,15 +35,14 @@ convolve_sigma_add_f_cuda_kernel(zisa::array_view<Scalar, 2> dst,
                   - src(x_idx, y_idx * n_coupled + i))
               + sigma(2 * x_idx, y_idx) 
                  * (src(x_idx + 1, y_idx * n_coupled + i) 
-                  - src(x_ix, y_idx * n_coupled + i))
+                  - src(x_idx, y_idx * n_coupled + i)))
        + del_y_2 
            * (sigma(2 * x_idx - 1, y_idx - 1)
                  * (src(x_idx, y_idx * n_coupled + i - n_coupled)
                   - src(x_idx, y_idx * n_coupled + i))
             + sigma(2 * x_idx - 1, y_idx + 1)
                  * (src(x_idx, y_idx * n_coupled + i + n_coupled)
-                  - src(x_idx, y_idx * n_coupled + i))
-           ) 
+                  - src(x_idx, y_idx * n_coupled + i)))
           + result_function[i];
     }
   }
