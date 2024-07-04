@@ -389,7 +389,7 @@ TEST(WaveEquationTests, TEST_FROM_NC) {
 #if CUDA_AVAILABLE
   std::remove("data/test_wave_out.nc");
   run_simulation<float>(reader, zisa::device_type::cuda);
-  check_results_periodic(nx, ny);
+  check_results(nx, ny);
 #endif // CUDA_AVAILABLE
 }
 } // namespace WaveEquationTests

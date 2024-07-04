@@ -20,7 +20,7 @@ cd pde-solvers-cuda
 mkdir build
 cmake -B build -DENABLE_CUDA={ON, OFF}
 ```
-Note that ENABLE_CUDA is set OFF by default
+Note that `ENABLE_CUDA` is set `OFF` by default
 
 ## Running the application
 The easyest way to run the application is by following these steps:
@@ -40,7 +40,7 @@ script relative to the directory you're running the application.
 
 This will run on the GPU if you have a GPU available, you have
 compiled the application with `-DENABLE_CUDA=ON` and if you 
-run it with the optional 1 added at the end.
+run it with the optional `1` added at the end.
 
 ### Output
 After the executable finishes, the results are stored in
