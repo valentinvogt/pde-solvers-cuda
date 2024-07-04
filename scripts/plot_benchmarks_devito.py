@@ -46,8 +46,8 @@ plt.figure(figsize=(12, 6))
 
 plot_loglog(data_own_gpu, label="GPU own implementation")
 plot_loglog(data_own_cpu, label="CPU own implementation")
-plot_loglog(data_dev_cpu, label="GPU Devito implementation")
-plot_loglog(data_dev_gpu, label="CPU Devito implementation")
+plot_loglog(data_dev_gpu, label="GPU Devito implementation")
+plot_loglog(data_dev_cpu, label="CPU Devito implementation")
 
 plt.xscale('log')
 plt.yscale('log')
