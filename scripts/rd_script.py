@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from create_netcdf_input import create_input_file
 from helpers import f_scalings, zero_func, const_sigma
 
@@ -8,7 +9,7 @@ B = 9
 
 def initial_noisy_function(member, coupled_idx, x_position, y_position):
     np.random.seed(1)
-    sigma = 0.1
+    sigma = 0.5
     if coupled_idx == 0:
         u = A * np.ones(shape=x_position.shape) + np.random.normal(
             0.0, sigma, size=x_position.shape
@@ -31,7 +32,7 @@ def initial_noisy_function(member, coupled_idx, x_position, y_position):
 def wrap(model, Nx, Nt, dt, init=None, dx=1.0):
     fn_order = 4 if model == "fhn" else 3
     fn_scalings = f_scalings(model, A, B)
-
+    input_filename = f"data/{model}.nc"
     create_input_file(
         f"data/{model}.nc",
         f"data/{model}_output.nc",
@@ -46,7 +47,7 @@ def wrap(model, Nx, Nt, dt, init=None, dx=1.0):
         coupled_function_order=fn_order,
         number_timesteps=Nt,
         final_time=Nt * dt,
-        number_snapshots=10,
+        number_snapshots=100,
         n_members=1,
         initial_value_function=initial_noisy_function,
         sigma_function=const_sigma,
@@ -56,5 +57,11 @@ def wrap(model, Nx, Nt, dt, init=None, dx=1.0):
         Dv=22.0,
     )
 
+    return input_filename
 
-wrap("brusselator", 128, Nt=5000, dt=0.0025)
+"""
+model can be one of bruss, gray_scott, fhn
+"""
+input_filename = wrap(model="bruss", Nx=200, Nt=10000, dt=0.0025)
+
+os.system(f"build/run_from_netcdf {input_filename}")

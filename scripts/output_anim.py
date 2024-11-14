@@ -30,6 +30,7 @@ print(global_max)
 u0 = 5
 v0 = 9
 
+logging = False
 
 # Function to initialize each frame for animation
 def animate(snapshot):
@@ -40,7 +41,7 @@ def animate(snapshot):
         ax.set_title(
             f"Member {member + 1}, Snapshot {snapshot + 1}, Coupled Index {coupled_idx + 1}"
         )
-        if snapshot % 10 == 0:
+        if snapshot % 10 == 0 and logging:
             component_name = "u" if coupled_idx == 0 else "v"
             steady_state = u0 if coupled_idx == 0 else v0
             l1 = np.sum(np.abs(matrix - steady_state))

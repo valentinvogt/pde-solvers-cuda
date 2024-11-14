@@ -10,7 +10,7 @@ def const_sigma(member, x_position, y_position):
 
 
 def f_scalings(model, A, B):
-    if model == "brusselator":
+    if model == "bruss":
         return lambda member, size: f_scalings_brusselator(member, size, A, B)
     elif model == "gray_scott":
         return lambda member, size: f_scalings_gray_scott(member, size, A, B)
