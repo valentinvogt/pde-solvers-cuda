@@ -80,7 +80,7 @@ if (CUDA_AVAILABLE)
   target_compile_options(unit_tests PUBLIC $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>>)
 endif()
 
-target_include_directories(unit_tests PUBLIC include include/kernel include/cuda)
+target_include_directories(unit_tests PUBLIC include include/cuda)
 
 target_link_libraries(unit_tests Zisa::core Zisa::memory gtest_main)
 ######### test executable end #################
