@@ -81,7 +81,8 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
                       scalar_type=0, n_coupled=1, 
                       coupled_function_order=2, number_timesteps=1000,
                       final_time=1., number_snapshots=3, n_members=2, initial_value_function=dummy_function_2d,
-                      sigma_function=dummy_sigma_2d, bc_neumann_function=dummy_function_2d, f_value_function=dummy_function_scalings):
+                      sigma_function=dummy_sigma_2d, bc_neumann_function=dummy_function_2d, f_value_function=dummy_function_scalings,
+                      Du=1., Dv=1.):
 
     # Create a new NetCDF file
     with nc.Dataset(filename, 'w') as root:
@@ -142,7 +143,10 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
         y_positions = np.linspace(- dy, y_length + dy, y_size + 2)
         xx, yy = np.meshgrid(x_positions, y_positions, indexing='ij')
 
-
+        Du_var = root.createVariable('Du', scalar_type_string, ())
+        Dv_var = root.createVariable('Dv', scalar_type_string, ())
+        Du_var[()] = Du
+        Dv_var[()] = Dv
         
         x_positions_sigma = np.linspace(- dx * 0.5, x_length + dx * 0.5, 2 * x_size + 1)
         y_positions_sigma = np.linspace(- dy * 0.5, y_length + dy * 0.5, y_size + 1)
