@@ -19,7 +19,8 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
                               zisa::array_const_view<Scalar, 2> src,
                               zisa::array_const_view<Scalar, 2> sigma,
                               Scalar del_x_2 /* 1/(dx^2)*/,
-                              Scalar del_y_2 /*1/(dx^2)*/, const Function &f) {
+                              Scalar del_y_2 /*1/(dx^2)*/, Scalar Diffusion[2],
+                              const Function &f) {
   const unsigned Nx = src.shape(0);
   const unsigned Ny = src.shape(1);
   for (int x = 1; x < Nx - 1; x++) {
@@ -30,16 +31,17 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
       f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu),
         result_function);
       for (int i = 0; i < n_coupled; i++) {
-        dst(x, y + i) =
-            del_x_2 * (sigma(2 * x - 2, y / n_coupled) *
-                           (src(x - 1, y + i) - src(x, y + i)) +
-                       sigma(2 * x, y / n_coupled) *
-                           (src(x + 1, y + i) - src(x, y + i))) +
-            del_y_2 * (sigma(2 * x - 1, y / n_coupled - 1) *
-                           (src(x, y + i - n_coupled) - src(x, y + i)) +
-                       sigma(2 * x - 1, y / n_coupled + 1) *
-                           (src(x, y + i + n_coupled) - src(x, y + i))) +
-            result_function[i];
+        dst(x, y + i) = Diffusion[i] * del_x_2 *
+                            (sigma(2 * x - 2, y / n_coupled) *
+                                 (src(x - 1, y + i) - src(x, y + i)) +
+                             sigma(2 * x, y / n_coupled) *
+                                 (src(x + 1, y + i) - src(x, y + i))) +
+                        Diffusion[i] * del_y_2 *
+                            (sigma(2 * x - 1, y / n_coupled - 1) *
+                                 (src(x, y + i - n_coupled) - src(x, y + i)) +
+                             sigma(2 * x - 1, y / n_coupled + 1) *
+                                 (src(x, y + i + n_coupled) - src(x, y + i))) +
+                        result_function[i];
       }
     }
   }
@@ -51,7 +53,8 @@ void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
                           zisa::array_const_view<Scalar, 2> src,
                           zisa::array_const_view<Scalar, 2> sigma,
                           Scalar del_x_2 /* 1/(dx^2)*/,
-                          Scalar del_y_2 /*1/(dx^2)*/, const Function &f) {
+                          Scalar del_y_2 /*1/(dx^2)*/, Scalar Diffusion[2],
+                          const Function &f) {
 
   const zisa::device_type memory_dst = dst.memory_location();
   const zisa::device_type memory_src = src.memory_location();
@@ -76,11 +79,12 @@ void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
   }
 
   if (memory_dst == zisa::device_type::cpu) {
-    convolve_sigma_add_f_cpu<n_coupled>(dst, src, sigma, del_x_2, del_y_2, f);
+    convolve_sigma_add_f_cpu<n_coupled>(dst, src, sigma, del_x_2, del_y_2,
+                                        Diffusion, f);
   }
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
-    convolve_sigma_add_f_cuda<n_coupled>(dst, src, sigma, del_x_2, del_y_2, f);
+    convolve_sigma_add_f_cuda<n_coupled>(dst, src, sigma, del_x_2, del_y_2, Diffusion, f);
   }
 #endif // CUDA_AVAILABLE
   else {

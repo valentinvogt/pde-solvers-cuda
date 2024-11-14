@@ -1,5 +1,5 @@
-#ifndef PDE_HEAT_HPP_
-#define PDE_HEAT_HPP_
+#ifndef PDE_RD_HPP_
+#define PDE_RD_HPP_
 
 #include "io/netcdf_reader.hpp"
 #include "periodic_bc.hpp"
@@ -7,14 +7,21 @@
 #include <pde_base.hpp>
 
 template <int n_coupled, typename Scalar, typename Function>
-class PDEHeat : public virtual PDEBase<n_coupled, Scalar> {
+class PDErd : public virtual PDEBase<n_coupled, Scalar> {
 public:
-  PDEHeat(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
+  PDErd(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Function f, Scalar dx, Scalar dy, Scalar Du, Scalar Dv)
       : PDEBase<n_coupled, Scalar>(Nx, Ny, memory_location, bc, dx, dy),
-        func_(f) {}
-  PDEHeat(const PDEHeat &other)
-      : PDEBase<n_coupled, Scalar>(other), func_(other.func_) {}
+        func_(f) {
+          this->Du_ = Du;
+          this->Dv_ = Dv;
+        }
+        
+  PDErd(const PDErd &other)
+      : PDEBase<n_coupled, Scalar>(other), func_(other.func_) {
+        this->Du_ = other.Du_;
+        this->Dv_ = other.Dv_;
+      }
 
   void read_values(const std::string &filename,
                    const std::string &tag_data = "initial_data",
@@ -112,7 +119,7 @@ public:
     zisa::array<Scalar, 2> tmp(this->data_.shape(), this->data_.device());
     const Scalar del_x_2 = 1. / (this->dx_ * this->dx_);
     const Scalar del_y_2 = 1. / (this->dy_ * this->dy_);
-    Scalar Diffusion[2] = {1., 1.};
+    Scalar Diffusion[2] = {this->Du_, this->Dv_};
     convolve_sigma_add_f<n_coupled>(tmp.view(), this->data_.const_view(),
                                     this->sigma_values_.const_view(), del_x_2,
                                     del_y_2, Diffusion, func_);
@@ -137,4 +144,4 @@ protected:
   Function func_;
 };
 
-#endif // PDE_HEAT_HPP_
+#endif // PDE_RD_HPP_

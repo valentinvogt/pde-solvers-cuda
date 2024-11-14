@@ -9,6 +9,7 @@
 #include <iostream>
 #include <netcdf.h>
 #include <pde_heat.hpp>
+#include <pde_rd.hpp>
 #include <pde_wave.hpp>
 #include <string.h>
 #include <string>
@@ -25,7 +26,7 @@
         std::move(PDE_TYPE<N_COUPLED, Scalar, CoupledFunction<Scalar>>(        \
             reader.get_x_size(), reader.get_y_size(), MEMORY_LOCATION, bc,     \
             func_coupled, reader.get_x_length() / reader.get_x_size(),         \
-            reader.get_x_length() / reader.get_x_size())),                     \
+            reader.get_x_length() / reader.get_x_size(), reader.get_Du(), reader.get_Dv())),                     \
         reader);                                                               \
     break;
 
@@ -83,6 +84,7 @@ void run_simulation(const NetCDFPDEReader &reader,
     std::cout << "boundary condition not in range! " << std::endl;
     exit(-1);
   }
+  Scalar Diffusion[2] = {1., 1.};
 
   // 0->Heat, 1->Wave
   int pde_type = reader.get_equation_type();
@@ -104,6 +106,17 @@ void run_simulation(const NetCDFPDEReader &reader,
       INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 3, memory_location)
       INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 4, memory_location)
       INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 5, memory_location)
+    default:
+      std::cout << "only implemented for n_coupled <= 5 yet" << std::endl;
+      exit(-1);
+    }
+  } else if (pde_type == 2) {
+    switch (reader.get_n_coupled()) {
+      INSTANCIATE_PDE_AND_CALCULATE(PDErd, 1, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDErd, 2, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDErd, 3, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDErd, 4, memory_location)
+      INSTANCIATE_PDE_AND_CALCULATE(PDErd, 5, memory_location)
     default:
       std::cout << "only implemented for n_coupled <= 5 yet" << std::endl;
       exit(-1);

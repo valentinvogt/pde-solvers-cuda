@@ -43,6 +43,22 @@ public:
 
     check(nc_get_att(ncid_, NC_GLOBAL, "number_snapshots", &number_snapshots_));
 
+    // Read Du and Dv variables
+    int Du_varid, Dv_varid;
+    check(nc_inq_varid(ncid_, "Du", &Du_varid));
+    check(nc_inq_varid(ncid_, "Dv", &Dv_varid));
+
+    if (scalar_type_ == 0) { // float
+      float Du_temp, Dv_temp;
+      check(nc_get_var_float(ncid_, Du_varid, &Du_temp));
+      check(nc_get_var_float(ncid_, Dv_varid, &Dv_temp));
+      Du_ = Du_temp;
+      Dv_ = Dv_temp;
+    } else { // double
+      check(nc_get_var_double(ncid_, Du_varid, &Du_));
+      check(nc_get_var_double(ncid_, Dv_varid, &Dv_));
+    }
+
     size_t file_to_save_output_len = 0;
     check(nc_inq_attlen(ncid_, NC_GLOBAL, "file_to_save_output",
                         &file_to_save_output_len));
@@ -84,6 +100,9 @@ public:
   int get_number_snapshots() const { return number_snapshots_; }
 
   char *get_file_to_save_output() const { return file_to_save_output_; }
+
+  double get_Du() const { return Du_; }
+  double get_Dv() const { return Dv_; }
 
   void write_whole_variable_to_array(std::string varname, void *arr_ptr) const {
     if (scalar_type_ == 0) {
@@ -176,6 +195,9 @@ private:
   int number_snapshots_;
 
   char *file_to_save_output_;
+
+  double Du_;
+  double Dv_;
 };
 
 #endif // NETCDF_READER_HPP_

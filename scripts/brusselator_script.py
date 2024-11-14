@@ -11,7 +11,7 @@ def initial_noisy_function(member, coupled_idx, x_position, y_position):
     else:
         print("initial_noisy_function is only meant for n_coupled == 2!")
         u = 0. * x_position
-    return u  
+    return u
 
 
 def zero_func(member, coupled_idx, x_position, y_position):
@@ -33,7 +33,7 @@ def f_scalings_brusselator(member, size):
     return f
 
 create_input_file('data/b2.nc', 'data/b2_out.nc', type_of_equation=0, 
-                      x_size=512, x_length=160., y_size=512, y_length=160, boundary_value_type=2,
+                      x_size=100, x_length=160., y_size=100, y_length=160, boundary_value_type=2,
                       scalar_type=0, n_coupled=2, 
                       coupled_function_order=3, number_timesteps=10000,
                       final_time=10., number_snapshots=32, n_members=1, initial_value_function=initial_noisy_function,

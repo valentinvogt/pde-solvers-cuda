@@ -14,7 +14,7 @@ __global__ void
 convolve_sigma_add_f_cuda_kernel(zisa::array_view<Scalar, 2> dst,
                                  zisa::array_const_view<Scalar, 2> src,
                                  zisa::array_const_view<Scalar, 2> sigma,
-                                 Scalar del_x_2, Scalar del_y_2, Function f) {
+                                 Scalar del_x_2, Scalar del_y_2, Scalar Diffusion[2], Function f) {
   const int x_idx =
       threadIdx.x + 1 + blockIdx.x * NUM_THREAD_X; // cannot be on boundary
   const int y_idx = threadIdx.y + 1 + blockIdx.y * NUM_THREAD_Y;
@@ -29,14 +29,14 @@ convolve_sigma_add_f_cuda_kernel(zisa::array_view<Scalar, 2> dst,
       result_function);
     for (int i = 0; i < n_coupled; i++) {
       dst(x_idx, n_coupled * y_idx + i) =
-          del_x_2
+          Diffusion[i] * del_x_2
              * (sigma(2 * x_idx - 2, y_idx)
                  * (src(x_idx - 1, y_idx * n_coupled + i) 
                   - src(x_idx, y_idx * n_coupled + i))
               + sigma(2 * x_idx, y_idx) 
                  * (src(x_idx + 1, y_idx * n_coupled + i) 
                   - src(x_idx, y_idx * n_coupled + i)))
-       + del_y_2 
+       + Diffusion[i] * del_y_2 
            * (sigma(2 * x_idx - 1, y_idx - 1)
                  * (src(x_idx, y_idx * n_coupled + i - n_coupled)
                   - src(x_idx, y_idx * n_coupled + i))

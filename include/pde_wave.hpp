@@ -1,7 +1,6 @@
 #ifndef PDE_WAVE_HPP_
 #define PDE_WAVE_HPP_
 
-
 #include "io/netcdf_reader.hpp"
 #include "periodic_bc.hpp"
 #include "zisa/io/hdf5_writer.hpp"
@@ -11,7 +10,7 @@ template <int n_coupled, typename Scalar, typename Function>
 class PDEWave : public virtual PDEBase<n_coupled, Scalar> {
 public:
   PDEWave(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
-          BoundaryCondition bc, Function f, Scalar dx, Scalar dy)
+          BoundaryCondition bc, Function f, Scalar dx, Scalar dy, Scalar Du, Scalar Dv)
       : PDEBase<n_coupled, Scalar>(Nx, Ny, memory_location, bc, dx, dy),
         func_(f) {}
 
@@ -25,9 +24,11 @@ public:
                                         this->data_.device());
     const Scalar del_x_2 = 1. / (this->dx_ * this->dx_);
     const Scalar del_y_2 = 1. / (this->dy_ * this->dy_);
-    convolve_sigma_add_f<n_coupled>(
-        second_deriv.view(), this->data_.const_view(),
-        this->sigma_values_.const_view(), del_x_2, del_y_2, func_);
+    Scalar Diffusion[2] = {1., 1.};
+    convolve_sigma_add_f<n_coupled>(second_deriv.view(),
+                                    this->data_.const_view(),
+                                    this->sigma_values_.const_view(), del_x_2,
+                                    del_y_2, Diffusion, func_);
 
     // update of derivative
     add_arrays_interior<n_coupled>(this->bc_neumann_values_.view(),

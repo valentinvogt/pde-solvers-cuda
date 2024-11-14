@@ -72,6 +72,9 @@ public:
     Scalar total_comp_time_count = 0.;
     int tot_comp_count = 0;
     for (unsigned int i = 0; i < n_timesteps; ++i) {
+      if (i % 1000 == 0) {
+        std::cout << "timestep: " << i << std::endl;
+      }
       if (time + dt >= dsnapshots * snapshot_counter) {
         Scalar dt_new = dsnapshots * snapshot_counter - time;
         // std::cout << "dt_new: " <<   dt_new << std::endl;
@@ -171,6 +174,8 @@ protected:
   const Scalar dx_;
   const Scalar dy_;
   bool ready_ = false;
+  Scalar Du_;
+  Scalar Dv_;
 };
 #undef DURATION
 
