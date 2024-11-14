@@ -166,13 +166,13 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
 
     print(f"NetCDF file '{filename}' created successfully.")
 
-if __name__ == "__main__":
-    # Usage example:
-    create_input_file('data/example.nc', 'data/example_out.nc', type_of_equation=0, 
-                      x_size=160, x_length=2., y_size=160, y_length=2., boundary_value_type=1,
-                      scalar_type=0, n_coupled=2, 
-                      coupled_function_order=3, number_timesteps=20000,
-                      final_time=10., number_snapshots=5, n_members=1, initial_value_function=initial_noisy_function,
-                      sigma_function=const_sigma, bc_neumann_function=zero_func, f_value_function=f_scalings_gray_scott)
+# if __name__ == "__main__":
+#     # Usage example:
+#     create_input_file('data/example.nc', 'data/example_out.nc', type_of_equation=0, 
+#                       x_size=160, x_length=2., y_size=160, y_length=2., boundary_value_type=1,
+#                       scalar_type=0, n_coupled=2, 
+#                       coupled_function_order=3, number_timesteps=20000,
+#                       final_time=10., number_snapshots=5, n_members=1, initial_value_function=initial_noisy_function,
+#                       sigma_function=const_sigma, bc_neumann_function=zero_func, f_value_function=f_scalings_gray_scott)
 
     
