@@ -6,7 +6,6 @@
 #include <pde_heat.hpp>
 #include <zisa/memory/array.hpp>
 
-
 namespace HeatEquationTests {
 
 // helper function which creates simple data array where all values are set to
@@ -91,9 +90,9 @@ TEST(HeatEquationTests, TEST_ZERO) {
   function_scalings(0) = 0.;
 #endif
   CoupledFunction<float> func(function_scalings.const_view(), 1, 1);
-
-  PDEHeat<1, float, CoupledFunction<float>> pde(
-      8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
+  PDEHeat<1, float, CoupledFunction<float>> pde(8, 8, memory_location,
+                                                BoundaryCondition::Dirichlet,
+                                                func, 0.1, 0.1, 1., 1.);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view());
@@ -145,9 +144,9 @@ TEST(HeatEquationTests, TEST_U_CONSTANT) {
   function_scalings(2) = 0.;
 #endif
   CoupledFunction<float> func(function_scalings.const_view(), 1, 3);
-
-  PDEHeat<1, float, CoupledFunction<float>> pde(
-      8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
+  PDEHeat<1, float, CoupledFunction<float>> pde(8, 8, memory_location,
+                                                BoundaryCondition::Dirichlet,
+                                                func, 0.1, 0.1, 1., 1.);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view());
@@ -206,8 +205,9 @@ TEST(HeatEquationTests, TEST_F_CONSTANT) {
   function_scalings(2) = 0.;
 #endif
   CoupledFunction<float> func(function_scalings.const_view(), 1, 3);
-  PDEHeat<1, float, CoupledFunction<float>> pde(
-      8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
+  PDEHeat<1, float, CoupledFunction<float>> pde(8, 8, memory_location,
+                                                BoundaryCondition::Dirichlet,
+                                                func, 0.1, 0.1, 1., 1.);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view());
@@ -281,9 +281,9 @@ TEST(HeatEquationTests, TEST_F_LINEAR) {
   function_scalings(3) = 0.;
 #endif
   CoupledFunction<float> func(function_scalings.const_view(), 1, 4);
-
-  PDEHeat<1, float, CoupledFunction<float>> pde(
-      8, 8, memory_location, BoundaryCondition::Dirichlet, func, 0.1, 0.1);
+  PDEHeat<1, float, CoupledFunction<float>> pde(8, 8, memory_location,
+                                                BoundaryCondition::Dirichlet,
+                                                func, 0.1, 0.1, 1., 1.);
 
   pde.read_values(data.const_view(), sigma_values.const_view(),
                   data.const_view());
@@ -448,9 +448,9 @@ void check_results_periodic(int nx, int ny) {
   }
   for (int i = 1; i < nx + 1; i++) {
     // left boundary
-    ASSERT_NEAR(final_value(i, 4), final_value(i, 3*(ny+2) - 2), tol);
+    ASSERT_NEAR(final_value(i, 4), final_value(i, 3 * (ny + 2) - 2), tol);
     // right boundary
-    ASSERT_NEAR(final_value(i, 3*ny + 1), final_value(i, 1), tol);
+    ASSERT_NEAR(final_value(i, 3 * ny + 1), final_value(i, 1), tol);
   }
 }
 

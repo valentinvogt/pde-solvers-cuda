@@ -1,10 +1,10 @@
 #include "pde_base.hpp"
+#include "run_from_netcdf.hpp"
 #include "zisa/memory/device_type.hpp"
 #include <coupled_function.hpp>
 #include <gtest/gtest.h>
 #include <pde_wave.hpp>
 #include <zisa/memory/array.hpp>
-#include "run_from_netcdf.hpp"
 
 namespace WaveEquationTests {
 
@@ -71,8 +71,8 @@ void test_zero_helper(zisa::array_const_view<float, 2> data,
                       zisa::array_const_view<float, 2> sigma,
                       zisa::device_type memory_location,
                       CoupledFunction<float> func, BoundaryCondition bc) {
-  PDEWave<1, float, CoupledFunction<float>> pde(8, 8, memory_location, bc,
-                                                      func, 0.1, 0.1);
+  PDEWave<1, float, CoupledFunction<float>> pde(8, 8, memory_location, bc, func,
+                                                0.1, 0.1, 1.0, 1.0);
   pde.read_values(data, sigma, data, data);
   for (int i = 0; i < 1000; i++) {
     pde.apply(0.1);
@@ -115,7 +115,7 @@ TEST(WaveEquationTests, TEST_ZERO) {
   zisa::copy(function_scalings_cuda, function_scalings);
   CoupledFunction<float> func(function_scalings_cuda, 1, 1);
 #else
-  CoupledFunction<float> func(function_scalings, 1,1 );
+  CoupledFunction<float> func(function_scalings, 1, 1);
 #endif
   test_zero_helper(data.const_view(), sigma_values.const_view(),
                    memory_location, func, BoundaryCondition::Dirichlet);
@@ -128,10 +128,10 @@ void test_constant_helper(zisa::array_const_view<float, 2> data,
                           zisa::array_const_view<float, 2> sigma,
                           zisa::array_const_view<float, 2> deriv_data,
                           zisa::device_type memory_location,
-                          CoupledFunction<float> func,
-                          BoundaryCondition bc) {
-  PDEWave<1, float, CoupledFunction<float>> pde(8, 8, memory_location, bc,
-                                                      func, 0.1, 0.1);
+                          CoupledFunction<float> func, BoundaryCondition bc) {
+
+  PDEWave<1, float, CoupledFunction<float>> pde(8, 8, memory_location, bc, func,
+                                                0.1, 0.1, 1.0, 1.0);
 
   pde.read_values(data, sigma, data, deriv_data);
   for (int i = 0; i < 1000; i++) {
@@ -190,7 +190,7 @@ TEST(WaveEquationTests, TEST_U_CONSTANT) {
   zisa::copy(function_scalings_cuda, function_scalings);
   CoupledFunction<float> func(function_scalings_cuda, 1, 1);
 #else
-  CoupledFunction<float> func(function_scalings, 1,1 );
+  CoupledFunction<float> func(function_scalings, 1, 1);
 #endif
 
   test_constant_helper(data.const_view(), sigma_values.const_view(),
@@ -205,10 +205,10 @@ void test_linear_helper(zisa::array_const_view<float, 2> data,
                         zisa::array_const_view<float, 2> sigma,
                         zisa::array_const_view<float, 2> deriv_data,
                         zisa::device_type memory_location,
-                        CoupledFunction<float> func,
-                        BoundaryCondition bc) {
+                        CoupledFunction<float> func, BoundaryCondition bc) {
   PDEWave<1, float, CoupledFunction<float>> pde(98, 98, memory_location, bc,
-                                                      func, 0.01, 0.01);
+                                                func, 0.01, 0.01, 1.0, 1.0
+);
 
   pde.read_values(data, sigma, data, deriv_data);
   // apply for 10 seconds
@@ -277,11 +277,9 @@ TEST(WaveEquationTests, TestConstantF) {
                      BoundaryCondition::Dirichlet);
 }
 
-
 void check_results(int nx, int ny) {
   int ncid;
-  ASSERT_TRUE(nc_open("data/test_wave_out.nc", NC_NOWRITE, &ncid) ==
-              NC_NOERR);
+  ASSERT_TRUE(nc_open("data/test_wave_out.nc", NC_NOWRITE, &ncid) == NC_NOERR);
   int type_of_equation;
   ASSERT_TRUE(nc_get_att(ncid, NC_GLOBAL, "type_of_equation",
                          &type_of_equation) == NC_NOERR);
@@ -312,7 +310,8 @@ void check_results(int nx, int ny) {
     for (int j = 0; j < ny + 2; j++) {
       //  f_1(x, y, z) = 1 => x(t) = t^2/2, x'(0) = 0
       ASSERT_NEAR(final_value(i, 3 * j), 2., tol);
-      // f_2(x, y, z) = 2x + y = t^2 + y => y(t) = 1.5exp(t) + 0.5exp(-t) - t^2 - 2, y'(0) = 1
+      // f_2(x, y, z) = 2x + y = t^2 + y => y(t) = 1.5exp(t) + 0.5exp(-t) - t^2
+      // - 2, y'(0) = 1
       ASSERT_NEAR(final_value(i, 3 * j + 1), sol_2, tol);
       // f_3(x, y, z) = 6x = 3t^2 => z(t) = t^4/4, z'(0) = 0
       ASSERT_NEAR(final_value(i, 3 * j + 2), 4., tol);
@@ -339,9 +338,9 @@ void check_results(int nx, int ny) {
   }
   for (int i = 1; i < nx + 1; i++) {
     // left boundary
-    ASSERT_NEAR(final_value(i, 4), final_value(i, 3*(ny+2) - 2), tol);
+    ASSERT_NEAR(final_value(i, 4), final_value(i, 3 * (ny + 2) - 2), tol);
     // right boundary
-    ASSERT_NEAR(final_value(i, 3*ny + 1), final_value(i, 1), tol);
+    ASSERT_NEAR(final_value(i, 3 * ny + 1), final_value(i, 1), tol);
   }
 }
 
@@ -351,7 +350,7 @@ void check_results(int nx, int ny) {
 TEST(WaveEquationTests, TEST_FROM_NC) {
   ASSERT_TRUE(
       std::system("python scripts/create_test_input_wave_periodic.py") == 0);
-  
+
   int nx = 64, ny = 64;
   NetCDFPDEReader reader("data/test_wave.nc");
 
@@ -359,7 +358,6 @@ TEST(WaveEquationTests, TEST_FROM_NC) {
                                     zisa::device_type::cpu);
   reader.write_variable_of_member_to_array(
       "initial_data", init_data_1.view().raw(), 0, nx + 2, 3 * (ny + 2));
-
 
   // ensure correct initial conditions for member 1
   float tol = 1e-5;
