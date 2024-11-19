@@ -52,7 +52,7 @@ template <int n_coupled, typename Scalar, typename Function>
 void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
                                zisa::array_const_view<Scalar, 2> src,
                                zisa::array_const_view<Scalar, 2> sigma,
-                               Scalar del_x_2, Scalar del_y_2,
+                               Scalar del_x_2, Scalar del_y_2, Scalar Diffusion[2],
                                const Function &f) {
 #if CUDA_AVAILABLE
   const dim3 thread_dims(NUM_THREAD_X, NUM_THREAD_Y);
@@ -61,7 +61,7 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
       std::ceil((src.shape(1) - 2 * n_coupled) / (double)thread_dims.y) *
           n_coupled);
   convolve_sigma_add_f_cuda_kernel<n_coupled, Scalar, Function>
-      <<<block_dims, thread_dims>>>(dst, src, sigma, del_x_2, del_y_2, f);
+      <<<block_dims, thread_dims>>>(dst, src, sigma, del_x_2, del_y_2, Diffusion, f);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
     std::cout << "Error in convolve_sigma_add_f_cuda: "
