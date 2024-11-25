@@ -1,5 +1,6 @@
 dummy
 out/*
+videos/
 data
 scripts/__pycache__
 *.err
