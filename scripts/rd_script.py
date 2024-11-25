@@ -3,8 +3,8 @@ import os
 from create_netcdf_input import create_input_file
 from helpers import f_scalings, zero_func, const_sigma
 
-A = 0.01
-B = 1.0
+A = 5
+B = 9
 
 
 def initial_sparse_sources(member, coupled_idx, x_position, y_position):
@@ -27,7 +27,7 @@ def initial_sparse_sources(member, coupled_idx, x_position, y_position):
 
 def steady_state_plus_noise(member, coupled_idx, x_position, y_position):
     np.random.seed(1)
-    sigma = 0.5
+    sigma = 0.1
     if coupled_idx == 0:
         u = A * np.ones(shape=x_position.shape) + np.random.normal(
             0.0, sigma, size=x_position.shape
@@ -61,13 +61,13 @@ def wrap(model, Nx, Nt, dt, init=None, dx=1.0):
         x_length=Nx * dx,
         y_size=Nx,
         y_length=Nx * dx,
-        boundary_value_type=1,
+        boundary_value_type=2,
         scalar_type=0,
         n_coupled=2,
         coupled_function_order=fn_order,
         number_timesteps=Nt,
         final_time=Nt * dt,
-        number_snapshots=10,
+        number_snapshots=20,
         n_members=1,
         initial_value_function=steady_state_plus_noise,
         sigma_function=const_sigma,
@@ -82,6 +82,6 @@ def wrap(model, Nx, Nt, dt, init=None, dx=1.0):
 """
 model can be one of bruss, gray_scott, fhn
 """
-input_filename = wrap(model="bruss", Nx=100, Nt=1000, dt=0.001, dx=0.25)
+input_filename = wrap(model="bruss", Nx=200, Nt=10_000, dt=0.0001, dx=0.25)
 
 # os.system(f"build/run_from_netcdf {input_filename}")

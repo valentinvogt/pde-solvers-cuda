@@ -22,10 +22,18 @@ y_size = dataset.getncattr("y_length")
 # Extract the data variable
 data = dataset.variables["data"][:]
 
+u = data[:, :, :, 0::n_coupled]
+v = data[:, :, :, 1::n_coupled]
+u_min = np.min(u)
+u_max = np.max(u)
+v_min = np.min(v)
+v_max = np.max(v)
+print(f"{u_min} <= u <= {u_max}")
+print(f"{v_min} <= v <= {v_max}")
 global_min = np.min(data)
 global_max = np.max(data)
-print(global_min)
-print(global_max)
+# print(global_min)
+# print(global_max)
 
 u0 = 5
 v0 = 9
