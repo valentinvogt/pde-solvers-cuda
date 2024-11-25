@@ -1,3 +1,9 @@
+euler-data
+dummy
+out/*
+data
+scripts/__pycache__
+
 # Prerequisites
 *.d
 
@@ -41,10 +47,3 @@ slurm*
 .direnv
 
 .cache
-
-
-
-dummy
-out/*
-data
-scripts/__pycache__
