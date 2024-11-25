@@ -1,7 +1,8 @@
 import numpy as np
 import os
 import re
-import argparse, sys
+import sys
+import argparse
 from create_netcdf_input import create_input_file
 from helpers import f_scalings, zero_func, const_sigma
 
@@ -26,7 +27,7 @@ Du: float = 2.0
 Dv: float = 22.0
 sigma_ic: float = 0.1
 n_snapshots: int = 100
-filename: str = "data/bruss.nc"
+out_dir: str = "data"
 """
 
 parser = argparse.ArgumentParser()
@@ -58,7 +59,25 @@ n_snapshots = args.n_snapshots
 filename = args.filename
 
 
-def initial_noisy_function(member, coupled_idx, x_position, y_position):
+def initial_sparse_sources(member, coupled_idx, x_position, y_position):
+    np.random.seed(1)
+
+    if coupled_idx == 0:
+        u = np.ones(x_position.shape)
+    elif coupled_idx == 1:
+        u = np.zeros(x_position.shape)
+        for i in range(0, x_position.shape[0]):
+            i = np.random.randint(0, x_position.shape[0])
+            j = np.random.randint(0, x_position.shape[1])
+            u[i, j] = 1.0
+    else:
+        print("initial_noisy_function is only meant for n_coupled == 2!")
+        u = 0.0 * x_position
+
+    return u
+
+
+def steady_state_plus_noise(member, coupled_idx, x_position, y_position):
     np.random.seed(1)
     sigma = sigma_ic
     if coupled_idx == 0:
@@ -72,19 +91,27 @@ def initial_noisy_function(member, coupled_idx, x_position, y_position):
     else:
         print("initial_noisy_function is only meant for n_coupled == 2!")
         u = 0.0 * x_position
+
     # u += (
     #     0.5
     #     * np.sin(2 * np.pi * x_position / 100)
     #     * np.sin(2 * np.pi * y_position / 100)
     # )
-    return u
 
+    return u
 
 fn_order = 4 if model == "fhn" else 3
 fn_scalings = f_scalings(model, A, B)
 input_filename = filename
 output_filename = filename.replace(".nc", "_output.nc")
-eprint(repr(output_filename))
+
+if model == "bruss":
+    initial_condition = steady_state_plus_noise
+elif model == "gray_scott":
+    initial_condition = initial_sparse_sources
+else:
+    initial_condition = steady_state_plus_noise
+
 create_input_file(
     input_filename,
     output_filename,
@@ -101,7 +128,7 @@ create_input_file(
     final_time=Nt * dt,
     number_snapshots=n_snapshots,
     n_members=1,
-    initial_value_function=initial_noisy_function,
+    initial_value_function=initial_condition,
     sigma_function=const_sigma,
     bc_neumann_function=zero_func,
     f_value_function=fn_scalings,

@@ -82,6 +82,6 @@ def wrap(model, Nx, Nt, dt, init=None, dx=1.0):
 """
 model can be one of bruss, gray_scott, fhn
 """
-input_filename = wrap(model="bruss", Nx=200, Nt=10_000, dt=0.0001, dx=0.25)
+input_filename = wrap(model="bruss", Nx=200, Nt=2_500, dt=0.0025)
 
 # os.system(f"build/run_from_netcdf {input_filename}")
