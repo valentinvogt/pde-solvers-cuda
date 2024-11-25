@@ -8,7 +8,7 @@ template <int n_coupled, typename Scalar, typename Function>
 void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
                                zisa::array_const_view<Scalar, 2> src,
                                zisa::array_const_view<Scalar, 2> sigma,
-                               Scalar del_x_2, Scalar del_y_2,
+                               Scalar del_x_2, Scalar del_y_2, Scalar Diffusion[2],
                                const Function &f);
 
 #define PDE_SOLVERS_CUDA_INSTANCIATE_CONVOLVE_SIGMA_CUDA_2(TYPE, N_COUPLED)    \

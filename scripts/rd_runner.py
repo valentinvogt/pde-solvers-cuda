@@ -70,10 +70,10 @@ def initial_noisy_function(member, coupled_idx, x_position, y_position):
 
 fn_order = 4 if model == "fhn" else 3
 fn_scalings = f_scalings(model, A, B)
-input_filename = f"data/{model}.nc"
+input_filename = f"data/{model}-dt_{dt}-dx_{dx}.nc"
 create_input_file(
-    f"data/{model}.nc",
-    f"data/{model}_output.nc",
+    input_filename,
+    f"data/{model}-dt_{dt}-dx_{dx}_output.nc",
     type_of_equation=2,
     x_size=Nx,
     x_length=Nx * dx,

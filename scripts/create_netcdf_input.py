@@ -164,7 +164,7 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
                     bc_neumann_values[member, :, coupled_idx::n_coupled] = bc_neumann_function(member, coupled_idx, xx, yy)
 
 
-    print(f"NetCDF file '{filename}' created successfully.")
+    # print(f"NetCDF file '{filename}' created successfully.")
 
 # if __name__ == "__main__":
 #     # Usage example:

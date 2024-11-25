@@ -64,4 +64,4 @@ model can be one of bruss, gray_scott, fhn
 """
 input_filename = wrap(model="bruss", Nx=200, Nt=10000, dt=0.0025)
 
-os.system(f"build/run_from_netcdf {input_filename}")
+# os.system(f"build/run_from_netcdf {input_filename}")

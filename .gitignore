@@ -48,3 +48,4 @@ dummy
 out/*
 data
 scripts/__pycache__
+*.err

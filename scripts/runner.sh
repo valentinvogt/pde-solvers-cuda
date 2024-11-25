@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=bruss
-#SBATCH --output=bruss-%j.out
-#SBATCH --error=bruss-%j.err
+#SBATCH --job-name=time-run
+#SBATCH --output=time-run-%j.out
+#SBATCH --error=time-run-%j.err
 #SBATCH --ntasks=1
-#SBATCH --nodes=2
+#SBATCH --nodes=1
 #SBATCH --gpus-per-node=1
 #SBATCH --mem-per-cpu=2048
-#SBATCH --time=00:15:00
+#SBATCH --time=01:00:00
 
 module load stack/2024-06
 module load gcc/12.2.0
@@ -29,16 +29,18 @@ module load python/3.11.6
 
 A=5
 B=9
-Nx=100
-dx=1.0
-Nt=1000
-dt=0.01
+Nx=400
+dx=0.25
+Nt=2_500
+dt=0.0025
 Du=2.0
 Dv=22.0
 n_snapshots=100
 
-FILE=$(python3 scripts/rd_runner.py --model bruss --A $A --B $B \
-        -Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-        --n_snapshots $n_snapshots)
+for dt in 0.001 0.0025 0.005 0.01; do
+        FILE=$(python3 scripts/rd_runner.py --model bruss --A $A --B $B \
+                --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
+                --n_snapshots $n_snapshots)
 
-build/run_from_netcdf $FILE
+        build/run_from_netcdf $FILE 1
+done
