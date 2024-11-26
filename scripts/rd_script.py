@@ -3,11 +3,29 @@ import os
 from create_netcdf_input import create_input_file
 from helpers import f_scalings, zero_func, const_sigma
 
-A = 5
-B = 9
+A = 0.01
+B = 1.0
 
 
-def initial_noisy_function(member, coupled_idx, x_position, y_position):
+def initial_sparse_sources(member, coupled_idx, x_position, y_position):
+    np.random.seed(1)
+
+    if coupled_idx == 0:
+        u = np.ones(x_position.shape)
+    elif coupled_idx == 1:
+        u = np.zeros(x_position.shape)
+        for i in range(0, x_position.shape[0]):
+            i = np.random.randint(0, x_position.shape[0])
+            j = np.random.randint(0, x_position.shape[1])
+            u[i, j] = 1.0
+    else:
+        print("initial_noisy_function is only meant for n_coupled == 2!")
+        u = 0.0 * x_position
+    
+    return u
+
+
+def steady_state_plus_noise(member, coupled_idx, x_position, y_position):
     np.random.seed(1)
     sigma = 0.5
     if coupled_idx == 0:
@@ -21,11 +39,13 @@ def initial_noisy_function(member, coupled_idx, x_position, y_position):
     else:
         print("initial_noisy_function is only meant for n_coupled == 2!")
         u = 0.0 * x_position
+    
     # u += (
     #     0.5
     #     * np.sin(2 * np.pi * x_position / 100)
     #     * np.sin(2 * np.pi * y_position / 100)
     # )
+    
     return u
 
 
@@ -41,15 +61,15 @@ def wrap(model, Nx, Nt, dt, init=None, dx=1.0):
         x_length=Nx * dx,
         y_size=Nx,
         y_length=Nx * dx,
-        boundary_value_type=2,
+        boundary_value_type=1,
         scalar_type=0,
         n_coupled=2,
         coupled_function_order=fn_order,
         number_timesteps=Nt,
         final_time=Nt * dt,
-        number_snapshots=100,
+        number_snapshots=10,
         n_members=1,
-        initial_value_function=initial_noisy_function,
+        initial_value_function=steady_state_plus_noise,
         sigma_function=const_sigma,
         bc_neumann_function=zero_func,
         f_value_function=fn_scalings,
@@ -62,6 +82,6 @@ def wrap(model, Nx, Nt, dt, init=None, dx=1.0):
 """
 model can be one of bruss, gray_scott, fhn
 """
-input_filename = wrap(model="bruss", Nx=200, Nt=10000, dt=0.0025)
+input_filename = wrap(model="bruss", Nx=100, Nt=1000, dt=0.001, dx=0.25)
 
 # os.system(f"build/run_from_netcdf {input_filename}")
