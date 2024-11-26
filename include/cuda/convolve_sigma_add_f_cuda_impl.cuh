@@ -14,7 +14,7 @@ __global__ void
 convolve_sigma_add_f_cuda_kernel(zisa::array_view<Scalar, 2> dst,
                                  zisa::array_const_view<Scalar, 2> src,
                                  zisa::array_const_view<Scalar, 2> sigma,
-                                 Scalar del_x_2, Scalar del_y_2, Scalar Diffusion[2], Function f) {
+                                 Scalar del_x_2, Scalar del_y_2, Scalar Du, Scalar Dv, Function f) {
   const int x_idx =
       threadIdx.x + 1 + blockIdx.x * NUM_THREAD_X; // cannot be on boundary
   const int y_idx = threadIdx.y + 1 + blockIdx.y * NUM_THREAD_Y;
@@ -28,15 +28,16 @@ convolve_sigma_add_f_cuda_kernel(zisa::array_view<Scalar, 2> dst,
                                         zisa::device_type::cuda},
       result_function);
     for (int i = 0; i < n_coupled; i++) {
+      Scalar D = (i == 0) ? Du : Dv;
       dst(x_idx, n_coupled * y_idx + i) =
-          Diffusion[i] * del_x_2
+          D * del_x_2
              * (sigma(2 * x_idx - 2, y_idx)
                  * (src(x_idx - 1, y_idx * n_coupled + i) 
                   - src(x_idx, y_idx * n_coupled + i))
               + sigma(2 * x_idx, y_idx) 
                  * (src(x_idx + 1, y_idx * n_coupled + i) 
                   - src(x_idx, y_idx * n_coupled + i)))
-       + Diffusion[i] * del_y_2 
+       + D * del_y_2 
            * (sigma(2 * x_idx - 1, y_idx - 1)
                  * (src(x_idx, y_idx * n_coupled + i - n_coupled)
                   - src(x_idx, y_idx * n_coupled + i))
@@ -52,7 +53,7 @@ template <int n_coupled, typename Scalar, typename Function>
 void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
                                zisa::array_const_view<Scalar, 2> src,
                                zisa::array_const_view<Scalar, 2> sigma,
-                               Scalar del_x_2, Scalar del_y_2, Scalar Diffusion[2],
+                               Scalar del_x_2, Scalar del_y_2, Scalar Du, Scalar Dv,
                                const Function &f) {
 #if CUDA_AVAILABLE
   const dim3 thread_dims(NUM_THREAD_X, NUM_THREAD_Y);
@@ -61,7 +62,7 @@ void convolve_sigma_add_f_cuda(zisa::array_view<Scalar, 2> dst,
       std::ceil((src.shape(1) - 2 * n_coupled) / (double)thread_dims.y) *
           n_coupled);
   convolve_sigma_add_f_cuda_kernel<n_coupled, Scalar, Function>
-      <<<block_dims, thread_dims>>>(dst, src, sigma, del_x_2, del_y_2, Diffusion, f);
+      <<<block_dims, thread_dims>>>(dst, src, sigma, del_x_2, del_y_2, Du, Dv, f);
   const auto error = cudaDeviceSynchronize();
   if (error != cudaSuccess) {
     std::cout << "Error in convolve_sigma_add_f_cuda: "

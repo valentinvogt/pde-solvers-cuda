@@ -84,7 +84,7 @@ void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
   }
 #if CUDA_AVAILABLE
   else if (memory_dst == zisa::device_type::cuda) {
-    convolve_sigma_add_f_cuda<n_coupled>(dst, src, sigma, del_x_2, del_y_2, Diffusion, f);
+    convolve_sigma_add_f_cuda<n_coupled>(dst, src, sigma, del_x_2, del_y_2, Diffusion[0], Diffusion[1], f);
   }
 #endif // CUDA_AVAILABLE
   else {
