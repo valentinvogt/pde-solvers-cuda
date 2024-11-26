@@ -1,8 +1,14 @@
 import numpy as np
 import os
+import re
 import argparse, sys
 from create_netcdf_input import create_input_file
 from helpers import f_scalings, zero_func, const_sigma
+
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 
 """
 Usage:
@@ -18,7 +24,9 @@ Nt: int = 1000
 dt: float = 0.01
 Du: float = 2.0
 Dv: float = 22.0
+sigma_ic: float = 0.1
 n_snapshots: int = 100
+filename: str = "data/bruss.nc"
 """
 
 parser = argparse.ArgumentParser()
@@ -31,7 +39,9 @@ parser.add_argument("--Nt", type=int, default=1000)
 parser.add_argument("--dt", type=float, default=0.01)
 parser.add_argument("--Du", type=float, default=2.0)
 parser.add_argument("--Dv", type=float, default=22.0)
+parser.add_argument("--sigma_ic", type=float, default=0.1)
 parser.add_argument("--n_snapshots", type=int, default=100)
+parser.add_argument("--filename", type=str, default="data/bruss.nc")
 
 args = parser.parse_args()
 model = args.model
@@ -43,11 +53,14 @@ Nt = args.Nt
 dt = args.dt
 Du = args.Du
 Dv = args.Dv
+sigma_ic = args.sigma_ic
 n_snapshots = args.n_snapshots
+filename = args.filename
+
 
 def initial_noisy_function(member, coupled_idx, x_position, y_position):
     np.random.seed(1)
-    sigma = 0.5
+    sigma = sigma_ic
     if coupled_idx == 0:
         u = A * np.ones(shape=x_position.shape) + np.random.normal(
             0.0, sigma, size=x_position.shape
@@ -67,13 +80,14 @@ def initial_noisy_function(member, coupled_idx, x_position, y_position):
     return u
 
 
-
 fn_order = 4 if model == "fhn" else 3
 fn_scalings = f_scalings(model, A, B)
-input_filename = f"data/{model}-dt_{dt}-dx_{dx}.nc"
+input_filename = filename
+output_filename = filename.replace(".nc", "_output.nc")
+eprint(repr(output_filename))
 create_input_file(
     input_filename,
-    f"data/{model}-dt_{dt}-dx_{dx}_output.nc",
+    output_filename,
     type_of_equation=2,
     x_size=Nx,
     x_length=Nx * dx,

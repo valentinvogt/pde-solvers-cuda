@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=vary-dx
-#SBATCH --output=vary-dx-%j.out
-#SBATCH --error=vary-dx-%j.err
+#SBATCH --job-name=vary-sigma
+#SBATCH --output=vary-sigma-%j.out
+#SBATCH --error=vary-sigma-%j.err
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
 #SBATCH --gpus-per-node=1
@@ -27,30 +27,26 @@ module load python/3.11.6
 # Dv: float = 22.0
 # n_snapshots: int = 100
 
-DATAPATH="/cluster/scratch/vogtva/data/vary_dx"
-
 A=5
 B=9
-# Nx=200
-X=200
+Nx=200
 dx=1.0
-Nt=5_000
+Nt=1_000
 dt=0.0025
 Du=2.0
 Dv=22.0
 n_snapshots=100
 
-for dx in 0.1 0.2 0.3 0.4 0.5 0.75 1.0; do
-        Nx=$(python -c "print(int($X / $dx))")
-        echo "Nx: $Nx"
-        FILENAME="${DATAPATH}/bruss_dx_${dx}.nc"
+#  0.2 0.3 0.4 0.5
+for sigma_ic in 0.1; do
+        FILENAME="data/vary_sigma_ic/bruss_sigma_${sigma_ic}.nc"
+        # echo "$(python3 -c "print(repr('$FILENAME'))")"
+        FILENAME=$(echo $FILENAME | tr -d '[:space:]')
+        # echo "$(python3 -c "print(repr('$FILENAME'))")"
+        
         FILE=$(python3 scripts/rd_runner.py --model bruss --A $A --B $B \
-                --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
+                --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv --sigma_ic $sigma_ic \
                 --n_snapshots $n_snapshots --filename $FILENAME)
-        build/run_from_netcdf $FILE 1
-done
 
-# Sanitization
-for file in ${DATAPATH}/*; do
-        mv "$file" "$(echo "$file" | sed 's/\xA0//g')"
+        build/run_from_netcdf $FILE 1
 done

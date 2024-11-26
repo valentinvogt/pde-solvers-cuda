@@ -42,10 +42,10 @@ slurm*
 
 .cache
 
-
+.DS_Store
 
 dummy
 out/*
-data
+data/
 scripts/__pycache__
 *.err
