@@ -90,7 +90,8 @@ for member in range(n_members):
 
     #remove prefix 'data/' from filename
     filename = filename.split('/')[1]
-    output_filename = f"out/{os.path.splitext(filename)[0]}.mp4"
+    out_dir = "videos"
+    output_filename = f"{out_dir}/{os.path.splitext(filename)[0]}.mp4"
     ani.save(output_filename, writer="ffmpeg", dpi=150)
 
     plt.close(fig)  # Close figure to free memory
