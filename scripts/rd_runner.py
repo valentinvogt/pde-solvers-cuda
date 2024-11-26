@@ -1,6 +1,5 @@
 import numpy as np
 import os
-import re
 import sys
 import argparse
 from create_netcdf_input import create_input_file
@@ -27,7 +26,7 @@ Du: float = 2.0
 Dv: float = 22.0
 sigma_ic: float = 0.1
 n_snapshots: int = 100
-out_dir: str = "data"
+filename: str = "data/bruss.nc"
 """
 
 parser = argparse.ArgumentParser()
@@ -91,18 +90,18 @@ def steady_state_plus_noise(member, coupled_idx, x_position, y_position):
     else:
         print("initial_noisy_function is only meant for n_coupled == 2!")
         u = 0.0 * x_position
-
     # u += (
     #     0.5
     #     * np.sin(2 * np.pi * x_position / 100)
     #     * np.sin(2 * np.pi * y_position / 100)
     # )
-
     return u
+
 
 fn_order = 4 if model == "fhn" else 3
 fn_scalings = f_scalings(model, A, B)
 input_filename = filename
+
 output_filename = filename.replace(".nc", "_output.nc")
 
 if model == "bruss":
