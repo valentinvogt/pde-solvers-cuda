@@ -27,6 +27,7 @@
 # n_snapshots: int = 100
 
 DATAPATH="data/vary-dx"
+PYTHON=".venv/bin/python3"
 
 A=5
 B=9
@@ -41,7 +42,7 @@ for dx in 0.1 0.2 0.3 0.4 0.5 0.75 1.0; do
         Nx=$(python -c "print(int($X / $dx))")
         echo "Nx: $Nx"
         FILENAME="${DATAPATH}/bruss_dx_${dx}.nc"
-        FILE=$(python3 scripts/rd_runner.py --model bruss --A $A --B $B \
+        FILE=$($PYTHON scripts/rd_runner.py --model bruss --A $A --B $B \
                 --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
                 --n_snapshots $n_snapshots --filename $FILENAME)
         build/run_from_netcdf $FILENAME
