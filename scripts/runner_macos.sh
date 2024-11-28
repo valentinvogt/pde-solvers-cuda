@@ -26,26 +26,28 @@
 # Dv: float = 22.0
 # n_snapshots: int = 100
 
-DATAPATH="data/vary-dx"
+DATAPATH="data/vary-both"
 PYTHON=".venv/bin/python3"
 
-A=5
-B=9
-Nx=100
-Nt=2_500
+# A=5
+# B=9
+Nx=200
+dx=1.0
+Nt=10_000
 dt=0.0025
 Du=2.0
 Dv=22.0
 n_snapshots=100
 
-for dx in 0.1 0.2 0.3 0.4 0.5 0.75 1.0; do
-        Nx=$(python -c "print(int($X / $dx))")
-        echo "Nx: $Nx"
-        FILENAME="${DATAPATH}/bruss_dx_${dx}.nc"
-        FILE=$($PYTHON scripts/rd_runner.py --model bruss --A $A --B $B \
-                --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                --n_snapshots $n_snapshots --filename $FILENAME)
-        build/run_from_netcdf $FILENAME
+for A in 1 3 5 7 9 15; do
+        for mult in 1.6 1.8 2.0 2.2; do
+                B=$($PYTHON -c "print($A * $mult)")
+                FILENAME="${DATAPATH}/bruss_A_${A}_B_${B}.nc"
+                FILE=$($PYTHON scripts/rd_runner.py --model bruss --A $A --B $B \
+                        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
+                        --n_snapshots $n_snapshots --filename $FILENAME)
+                build/run_from_netcdf $FILE 1
+        done
 done
 
 # Sanitization

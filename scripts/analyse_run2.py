@@ -37,22 +37,22 @@ def plot(data):
     return fig, ax, ims
 
 
-def animate(snapshot, data, ims, ax):
-    coupled_idx = 0
-    matrix = data[0, snapshot, :, coupled_idx::n_coupled]
-    im = ims[coupled_idx]
-    im.set_array(matrix)  # Update data for each coupled component
-    name = "u" if coupled_idx == 0 else "v"
-    ax.set_title(f"Snapshot {snapshot + 1}, {name}")
+def animate(snapshot, data, ims, axes):
+    for coupled_idx, ax in enumerate(axes):
+        matrix = data[0, snapshot, :, coupled_idx::n_coupled]
+        im = ims[coupled_idx]
+        im.set_array(matrix)  # Update data for each coupled component
+        name = "u" if coupled_idx == 0 else "v"
+        ax.set_title(f"Snapshot {snapshot + 1}, {name}")
 
     return ims
 
 
 def make_animation(data, name, out_dir):
-    fig, ax, ims = plot(data)
+    fig, axes, ims = plot(data)
     ani = animation.FuncAnimation(
         fig,
-        partial(animate, data=data, ims=ims, ax=ax),
+        partial(animate, data=data, ims=ims, axes=axes),
         frames=data.shape[1],
         interval=100,
         blit=True,
@@ -63,8 +63,8 @@ def make_animation(data, name, out_dir):
 
 
 def save_final_frame(data, name, out_dir):
-    fig, ax, ims = plot(data)
-    animate(data.shape[1] - 1, data, ims, ax)
+    fig, axes, ims = plot(data)
+    animate(data.shape[1] - 1, data, ims, axes)
     plt.savefig(
         os.path.join(out_dir, name.replace("_output.nc", "_final.png")), dpi=150
     )
@@ -119,17 +119,15 @@ def main():
 
     files_formatted = []
     for f in files:
-        # assume format "gs_A_[value]_B_[value]_output.nc"
+        # assume format "bruss_A_[value]_B_[value]_output.nc"
         fname = os.path.basename(f)
-        if fname.startswith("gs_"):
+        if fname.startswith("bruss_A"):
             A = float(fname.split("_")[2])
             B = float(fname.split("_")[4])
-            fname = f"gs_A_{A:.3f}_B_{B:.3f}_output.nc"
+            fname = f"bruss_A_{A:.2f}_B_{B:.2f}_output.nc"
             os.rename(os.path.join(dir_path, f), os.path.join(dir_path, fname))
             files_formatted.append((fname, A, B))
-
     files_formatted.sort(key=lambda x: (x[1], x[2]))
-    
     ims = []
     for f, _, _ in files_formatted:
         print(f"Processing {f}")
@@ -141,21 +139,21 @@ def main():
             save_final_frame(data, f, out_dir)
         ims.append(data[0, -1, :, 0::n_coupled])
 
-    fig = plt.figure(figsize=(8, 16))
+    fig = plt.figure(figsize=(16, 24))
     grid = ImageGrid(
         fig,
         111,
-        nrows_ncols=(10, 6),
+        nrows_ncols=(4, 6),
         axes_pad=0.5,  # pad between Axes in inch.
     )
 
     for i, (ax, (f, A, B)) in enumerate(zip(grid, files_formatted)):
-        ax.set_title(f"A={A:.3f}, B={B:.3f}")
+        ax.set_title(f"A={A:.2f}, B={B:.2f}")
         ax.axis("off")
         ax.set_aspect("equal")
         ax.imshow(ims[i], cmap="viridis")
 
-    plt.savefig(os.path.join(out_dir, "u.png"), dpi=500)
+    plt.savefig(os.path.join(out_dir, "u.png"), dpi=150)
     print("Done")
     # if conv:
     #     for param, f in files:
