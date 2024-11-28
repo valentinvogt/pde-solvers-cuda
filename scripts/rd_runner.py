@@ -42,6 +42,7 @@ parser.add_argument("--dt", type=float, default=0.01)
 parser.add_argument("--Du", type=float, default=2.0)
 parser.add_argument("--Dv", type=float, default=22.0)
 parser.add_argument("--sigma_ic", type=float, default=0.1)
+parser.add_argument("--random_seed", type=int, default=1)
 parser.add_argument("--sparsity", type=int, default=1)
 parser.add_argument("--n_snapshots", type=int, default=100)
 parser.add_argument("--filename", type=str, default="data/bruss.nc")
@@ -58,6 +59,7 @@ dt = args.dt
 Du = args.Du
 Dv = args.Dv
 sigma_ic = args.sigma_ic
+random_seed = args.random_seed
 sparsity = args.sparsity
 n_snapshots = args.n_snapshots
 filename = args.filename
