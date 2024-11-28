@@ -13,37 +13,36 @@ n_coupled = 2
 def plot(data):
     global_min = np.min(data)
     global_max = np.max(data)
-    fig, axes = plt.subplots(
-        nrows=1, ncols=n_coupled, figsize=(12, 6), gridspec_kw={"wspace": 0.4}
-    )
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12, 6))
 
     ims = []
-    for coupled_idx, ax in enumerate(axes):
-        # Display the first snapshot initially; this will be updated in the animation
-        matrix = data[0, 0, :, coupled_idx::n_coupled]
-        im = ax.imshow(
-            matrix, cmap="viridis", aspect="equal", vmin=global_min, vmax=global_max
-        )
-        ims.append(im)
-        ax.set_xlabel("y")
-        ax.set_ylabel("x")
+
+    coupled_idx = 0
+    # Display the first snapshot initially; this will be updated in the animation
+    matrix = data[0, 0, :, coupled_idx::n_coupled]
+    im = ax.imshow(
+        matrix, cmap="viridis", aspect="equal", vmin=global_min, vmax=global_max
+    )
+    ims.append(im)
+    # ax.set_xlabel("y")
+    # ax.set_ylabel("x")
 
     # Add a colorbar
-    cbar = fig.colorbar(
-        ims[0], ax=axes, orientation="vertical", fraction=0.02, pad=0.04
-    )
-    cbar.set_label("Data Value")
-    return fig, axes, ims
+    # cbar = fig.colorbar(
+    #     ims[0], ax=ax, orientation="vertical", fraction=0.02, pad=0.04
+    # )
+    # cbar.set_label("Data Value")
+    return fig, ax, ims
 
-def animate(snapshot, data, ims, axes):
-    for coupled_idx, ax in enumerate(axes):
-        matrix = data[0, snapshot, :, coupled_idx::n_coupled]
-        im = ims[coupled_idx]
-        im.set_array(matrix)  # Update data for each coupled component
-        name = "u" if coupled_idx == 0 else "v"
-        ax.set_title(
-            f"Snapshot {snapshot + 1}, {name}"
-        )
+def animate(snapshot, data, ims, ax):
+    coupled_idx = 0
+    matrix = data[0, snapshot, :, coupled_idx::n_coupled]
+    im = ims[coupled_idx]
+    im.set_array(matrix)  # Update data for each coupled component
+    name = "u" if coupled_idx == 0 else "v"
+    # ax.set_title(
+    #     f"Snapshot {snapshot + 1}, {name}"
+    # )
 
     return ims
 

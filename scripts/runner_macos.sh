@@ -29,25 +29,22 @@
 DATAPATH="data/vary-both"
 PYTHON=".venv/bin/python3"
 
-# A=5
-# B=9
-Nx=200
+A=0.037
+B=0.06
+Nx=100
 dx=1.0
-Nt=10_000
-dt=0.0025
-Du=2.0
-Dv=22.0
+Nt=10_001
+dt=0.05
+Du=0.2
+Dv=0.1
 n_snapshots=100
 
-for A in 1 3 5 7 9 15; do
-        for mult in 1.6 1.8 2.0 2.2; do
-                B=$($PYTHON -c "print($A * $mult)")
-                FILENAME="${DATAPATH}/bruss_A_${A}_B_${B}.nc"
-                FILE=$($PYTHON scripts/rd_runner.py --model bruss --A $A --B $B \
-                        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                        --n_snapshots $n_snapshots --filename $FILENAME)
-                build/run_from_netcdf $FILE 1
-        done
+for sparsity in 1 2 5 10 50; do
+        FILENAME="data/gs_sp/gs-sparsity_${sparsity}.nc"
+        FILE=$(.venv/bin/python3 scripts/rd_runner.py --model gray_scott --A $A --B $B \
+                --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
+                --n_snapshots $n_snapshots --filename $FILENAME --sparsity $sparsity)
+        build/run_from_netcdf $FILENAME
 done
 
 # Sanitization

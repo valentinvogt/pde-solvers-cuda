@@ -42,7 +42,7 @@ parser.add_argument("--dt", type=float, default=0.01)
 parser.add_argument("--Du", type=float, default=2.0)
 parser.add_argument("--Dv", type=float, default=22.0)
 parser.add_argument("--sigma_ic", type=float, default=0.1)
-parser.add_argument("--random_seed", type=int, default=1)
+parser.add_argument("--sparsity", type=int, default=1)
 parser.add_argument("--n_snapshots", type=int, default=100)
 parser.add_argument("--filename", type=str, default="data/bruss.nc")
 parser.add_argument("--run_id", type=str, default="")
@@ -58,7 +58,7 @@ dt = args.dt
 Du = args.Du
 Dv = args.Dv
 sigma_ic = args.sigma_ic
-random_seed = args.random_seed
+sparsity = args.sparsity
 n_snapshots = args.n_snapshots
 filename = args.filename
 run_id = args.run_id
@@ -70,7 +70,7 @@ def initial_sparse_sources(member, coupled_idx, x_position, y_position):
         u = np.ones(x_position.shape)
     elif coupled_idx == 1:
         u = np.zeros(x_position.shape)
-        for i in range(0, x_position.shape[0]):
+        for i in range(0, sparsity * x_position.shape[0]):
             i = np.random.randint(0, x_position.shape[0])
             j = np.random.randint(0, x_position.shape[1])
             u[i, j] = 1.0
