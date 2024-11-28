@@ -27,7 +27,7 @@ module load python/3.11.6
 # Dv: float = 22.0
 # n_snapshots: int = 100
 
-DATAPATH="/cluster/scratch/vogtva/data/vary-dx"
+DATAPATH="/cluster/scratch/vogtva/data/vary-seed"
 
 A=5
 B=9
@@ -39,12 +39,11 @@ Du=2.0
 Dv=22.0
 n_snapshots=100
 
-
-for sigma_ic in 0.1 0.2 0.3 0.4 0.5; do
-        FILENAME="${DATAPATH}/vary_sigma_ic/bruss_sigma_${sigma_ic}.nc"
+for random_seed in {0..9}; do
+        FILENAME="${DATAPATH}/bruss_seed_${random_seed}.nc"
 
         FILE=$(python3 scripts/rd_runner.py --model bruss --A $A --B $B \
-                --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv --sigma_ic $sigma_ic \
+                --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv --random_seed $random_seed \
                 --n_snapshots $n_snapshots --filename $FILENAME)
 
         build/run_from_netcdf $FILE 1

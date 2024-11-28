@@ -27,29 +27,25 @@ module load python/3.11.6
 # Dv: float = 22.0
 # n_snapshots: int = 100
 
-DATAPATH="/cluster/scratch/vogtva/data"
+DATAPATH="/cluster/scratch/vogtva/data/vb-high"
 
-A=5
-B=9
+# A=5
+# B=9
 Nx=400
 dx=0.5
-Nt=50_000
-dt=0.001
-# Du=2.0
-# Dv=22.0
-n_snapshots=100
-model="bruss"
+Nt=1_000
+dt=0.0025
+Du=2.0
+Dv=22.0
+n_snapshots=250
 
-mkdir -p $DATAPATH/$model
-
-for Du in 1.0 1.5 2.0 2.5; do
-        for mult in 7 9 11 13; do
-                Dv=$(python3 -c "print($Du * $mult)")
-                FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
-                echo $FILENAME
-                FILE=$(python3 scripts/rd_runner.py --model $model --A $A --B $B \
+for A in 10 11 12 13 14 15; do
+        for mult in 1.6 1.8 2.0 2.2; do
+                B=$(python3 -c "print($A * $mult)")
+                FILENAME="${DATAPATH}/bruss_A_${A}_B_${B}.nc"
+                FILE=$(python3 scripts/rd_runner.py --model bruss --A $A --B $B \
                         --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=vary_du_dv)
+                        --n_snapshots $n_snapshots --filename $FILENAME)
                 build/run_from_netcdf $FILE 1
         done
 done

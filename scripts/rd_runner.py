@@ -3,7 +3,7 @@ import os
 import sys
 import argparse
 from create_netcdf_input import create_input_file
-from helpers import f_scalings, zero_func, const_sigma
+from helpers import f_scalings, zero_func, const_sigma, create_json
 
 
 def eprint(*args, **kwargs):
@@ -25,8 +25,10 @@ dt: float = 0.01
 Du: float = 2.0
 Dv: float = 22.0
 sigma_ic: float = 0.1
+random_seed: int = 1
 n_snapshots: int = 100
 filename: str = "data/bruss.nc"
+run_id: str = ""
 """
 
 parser = argparse.ArgumentParser()
@@ -40,8 +42,10 @@ parser.add_argument("--dt", type=float, default=0.01)
 parser.add_argument("--Du", type=float, default=2.0)
 parser.add_argument("--Dv", type=float, default=22.0)
 parser.add_argument("--sigma_ic", type=float, default=0.1)
+parser.add_argument("--random_seed", type=int, default=1)
 parser.add_argument("--n_snapshots", type=int, default=100)
 parser.add_argument("--filename", type=str, default="data/bruss.nc")
+parser.add_argument("--run_id", type=str, default="")
 
 args = parser.parse_args()
 model = args.model
@@ -54,12 +58,13 @@ dt = args.dt
 Du = args.Du
 Dv = args.Dv
 sigma_ic = args.sigma_ic
+random_seed = args.random_seed
 n_snapshots = args.n_snapshots
 filename = args.filename
-
+run_id = args.run_id
 
 def initial_sparse_sources(member, coupled_idx, x_position, y_position):
-    np.random.seed(1)
+    np.random.seed(random_seed)
 
     if coupled_idx == 0:
         u = np.ones(x_position.shape)
@@ -77,7 +82,7 @@ def initial_sparse_sources(member, coupled_idx, x_position, y_position):
 
 
 def steady_state_plus_noise(member, coupled_idx, x_position, y_position):
-    np.random.seed(1)
+    np.random.seed(random_seed)
     sigma = sigma_ic
     if coupled_idx == 0:
         u = A * np.ones(shape=x_position.shape) + np.random.normal(
@@ -135,4 +140,25 @@ create_input_file(
     Dv=Dv,
 )
 
+
 print(input_filename)
+
+create_json(
+    {
+        "model": model,
+        "A": A,
+        "B": B,
+        "Nx": Nx,
+        "dx": dx,
+        "Nt": Nt,
+        "dt": dt,
+        "Du": Du,
+        "Dv": Dv,
+        "sigma_ic": sigma_ic,
+        "random_seed": random_seed,
+        "n_snapshots": n_snapshots,
+        "filename": output_filename,
+        "run_id": run_id,
+    },
+    filename.replace(".nc", ".json"),
+)
