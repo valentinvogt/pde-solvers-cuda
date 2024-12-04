@@ -39,15 +39,13 @@ Du=2.0
 Dv=22.0
 n_snapshots=100
 model="bruss"
-run_id="vary_ab_exp"
+run_id="vary_a_b"
 
 mkdir -p $DATAPATH/$model
 
-for A in $(seq 0.5 1 6); do
-        for mult in 0.5 1 1.5; do
-                A=$(python3 -c "print(2 ** $A)")
+for A in 1 3 5 7 9 11 13 15; do
+        for mult in 0.5 1 1.5 2 2.5 3; do
                 B=$(python3 -c "print($A * $mult)")
-                echo $A $B
                 FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
                 echo $FILENAME
                 FILE=$(python3 scripts/rd_runner.py --model $model --A $A --B $B \
