@@ -5,6 +5,8 @@ data
 scripts/__pycache__
 *.err
 
+**/.env
+
 # Prerequisites
 *.d
 
