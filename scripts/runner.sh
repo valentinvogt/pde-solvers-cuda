@@ -35,21 +35,24 @@ Nx=400
 dx=0.5
 Nt=50_000
 dt=0.001
-# Du=2.0
-# Dv=22.0
+Du=2.0
+Dv=22.0
 n_snapshots=100
 model="bruss"
+run_id="vary_ab_exp"
 
 mkdir -p $DATAPATH/$model
 
-for Du in 1.0 1.5 2.0 2.5; do
-        for mult in 7 9 11 13; do
-                Dv=$(python3 -c "print($Du * $mult)")
+for A in $(seq 0.5 1 6); do
+        for mult in 0.5 1 1.5; do
+                A=$(python3 -c "print(2 ** $A)")
+                B=$(python3 -c "print($A * $mult)")
+                echo $A $B
                 FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
                 echo $FILENAME
                 FILE=$(python3 scripts/rd_runner.py --model $model --A $A --B $B \
                         --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=vary_du_dv)
+                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
                 build/run_from_netcdf $FILE 1
         done
 done

@@ -33,12 +33,13 @@ DATAPATH="/cluster/scratch/vogtva/data"
 # B=0.06
 Nx=400
 dx=0.5
-Nt=50_000
-dt=0.0025
-Du=2.0
-Dv=22.0
+Nt=5_000
+dt=0.01
+Du=0.2
+Dv=0.1
 n_snapshots=100
 model="gray_scott"
+run_id="gs_vary_ab_correct"
 
 mkdir -p $DATAPATH/$model
 
@@ -49,7 +50,7 @@ for A in 0.03 0.032 0.034 0.036 0.038 0.04 0.042 0.044 0.046; do
                 echo $FILENAME
                 FILE=$(python3 scripts/rd_runner.py --model $model --A $A --B $B \
                         --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=gs_vary_ab)
+                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
                 build/run_from_netcdf $FILE 1
         done
 done
