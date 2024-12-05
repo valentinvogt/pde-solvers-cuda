@@ -2,9 +2,9 @@ dummy
 out/*
 videos/
 data
-scripts/__pycache__
 *.err
-
+.vscode/
+__pycache__
 .env
 
 # Prerequisites

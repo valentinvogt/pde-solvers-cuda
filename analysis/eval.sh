@@ -18,5 +18,4 @@ module load python/3.11.6
 DATAPATH="/cluster/scratch/vogtva/data/gs"
 OUTPATH="/cluster/scratch/vogtva/out/"
 
-# python3 scripts/analyse_run.py --data $DATAPATH --out_dir $OUTPATH --anim
-python3 scripts/analyse_run2.py --data $DATAPATH --out_dir $OUTPATH --anim
+python3 analysis/anim_db.py --model gray_scott --run_id gs_vary_ab_next

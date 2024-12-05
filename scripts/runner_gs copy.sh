@@ -29,31 +29,27 @@ module load python/3.11.6
 
 DATAPATH="/cluster/scratch/vogtva/data"
 
-# A=0.037
-# B=0.06
+A=0.037
+B=0.06
 Nx=400
 dx=1.0
-Nt=20000
+Nt=10000
 dt=0.01
 Du=0.2
 Dv=0.1
 n_snapshots=100
 model="gray_scott"
-run_id="gs_vary_ab_next"
+run_id="gs_vary_ab_single"
 
 mkdir -p $DATAPATH/$model
 
-for A in 0.035 0.036 0.037 0.038 0.039; do
-        for mult in 1.0 1.2 1.4 1.6 1.8 2.0; do
-                B=$(python3 -c "print($A * $mult)")
-                FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
-                echo $FILENAME
-                FILE=$(python3 scripts/rd_runner.py --model $model --A $A --B $B \
-                        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
-                build/run_from_netcdf $FILE 1
-        done
-done
+
+FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
+echo $FILENAME
+FILE=$(python3 scripts/rd_runner.py --model $model --A $A --B $B \
+        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
+        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
+build/run_from_netcdf $FILE 1
 
 # Sanitization
 for file in ${DATAPATH}/*; do
