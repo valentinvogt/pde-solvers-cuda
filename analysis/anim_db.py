@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.axes_grid1 import ImageGrid
+from matplotlib.animation import FuncAnimation
 
 import os
 import glob
@@ -55,7 +56,7 @@ def make_animation(data, name, out_dir, coupled_idx):
     fig, ax, im = plot(data, coupled_idx)
     ani = animation.FuncAnimation(
         fig,
-        partial(animate, coupled_idx, data=data, im=im, ax=ax),
+        partial(animate, coupled_idx=coupled_idx, data=data, im=im, ax=ax),
         frames=data.shape[1],
         interval=100,
         blit=True,
@@ -64,16 +65,73 @@ def make_animation(data, name, out_dir, coupled_idx):
     ani.save(out_name, writer="ffmpeg", dpi=150)
     plt.close(fig)
 
+def ab_grid_animation(
+    df, component_idx=0, sigdigits=2, var1="A", var2="B", file="", fps=10
+):
+    if len(df) == 0:
+        return None
+
+    df = df.sort_values(by=[var1, var2])
+    A_count = len(df[var1].unique())
+    B_count = int(len(df) / A_count)
+
+    fig = plt.figure(figsize=(15, 12))
+    grid = ImageGrid(fig, 111, nrows_ncols=(A_count, B_count), axes_pad=(0.1, 0.3))
+    ims = []
+
+    # Preload data and calculate global min/max for normalization
+    global_min, global_max = float("inf"), float("-inf")
+    for i, row in df.iterrows():
+        ds = nc.Dataset(row["filename"])
+        data = ds.variables["data"][:]
+        ims.append((row, data))
+        global_min = min(global_min, data[0, :, :, component_idx::2].min())
+        global_max = max(global_max, data[0, :, :, component_idx::2].max())
+
+    # Normalization parameters for consistent color mapping
+    norm = plt.Normalize(vmin=global_min, vmax=global_max)
+
+    def update(frame):
+        fig.clear()
+        grid = ImageGrid(fig, 111, nrows_ncols=(A_count, B_count), axes_pad=(0.1, 0.3))
+
+        for ax, (row, data) in zip(grid, ims):
+            im = data[0, frame, :, component_idx::2]
+            ax.set_title(
+                f"{var1}={row[var1]:.{sigdigits}f}\n{var2} = {row[var2]:.{sigdigits}f}",
+                fontsize=6,
+            )
+            ax.imshow(im, cmap="viridis", norm=norm)
+            ax.set_aspect("equal")
+            ax.axis("off")
+
+        row = df.iloc[0]
+        time = row["dt"] * frame * row["Nt"] / row["n_snapshots"]
+        fig.suptitle(
+            f"{row['model'].capitalize()}, Nx={row['Nx']}, dx={row['dx']}, dt={row['dt']}, T={time:.2f}",
+            fontsize=16,
+        )
+
+    anim = FuncAnimation(fig, update, frames=range(df.iloc[0]["n_snapshots"]), interval=1000/fps)
+
+    if file:
+        anim.save(file, fps=fps, dpi=300)
+    else:
+        plt.show()
+
+    return anim
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="bruss")
     parser.add_argument("--dt", type=float, default=0)
+    parser.add_argument("--Nt", type=int, default=0)
     parser.add_argument("--run_id", type=str, default="")
 
     args = parser.parse_args()
     model = args.model
     dt = args.dt
+    Nt = args.Nt
     run_id = args.run_id
 
     load_dotenv()
@@ -89,12 +147,17 @@ def main():
         df = df[df["run_id"] == run_id]
     if dt != 0:
         df = df[df["dt"] == dt]
+    if Nt != 0:
+        df = df[df["Nt"] == Nt]
 
-    for i, row in df.iterrows():
-        ds = nc.Dataset(row["filename"])
-        data = ds.variables["data"][:]
-        A, B = row["A"], row["B"]
-        make_animation(data, f"{model}-{A}-{B}", output_dir, coupled_idx=1)
-        print(f"created ({A},{B})")
+    # for i, row in df.iterrows():
+    #     ds = nc.Dataset(row["filename"])
+    #     data = ds.variables["data"][:]
+    #     A, B = row["A"], row["B"]
+    #     make_animation(data, f"{model}-{A}-{B}", output_dir, coupled_idx=1)
+    #     print(f"created ({A},{B})")
+
+    ab_grid_animation(df, 1, sigdigits=2, var1="A", var2="B", file="bruss_a_b.gif")
+        
 if __name__ == "__main__":
     main()

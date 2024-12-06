@@ -31,28 +31,26 @@ DATAPATH="/cluster/scratch/vogtva/data"
 
 A=5
 B=9
-Nx=400
+Nx=200
 dx=0.5
-Nt=50_000
+Nt=10_000
 dt=0.001
 Du=2.0
 Dv=22.0
 n_snapshots=100
 model="bruss"
-run_id="vary_a_b"
+run_id="vary_sources"
+sources=5
 
 mkdir -p $DATAPATH/$model
 
-for A in 1 3 5 7 9 11 13 15; do
-        for mult in 0.5 1 1.5 2 2.5 3; do
-                B=$(python3 -c "print($A * $mult)")
-                FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
-                echo $FILENAME
-                FILE=$(python3 scripts/rd_runner.py --model $model --A $A --B $B \
-                        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
-                build/run_from_netcdf $FILE 1
-        done
+for sources in 0 1 5 10 25; do
+        FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
+        echo $FILENAME
+        FILE=$(python3 scripts/rd_runner.py --model $model --A $A --B $B \
+                --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
+                --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id --add_gaussians $sources)
+        build/run_from_netcdf $FILE 1
 done
 
 # Sanitization

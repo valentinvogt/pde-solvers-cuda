@@ -22,7 +22,7 @@ def get_db(data_dir, model: str = "all") -> pd.DataFrame:
 
         return df_all
 
-    json_files = glob.glob(os.path.join(data_dir, "*.json"))
+    json_files = glob.glob(os.path.join(data_dir, model, "*.json"))
     data_list = []
 
     # Iterate through the JSON files and read them
