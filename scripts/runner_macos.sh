@@ -26,31 +26,37 @@
 # Du: float = 2.0
 # Dv: float = 22.0
 # n_snapshots: int = 100
-
+PYTHON=".venv/bin/python"
 DATAPATH="/Users/vv/eth/bachelor/pde-solvers-cuda/data"
 
-A=0.037
-B=0.06
-Nx=100
-dx=1.0
+A=5
+B=9
+Nx=50
+dx=0.5
 Nt=10_000
-dt=0.01
-Du=0.2
-Dv=0.1
+dt=0.0025
+Du=2.0
+Dv=22.0
 n_snapshots=100
-model="gray_scott"
-run_id="gs_vary_ab_dt_1"
-PYTHON=".venv/bin/python3"
+model="bruss"
+run_id="dist"
+
 mkdir -p $DATAPATH/$model
 
+for seed in $(seq 1 5); do
+        for eps_u in 0.01 0.05 0.1 0.5; do
+                for eps_v in 0.01 0.05 0.1 0.5; do
+                    FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
+                    echo $FILENAME
+                    FILE=$($PYTHON scripts/rd_runner.py --model $model --A $A --B $B \
+                            --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv --sigma_ic_u $eps_u \
+                            --sigma_ic_v $eps_v --random_seed $seed \
+                            --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
+                    build/run_from_netcdf $FILE 1
+                done
+        done
+done
 
-FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
-echo $FILENAME
-FILE=$($PYTHON scripts/rd_runner.py --model $model --A $A --B $B \
-        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
-echo FILE
-build/run_from_netcdf $FILE 1
 
 # Sanitization
 # for file in ${DATAPATH}/*; do

@@ -41,7 +41,8 @@ parser.add_argument("--Nt", type=int, default=1000)
 parser.add_argument("--dt", type=float, default=0.01)
 parser.add_argument("--Du", type=float, default=2.0)
 parser.add_argument("--Dv", type=float, default=22.0)
-parser.add_argument("--sigma_ic", type=float, default=0.1)
+parser.add_argument("--sigma_ic_u", type=float, default=0.1)
+parser.add_argument("--sigma_ic_v", type=float, default=0.0)
 parser.add_argument("--random_seed", type=int, default=1)
 parser.add_argument("--sparsity", type=int, default=1)
 parser.add_argument("--n_snapshots", type=int, default=100)
@@ -59,7 +60,11 @@ Nt = args.Nt
 dt = args.dt
 Du = args.Du
 Dv = args.Dv
-sigma_ic = args.sigma_ic
+sigma_ic_u = args.sigma_ic_u
+sigma_ic_v = args.sigma_ic_v
+if sigma_ic_v == 0.0:
+    sigma_ic_v = sigma_ic_u
+sigma_ic = (sigma_ic_u, sigma_ic_v)
 random_seed = args.random_seed
 sparsity = args.sparsity
 n_snapshots = args.n_snapshots
@@ -87,14 +92,13 @@ def initial_sparse_sources(member, coupled_idx, x_position, y_position):
 
 def steady_state_plus_noise(member, coupled_idx, x_position, y_position):
     np.random.seed(random_seed)
-    sigma = sigma_ic
     if coupled_idx == 0:
         u = A * np.ones(shape=x_position.shape) + np.random.normal(
-            0.0, sigma, size=x_position.shape
+            0.0, sigma_ic[0], size=x_position.shape
         )
     elif coupled_idx == 1:
         u = (B / A) * np.ones(shape=x_position.shape) + np.random.normal(
-            0.0, sigma, size=x_position.shape
+            0.0, sigma_ic[1], size=x_position.shape
         )
     else:
         print("initial_noisy_function is only meant for n_coupled == 2!")
@@ -162,7 +166,8 @@ create_json(
         "dt": dt,
         "Du": Du,
         "Dv": Dv,
-        "sigma_ic": sigma_ic,
+        "sigma_ic_u": sigma_ic_u,
+        "sigma_ic_v": sigma_ic_v,
         "random_seed": random_seed,
         "n_snapshots": n_snapshots,
         "filename": output_filename,
