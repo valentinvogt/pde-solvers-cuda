@@ -35,3 +35,9 @@ def get_db(data_dir, model: str = "all") -> pd.DataFrame:
     df = pd.DataFrame(data_list)
     return df
 
+
+def convergence_plot(row):
+    """
+    Plots the convergence of the model.
+    """
+    ds = nc.Dataset(row["filename"])
