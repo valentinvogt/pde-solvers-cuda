@@ -33,7 +33,7 @@ A=5
 B=9
 Nx=50
 dx=0.5
-Nt=10_000
+Nt=1_000
 dt=0.0025
 Du=2.0
 Dv=22.0
@@ -44,8 +44,8 @@ run_id="dist"
 mkdir -p $DATAPATH/$model
 
 for seed in $(seq 1 5); do
-        for eps_u in 0.01 0.05 0.1 0.5; do
-                for eps_v in 0.01 0.05 0.1 0.5; do
+        for eps_u in 0.01 0.05; do
+                for eps_v in 0.01 0.05; do
                     FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
                     echo $FILENAME
                     FILE=$($PYTHON scripts/rd_runner.py --model $model --A $A --B $B \
