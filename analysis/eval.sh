@@ -2,7 +2,7 @@
 #SBATCH --job-name=eval
 #SBATCH --output=eval-%j.out
 #SBATCH --error=eval-%j.err
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=4096
 #SBATCH --time=00:30:00
 
@@ -15,7 +15,8 @@ module load openmpi/4.1.6
 module load netcdf-c/4.9.2
 module load python/3.11.6
 
-DATAPATH="/cluster/scratch/vogtva/data/bruss"
-OUTPATH="/cluster/scratch/vogtva/out/"
-
-python3 analysis/anim_db.py --model bruss --run_id vary_a_b
+run_id="ab_new"
+var1="A"
+var2="B"
+file="out/bruss_ab_new.gif"
+python3 analysis/anim_db.py --model bruss --subdir $run_id --run_id $run_id --var1 $var1 --var2 $var2 --outfile $file --dpi 150

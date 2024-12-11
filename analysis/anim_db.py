@@ -66,7 +66,7 @@ def make_animation(data, name, out_dir, coupled_idx):
     plt.close(fig)
 
 def ab_grid_animation(
-    df, component_idx=0, sigdigits=2, var1="A", var2="B", file="", fps=10
+    df, component_idx=0, sigdigits=2, var1="A", var2="B", file="", fps=10, dpi=100
 ):
     if len(df) == 0:
         return None
@@ -115,7 +115,7 @@ def ab_grid_animation(
     anim = FuncAnimation(fig, update, frames=range(df.iloc[0]["n_snapshots"]), interval=1000/fps)
 
     if file:
-        anim.save(file, fps=fps, dpi=300)
+        anim.save(file, fps=fps, dpi=dpi)
     else:
         plt.show()
 
@@ -124,15 +124,27 @@ def ab_grid_animation(
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="bruss")
+    parser.add_argument("--subdir", type=str, default="")
     parser.add_argument("--dt", type=float, default=0)
     parser.add_argument("--Nt", type=int, default=0)
     parser.add_argument("--run_id", type=str, default="")
-
+    parser.add_argument("--var1", type=str, default="A")
+    parser.add_argument("--var2", type=str, default="B")
+    parser.add_argument("--outfile", type=str, default="output.gif")
+    parser.add_argument("--fps", type=int, default=10)
+    parser.add_argument("--dpi", type=int, default=150)
+    
     args = parser.parse_args()
     model = args.model
+    subdir = args.subdir
     dt = args.dt
     Nt = args.Nt
     run_id = args.run_id
+    var1 = args.var1
+    var2 = args.var2
+    outfile = args.outfile
+    fps = args.fps
+    dpi = args.dpi
 
     load_dotenv()
     data_dir = os.getenv("DATA_DIR")
@@ -140,7 +152,11 @@ def main():
     output_dir = os.path.join(output_dir, model)
     os.makedirs(output_dir, exist_ok=True)
 
-    df0 = get_db(os.path.join(data_dir, model))
+    if subdir != "":
+        path = os.path.join(data_dir, model, subdir)
+    else:
+        path = os.path.join(data_dir, model)
+    df0 = get_db(path)
 
     df = df0.copy()
     if run_id != "":
@@ -157,7 +173,12 @@ def main():
     #     make_animation(data, f"{model}-{A}-{B}", output_dir, coupled_idx=1)
     #     print(f"created ({A},{B})")
 
-    ab_grid_animation(df, 1, sigdigits=2, var1="A", var2="B", file="bruss_a_b.gif")
+    # replace ending of outfile with _u.<ending> and _v.<ending>
+    # should work for .gif and .mp4
+    file_u = outfile.replace(".", "_u.")
+    file_v = outfile.replace(".", "_v.")
+    ab_grid_animation(df, 0, sigdigits=2, var1=var1, var2=var2, file=file_u, fps=fps, dpi=dpi)
+    ab_grid_animation(df, 1, sigdigits=2, var1=var1, var2=var2, file=file_v, fps=fps, dpi=dpi)
         
 if __name__ == "__main__":
     main()

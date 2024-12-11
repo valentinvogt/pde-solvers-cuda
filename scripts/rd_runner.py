@@ -48,6 +48,7 @@ parser.add_argument("--sparsity", type=int, default=1)
 parser.add_argument("--n_snapshots", type=int, default=100)
 parser.add_argument("--filename", type=str, default="data/bruss.nc")
 parser.add_argument("--run_id", type=str, default="")
+parser.add_argument("--add_gaussians", type=int, default=0)
 
 args = parser.parse_args()
 model = args.model
@@ -69,6 +70,8 @@ sparsity = args.sparsity
 n_snapshots = args.n_snapshots
 filename = args.filename
 run_id = args.run_id
+add_gaussians = args.add_gaussians
+
 
 def initial_sparse_sources(member, coupled_idx, x_position, y_position):
     np.random.seed(random_seed)
@@ -101,11 +104,8 @@ def steady_state_plus_noise(member, coupled_idx, x_position, y_position):
     else:
         print("initial_noisy_function is only meant for n_coupled == 2!")
         u = 0.0 * x_position
-    # u += (
-    #     0.5
-    #     * np.sin(2 * np.pi * x_position / 100)
-    #     * np.sin(2 * np.pi * y_position / 100)
-    # )
+    if add_gaussians > 0:
+        u += add_gaussians * np.sin(8 * np.pi * x_position / Nx) * np.sin(8 * np.pi * y_position / Nx)
     return u
 
 
@@ -166,6 +166,7 @@ create_json(
         "n_snapshots": n_snapshots,
         "filename": output_filename,
         "run_id": run_id,
+        "num_sources": add_gaussians,
     },
     filename.replace(".nc", ".json"),
 )

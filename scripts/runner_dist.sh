@@ -21,15 +21,15 @@ DATAPATH="/cluster/scratch/vogtva/data"
 
 A=5
 B=9
-Nx=400
-dx=0.5
+Nx=200
+dx=1.0
 Nt=10_000
 dt=0.0025
 Du=2.0
 Dv=22.0
 n_snapshots=100
 model="bruss"
-run_id="dist"
+run_id="dist2"
 
 mkdir -p $DATAPATH/$model
 
