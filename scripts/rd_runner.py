@@ -107,27 +107,61 @@ if __name__ == "__main__":
     parser.add_argument("--run_id", type=str, default="")
     parser.add_argument("--add_gaussians", type=int, default=0)
 
-    args = parser.parse_args()
-    model = args.model
-    A = args.A
-    B = args.B
-    Nx = args.Nx
-    dx = args.dx
-    Nt = args.Nt
-    dt = args.dt
-    Du = args.Du
-    Dv = args.Dv
-    sigma_ic_u = args.sigma_ic_u
-    sigma_ic_v = args.sigma_ic_v
-    if sigma_ic_v == 0.0:
-        sigma_ic_v = sigma_ic_u
-    sigma_ic = (sigma_ic_u, sigma_ic_v)
-    random_seed = args.random_seed
-    sparsity = args.sparsity
-    n_snapshots = args.n_snapshots
-    filename = args.filename
-    run_id = args.run_id
-    add_gaussians = args.add_gaussians
+args = parser.parse_args()
+model = args.model
+A = args.A
+B = args.B
+Nx = args.Nx
+dx = args.dx
+Nt = args.Nt
+dt = args.dt
+Du = args.Du
+Dv = args.Dv
+sigma_ic_u = args.sigma_ic_u
+sigma_ic_v = args.sigma_ic_v
+if sigma_ic_v == 0.0:
+    sigma_ic_v = sigma_ic_u
+sigma_ic = (sigma_ic_u, sigma_ic_v)
+random_seed = args.random_seed
+sparsity = args.sparsity
+n_snapshots = args.n_snapshots
+filename = args.filename
+run_id = args.run_id
+
+
+def initial_sparse_sources(member, coupled_idx, x_position, y_position):
+    np.random.seed(random_seed)
+
+    if coupled_idx == 0:
+        u = np.ones(x_position.shape)
+    elif coupled_idx == 1:
+        u = np.zeros(x_position.shape)
+        for i in range(0, sparsity * x_position.shape[0]):
+            i = np.random.randint(0, x_position.shape[0])
+            j = np.random.randint(0, x_position.shape[1])
+            u[i, j] = 1.0
+    else:
+        print("initial_noisy_function is only meant for n_coupled == 2!")
+        u = 0.0 * x_position
+
+    return u
+
+
+def steady_state_plus_noise(member, coupled_idx, x_position, y_position):
+    np.random.seed(random_seed)
+    if coupled_idx == 0:
+        u = A * np.ones(shape=x_position.shape) + np.random.normal(
+            0.0, sigma_ic[0], size=x_position.shape
+        )
+    elif coupled_idx == 1:
+        u = (B / A) * np.ones(shape=x_position.shape) + np.random.normal(
+            0.0, sigma_ic[1], size=x_position.shape
+        )
+    else:
+        print("initial_noisy_function is only meant for n_coupled == 2!")
+        u = 0.0 * x_position
+    return u
+
 
     fn_order = 4 if model == "fhn" else 3
     fn_scalings = f_scalings(model, A, B)
