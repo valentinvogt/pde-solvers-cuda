@@ -43,17 +43,19 @@ def plot(data, coupled_idx=0):
 
 
 def animate(snapshot, coupled_idx, data, im, ax):
+    print(f"Animate called with idx {snapshot}")
     matrix = data[0, snapshot, :, coupled_idx::2]
     im.set_array(matrix)  # Update data for each coupled component
     name = "u" if coupled_idx == 0 else "v"
-    # ax.set_title(
-    #     f"Snapshot {snapshot + 1}, {name}"
-    # )
+    ax.set_title(
+        f"Snapshot {snapshot + 1}, {name}"
+    )
     return [im]
 
 
 def make_animation(data, name, out_dir, coupled_idx):
     fig, ax, im = plot(data, coupled_idx)
+    print(data.shape[1])
     ani = animation.FuncAnimation(
         fig,
         partial(animate, coupled_idx=coupled_idx, data=data, im=im, ax=ax),
@@ -61,7 +63,7 @@ def make_animation(data, name, out_dir, coupled_idx):
         interval=100,
         blit=True,
     )
-    out_name = os.path.join(out_dir, f"{name}_output.mp4")
+    out_name = os.path.join(out_dir, f"{name}_output.gif")
     ani.save(out_name, writer="ffmpeg", dpi=150)
     plt.close(fig)
 
@@ -166,19 +168,21 @@ def main():
     if Nt != 0:
         df = df[df["Nt"] == Nt]
 
-    # for i, row in df.iterrows():
-    #     ds = nc.Dataset(row["filename"])
-    #     data = ds.variables["data"][:]
-    #     A, B = row["A"], row["B"]
-    #     make_animation(data, f"{model}-{A}-{B}", output_dir, coupled_idx=1)
-    #     print(f"created ({A},{B})")
+    df = df[(df['A'] == 0.5) & (df['B'] == 2.5)]
+
+    for i, row in df.iterrows():
+        ds = nc.Dataset(row["filename"])
+        data = ds.variables["data"][:]
+        A, B = row["A"], row["B"]
+        make_animation(data, f"{model}-{A}-{B}", output_dir, coupled_idx=0)
+        print(f"created ({A},{B})")
 
     # replace ending of outfile with _u.<ending> and _v.<ending>
     # should work for .gif and .mp4
-    file_u = outfile.replace(".", "_u.")
-    file_v = outfile.replace(".", "_v.")
-    ab_grid_animation(df, 0, sigdigits=2, var1=var1, var2=var2, file=file_u, fps=fps, dpi=dpi)
-    ab_grid_animation(df, 1, sigdigits=2, var1=var1, var2=var2, file=file_v, fps=fps, dpi=dpi)
+    # file_u = outfile.replace(".", "_u.")
+    # file_v = outfile.replace(".", "_v.")
+    # ab_grid_animation(df, 0, sigdigits=2, var1=var1, var2=var2, file=file_u, fps=fps, dpi=dpi)
+    # ab_grid_animation(df, 1, sigdigits=2, var1=var1, var2=var2, file=file_v, fps=fps, dpi=dpi)
         
 if __name__ == "__main__":
     main()

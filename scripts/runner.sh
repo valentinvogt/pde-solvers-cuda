@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --job-name=sin-src
-#SBATCH --output=sin-src-%j.out
-#SBATCH --error=sin-src-%j.err
+#SBATCH --job-name=abd-run
+#SBATCH --output=abd-run-%j.out
+#SBATCH --error=abd-run-%j.err
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
-#SBATCH --gpus-per-node=1
+#SBATCH --gpus-per-node=4
 #SBATCH --mem-per-cpu=2048
 #SBATCH --time=04:00:00
 
@@ -33,29 +33,38 @@ A=5
 B=9
 Nx=128
 dx=1.0
-Nt=10_000
+Nt=40_000
 dt=0.0025
 Du=2.0
 Dv=22.0
 n_snapshots=100
 model="bruss"
-run_id="ab_new"
+run_id="abd_test"
 
 mkdir -p $DATAPATH/$model/$run_id
 
-for A in 0.1 0.5 1 2 5 10 20 50 100; do
-        for mult in 1.25 1.5 1.75 2 2.5 3 4 5 10; do
-                B=$(python -c "print($A * $mult)")
-                FILENAME="${DATAPATH}/${model}/${run_id}/$(uuidgen).nc"
-                echo $FILENAME
-                FILE=$(python scripts/rd_runner.py --model $model --A $A --B $B \
-                        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
-                build/run_from_netcdf $FILE 1
+for A in 0.1 0.5 1 2 5 10; do
+        for B_mult in 1.25 1.75 2 2.5 3 4 5; do
+                for Du in 1.0 2.0 3.0; do
+                        for D_mult in 4 11 18; do
+                                start=`date +%s`
+                                B=$(python -c "print($A * $B_mult)")
+                                Dv=$(python -c "print($Du * $D_mult)")
+                                FILENAME="${DATAPATH}/${model}/${run_id}/$(uuidgen).nc"
+                                echo "(A, B, Du, Dv) = ($A, $B, $Du, $Dv)"
+                                FILE=$(python scripts/rd_runner.py --model $model --A $A --B $B \
+                                        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
+                                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
+                                build/run_from_netcdf $FILE 1
+                                end=`date +%s`
+                                runtime=$((end-start))
+                                echo "Took $runtime seconds"
+                        done
+                done
         done
 done
 
-# Sanitization
-for file in ${DATAPATH}/*; do
-        mv "$file" "$(echo "$file" | sed 's/\xA0//g')"
-done
+# # Sanitization
+# for file in ${DATAPATH}/*; do
+#         mv "$file" "$(echo "$file" | sed 's/\xA0//g')"
+# done
