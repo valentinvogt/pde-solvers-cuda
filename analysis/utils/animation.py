@@ -13,59 +13,8 @@ from dotenv import load_dotenv
 from functools import partial
 import argparse
 
+from db_tools import make_animation, get_db
 
-def get_db(data_dir):
-    json_files = glob.glob(os.path.join(data_dir, "*.json"))
-    data_list = []
-
-    # Iterate through the JSON files and read them
-    for file in json_files:
-        with open(file, "r") as f:
-            data = json.load(f)
-            data_list.append(data)
-
-    # Convert the list of dictionaries to a DataFrame
-    df = pd.DataFrame(data_list)
-    return df
-
-
-def plot(data, coupled_idx=0):
-    global_min = np.min(data)
-    global_max = np.max(data)
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12, 6))
-
-    # Display the first snapshot initially; this will be updated in the animation
-    matrix = data[0, 0, :, coupled_idx::2]
-    im = ax.imshow(
-        matrix, cmap="viridis", aspect="equal", vmin=global_min, vmax=global_max
-    )
-    return fig, ax, im
-
-
-def animate(snapshot, coupled_idx, data, im, ax):
-    print(f"Animate called with idx {snapshot}")
-    matrix = data[0, snapshot, :, coupled_idx::2]
-    im.set_array(matrix)  # Update data for each coupled component
-    name = "u" if coupled_idx == 0 else "v"
-    ax.set_title(
-        f"Snapshot {snapshot + 1}, {name}"
-    )
-    return [im]
-
-
-def make_animation(data, name, out_dir, coupled_idx):
-    fig, ax, im = plot(data, coupled_idx)
-    print(data.shape[1])
-    ani = animation.FuncAnimation(
-        fig,
-        partial(animate, coupled_idx=coupled_idx, data=data, im=im, ax=ax),
-        frames=data.shape[1],
-        interval=100,
-        blit=True,
-    )
-    out_name = os.path.join(out_dir, f"{name}_output.gif")
-    ani.save(out_name, writer="ffmpeg", dpi=150)
-    plt.close(fig)
 
 def ab_grid_animation(
     df, component_idx=0, sigdigits=2, var1="A", var2="B", file="", fps=10, dpi=100

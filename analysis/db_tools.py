@@ -58,6 +58,20 @@ def get_db(data_dir) -> pd.DataFrame:
     df = pd.DataFrame(data_list)
     return df
 
+def check_data_dir(data_dir):
+    valid = True
+    for root, dirs, files in os.walk(data_dir):
+        for file in files:
+            if file.endswith(".json"):
+                d = json.load(open(os.path.join(root, file)))
+                if "filename" in d:
+                    # check if file exists
+                    if not os.path.isfile(d["filename"]):
+                        print("File does not exist")
+                        valid = False
+
+    return valid
+                    
 
 def filter_df(df, A, B, Du, Dv):
     return df[(df["A"] == A) & (df["B"] == B) & (df["Du"] == Du) & (df["Dv"] == Dv)]
@@ -245,13 +259,14 @@ def metrics_grid(
     if len(df) == 0:
         return None
 
+    A_count = len(df[var1].unique())
     if var2 == "":
         df = df.sort_values(by=[var1])
         df[var2] = 0
-        B_count = 1
+        B_count = A_count
+        A_count = 1
     else:
         df = df.sort_values(by=[var1, var2])
-        A_count = len(df[var1].unique())
         B_count = int(len(df) / A_count)
 
     df = df.reset_index(drop=True)
@@ -288,8 +303,8 @@ def metrics_grid(
         elif metric == "dt":
             values = time_derivatives
 
-        row_idx = i // B_count if B_count > 1 else 0
-        col_idx = i % B_count if B_count > 1 else i
+        row_idx = i // B_count if B_count > 1 else i
+        col_idx = i % B_count if B_count > 1 else 0
         axes[row_idx, col_idx].plot(
             np.arange(0, data.shape[1] - start_frame)
             * row["dt"]
@@ -311,7 +326,7 @@ def metrics_grid(
     )
 
     plt.tight_layout()
-    plt.subplots_adjust(top=0.95)
+    plt.subplots_adjust(top=0.9)
 
     if filename == "":
         plt.show()

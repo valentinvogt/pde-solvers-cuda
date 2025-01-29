@@ -2,10 +2,12 @@ import numpy as np
 import os
 import sys
 import argparse
+from dotenv import load_dotenv
+from functools import partial
+from uuid import uuid4
+
 from create_netcdf_input import create_input_file
 from helpers import f_scalings, zero_func, const_sigma, create_json
-
-
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -32,8 +34,7 @@ run_id: str = ""
 """
 
 
-def initial_sparse_sources(member, coupled_idx, x_position, y_position):
-    np.random.seed(random_seed)
+def initial_sparse_sources(member, coupled_idx, x_position, y_position, sparsity):
 
     if coupled_idx == 0:
         u = np.ones(x_position.shape)
@@ -50,25 +51,18 @@ def initial_sparse_sources(member, coupled_idx, x_position, y_position):
     return u
 
 
-def steady_state_plus_noise(member, coupled_idx, x_position, y_position):
-    np.random.seed(random_seed)
+def steady_state_plus_noise(member, coupled_idx, x_position, y_position, ic_type, ic_param):
     if coupled_idx == 0:
         u = A * np.ones(shape=x_position.shape) + np.random.normal(
-            0.0, sigma_ic[0], size=x_position.shape
+            0.0, ic_param[0], size=x_position.shape
         )
     elif coupled_idx == 1:
         u = (B / A) * np.ones(shape=x_position.shape) + np.random.normal(
-            0.0, sigma_ic[1], size=x_position.shape
+            0.0, ic_param[1], size=x_position.shape
         )
     else:
         print("initial_noisy_function is only meant for n_coupled == 2!")
         u = 0.0 * x_position
-    if add_gaussians > 0:
-        u += (
-            add_gaussians
-            * np.sin(8 * np.pi * x_position / Nx)
-            * np.sin(8 * np.pi * y_position / Nx)
-        )
     return u
 
 
@@ -84,50 +78,7 @@ def run_wrapper(
     filename,
     run_id,
 ):
-    pass
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="bruss")
-    parser.add_argument("--A", type=float, default=5)
-    parser.add_argument("--B", type=float, default=9)
-    parser.add_argument("--Nx", type=int, default=100)
-    parser.add_argument("--dx", type=float, default=1.0)
-    parser.add_argument("--Nt", type=int, default=1000)
-    parser.add_argument("--dt", type=float, default=0.01)
-    parser.add_argument("--Du", type=float, default=2.0)
-    parser.add_argument("--Dv", type=float, default=22.0)
-    parser.add_argument("--sigma_ic_u", type=float, default=0.1)
-    parser.add_argument("--sigma_ic_v", type=float, default=0.0)
-    parser.add_argument("--random_seed", type=int, default=1)
-    parser.add_argument("--sparsity", type=int, default=1)
-    parser.add_argument("--n_snapshots", type=int, default=100)
-    parser.add_argument("--filename", type=str, default="data/bruss.nc")
-    parser.add_argument("--run_id", type=str, default="")
-    parser.add_argument("--add_gaussians", type=int, default=0)
-
-    args = parser.parse_args()
-    model = args.model
-    A = args.A
-    B = args.B
-    Nx = args.Nx
-    dx = args.dx
-    Nt = args.Nt
-    dt = args.dt
-    Du = args.Du
-    Dv = args.Dv
-    sigma_ic_u = args.sigma_ic_u
-    sigma_ic_v = args.sigma_ic_v
-    if sigma_ic_v == 0.0:
-        sigma_ic_v = sigma_ic_u
-    sigma_ic = (sigma_ic_u, sigma_ic_v)
-    random_seed = args.random_seed
-    sparsity = args.sparsity
-    n_snapshots = args.n_snapshots
-    filename = args.filename
-    run_id = args.run_id
-    add_gaussians = args.add_gaussians
+    np.random.seed(random_seed)
 
     fn_order = 4 if model == "fhn" else 3
     fn_scalings = f_scalings(model, A, B)
@@ -136,7 +87,7 @@ if __name__ == "__main__":
     output_filename = filename.replace(".nc", "_output.nc")
 
     if model == "bruss":
-        initial_condition = steady_state_plus_noise
+        initial_condition = partial(steady_state_plus_noise, ic_type=ic_type, ic_param=ic_param)
     elif model == "gray_scott":
         initial_condition = initial_sparse_sources
     else:
@@ -179,13 +130,47 @@ if __name__ == "__main__":
             "dt": dt,
             "Du": Du,
             "Dv": Dv,
-            "sigma_ic_u": sigma_ic_u,
-            "sigma_ic_v": sigma_ic_v,
+            "ic_type": ic_type,
+            "ic_param": ic_param,
             "random_seed": random_seed,
             "n_snapshots": n_snapshots,
             "filename": output_filename,
             "run_id": run_id,
-            "num_sources": add_gaussians,
         },
         filename.replace(".nc", ".json"),
     )
+
+
+def sample_ball(A, B, Du, Dv, sigma, num_samples, path):
+    Nx=128
+    dx=1.0
+    Nt=40_000
+    dt=0.0025
+    for i in range(num_samples):
+        A_new = A + np.random.normal(0, sigma[0])
+        B_new = B + np.random.normal(0, sigma[1])
+        Du_new = Du + np.random.normal(0, sigma[2])
+        Dv_new = Dv + np.random.normal(0, sigma[3])
+
+        run_wrapper(
+            "bruss",
+            A_new, B_new,
+            Nx, dx,
+            Nt, dt,
+            Du_new, Dv_new,
+            "normal", [0.1, 0.1],
+            i,
+            n_snapshots=100,
+            filename=os.path.join(path, f"{uuid4()}.nc"),
+        )
+
+if __name__ == "__main__":
+    model = "bruss"
+    run_id = "ball_sampling"
+    load_dotenv()
+
+    data_dir = os.getenv("DATA_DIR")
+    path = os.path.join(data_dir, model, run_id)
+    os.makedirs(path, exist_ok=True)
+
+    
