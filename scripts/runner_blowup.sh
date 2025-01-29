@@ -4,7 +4,7 @@
 #SBATCH --error=vary-both-%j.err
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
-#SBATCH --gpus-per-node=1
+#SBATCH --gpus-per-node=2
 #SBATCH --mem-per-cpu=2048
 #SBATCH --time=04:00:00
 
@@ -27,30 +27,38 @@ module load python/3.11.6
 # Dv: float = 22.0
 # n_snapshots: int = 100
 
-DATAPATH="/cluster/scratch/vogtva/data/vb-high"
+DATAPATH="/cluster/scratch/vogtva/data"
 
 # A=5
 # B=9
-Nx=400
-dx=0.5
-Nt=1_000
+Nx=128
+dx=1.0
+Nt=5_000
 dt=0.0025
-Du=2.0
-Dv=22.0
-n_snapshots=250
+Du=1.0
+Dv=18.0
+n_snapshots=500
+model="bruss"
+run_id="blowup"
+mkdir -p $DATAPATH/$model/$run_id
 
-for A in 10 11 12 13 14 15; do
-        for mult in 1.6 1.8 2.0 2.2; do
-                B=$(python3 -c "print($A * $mult)")
-                FILENAME="${DATAPATH}/bruss_A_${A}_B_${B}.nc"
-                FILE=$(python3 scripts/rd_runner.py --model bruss --A $A --B $B \
+for A in 9 10 11; do
+        for B_mult in 3 3.5 4 4.5 5 5.5; do
+                start=`date +%s`
+                B=$(python -c "print($A * $B_mult)")
+                FILENAME="${DATAPATH}/${model}/${run_id}/$(uuidgen).nc"
+                echo "(A, B) = ($A, $B)"
+                FILE=$(python scripts/rd_runner.py --model $model --A $A --B $B \
                         --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                        --n_snapshots $n_snapshots --filename $FILENAME)
+                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
                 build/run_from_netcdf $FILE 1
+                end=`date +%s`
+                runtime=$((end-start))
+                echo "Took $runtime seconds"
         done
 done
 
 # Sanitization
-for file in ${DATAPATH}/*; do
-        mv "$file" "$(echo "$file" | sed 's/\xA0//g')"
-done
+# for file in ${DATAPATH}/*; do
+#         mv "$file" "$(echo "$file" | sed 's/\xA0//g')"
+# done

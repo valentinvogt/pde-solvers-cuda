@@ -45,8 +45,8 @@ def f(member, size):
 
 
 create_input_file('data/test_periodic.nc', 'data/test_periodic_out.nc', type_of_equation=0, 
-                      x_size=64, x_length=1., y_size=64, y_length=1., boundary_value_type=2,
+                      x_size=128, x_length=1., y_size=128, y_length=1., boundary_value_type=2,
                       scalar_type=0, n_coupled=3, 
-                      coupled_function_order=3, number_timesteps=5000,
-                      final_time=2., number_snapshots=3, n_members=2, initial_value_function=initial_function,
+                      coupled_function_order=3, number_timesteps=40_000,
+                      final_time=2., number_snapshots=100, n_members=2, initial_value_function=initial_function,
                       sigma_function=sigma, bc_neumann_function=is_ignored, f_value_function=f)

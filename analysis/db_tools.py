@@ -1,11 +1,19 @@
 import netCDF4 as nc
 import numpy as np
-import pandas as pd
-import json
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from mpl_toolkits.axes_grid1 import ImageGrid
+from matplotlib.animation import FuncAnimation
+
 import os
 import glob
+import pandas as pd
+import json
+from dotenv import load_dotenv
+from functools import partial
 
-def get_db(data_dir, model: str = "all") -> pd.DataFrame:
+
+def get_db_for_model(data_dir, model: str = "all") -> pd.DataFrame:
     """
     Creates a DataFrame from the JSON files in the specified directory.
     If model is 'all', all subdirectories of data_dir are used.
@@ -36,8 +44,291 @@ def get_db(data_dir, model: str = "all") -> pd.DataFrame:
     return df
 
 
-def convergence_plot(row):
-    """
-    Plots the convergence of the model.
-    """
+def get_db(data_dir) -> pd.DataFrame:
+    json_files = glob.glob(os.path.join(data_dir, "*.json"))
+    data_list = []
+
+    # Iterate through the JSON files and read them
+    for file in json_files:
+        with open(file, "r") as f:
+            data = json.load(f)
+            data_list.append(data)
+
+    # Convert the list of dictionaries to a DataFrame
+    df = pd.DataFrame(data_list)
+    return df
+
+
+def filter_df(df, A, B, Du, Dv):
+    return df[(df["A"] == A) & (df["B"] == B) & (df["Du"] == Du) & (df["Dv"] == Dv)]
+
+
+def get_data(row):
     ds = nc.Dataset(row["filename"])
+    data = ds.variables["data"][:]
+    ds.close()
+    return data
+
+
+def plot(data, global_min, global_max):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6), gridspec_kw={"wspace": 0.4})
+    ims = []
+    for coupled_idx, ax in enumerate(axes):
+        matrix = data[0, 0, :, 0::2]
+        matrix /= np.max(matrix)
+        im = ax.imshow(matrix, cmap="viridis", aspect="equal", vmin=0, vmax=1)
+        ax.set_title(f"Snapshot 1, {'u' if coupled_idx == 0 else 'v'}")
+        ims.append(im)
+    return fig, axes, ims
+
+
+def animate(snapshot, data, ims, axes):
+    for coupled_idx, (ax, im) in enumerate(zip(axes, ims)):
+        matrix = data[0, snapshot, :, coupled_idx::2]
+        matrix /= matrix.max()  # Normalize
+        im.set_array(matrix)
+        name = "u" if coupled_idx == 0 else "v"
+        ax.set_title(f"Snapshot {snapshot + 1}, {name}")
+    return ims
+
+
+def make_animation(data, name, out_dir):
+    global_min = np.min(data)
+    global_max = np.max(data)
+    fig, axes, ims = plot(data, global_min, global_max)
+    ani = animation.FuncAnimation(
+        fig,
+        partial(animate, data=data, ims=ims, axes=axes),
+        frames=data.shape[1],
+        interval=100,
+        blit=True,
+    )
+    out_name = os.path.join(out_dir, f"{name}_output.gif")
+    ani.save(out_name, writer="ffmpeg", dpi=150)
+    plt.close(fig)
+
+
+def classify_trajectories(
+    df,
+    start_frame,
+    steady_threshold=1e-3,
+    osc_threshold=1e-2,
+    dev_threshold=1e-2,
+) -> pd.DataFrame:
+    """
+    Classify runs based on behavior: inserts column 'category' into DataFrame.
+    Possible categories: 'steady_state', 'interesting', 'divergent_or_unknown'.
+    Args:
+        df: DataFrame containing run metadata.
+        steady_threshold: Threshold for ||du/dt|| to classify as steady.
+        osc_threshold: Threshold for oscillatory behavior.
+        dev_threshold: Threshold for deviation from the steady state.
+
+    Returns:
+        Updated DataFrame with classification labels.
+    """
+
+    if len(df) == 0:
+        return None
+
+    start_frame = 80  # Ignore early frames to avoid transients
+
+    classifications = []
+    for i, row in df.iterrows():
+        Nt = row["n_snapshots"]
+        assert start_frame < Nt, "start_frame must be less than Nt"
+
+        ds = nc.Dataset(row["filename"])
+        data = ds.variables["data"][:]  # Assume shape [time, spatial, ...]
+        steady_state = np.zeros_like(data[0, 0, :, :])
+        steady_state[:, 0::2] = row["A"]  # u = A
+        steady_state[:, 1::2] = row["B"] / row["A"]  # v = B / A
+
+        deviations = []
+        time_derivatives = []
+
+        du_dt = np.gradient(
+            data[0, :, :, :], row["dt"], axis=0
+        )  # Time derivative of (u, v)
+
+        for j in range(start_frame, Nt):
+            deviations.append(np.linalg.norm(data[0, j, :, :] - steady_state))
+            time_derivatives.append(np.linalg.norm(du_dt[j]))
+
+        final_dev = deviations[-1]
+        mean_dev = np.mean(deviations)
+        std_dev = np.std(time_derivatives)
+        max_derivative = np.max(time_derivatives)
+
+        if final_dev < dev_threshold or (
+            final_dev < 5 * dev_threshold and max_derivative < steady_threshold
+        ):
+            category = "steady_state"
+        elif std_dev > osc_threshold or mean_dev > dev_threshold:
+            category = "interesting_behavior"
+        else:
+            category = "divergent_or_unknown"
+        classifications.append(category)
+        ds.close()
+
+    df["category"] = classifications
+    return df
+
+
+def plot_grid(
+    df,
+    component_idx=0,
+    frame=-1,
+    sigdigits=3,
+    var1="A",
+    var2="B",
+    filename="",
+):
+    if len(df) == 0:
+        return None
+
+    df = df.sort_values(by=[var1, var2])
+    A_count = len(df[var1].unique())
+    B_count = int(len(df) / A_count)
+    print(var1, ": ", A_count, " values, ", var2, ": ", B_count, " values")
+
+    fig = plt.figure(figsize=(15, 12))
+    grid = ImageGrid(fig, 111, nrows_ncols=(A_count, B_count), axes_pad=(0.1, 0.3))
+    ims = []
+
+    for i, row in df.iterrows():
+        ds = nc.Dataset(row["filename"])
+        data = ds.variables["data"][:]
+        f_min = data.min()
+        f_max = data.max()
+        ims.append((row, data[0, frame, :, component_idx::2], f_min, f_max))
+
+    for ax, (row, im, f_min, f_max) in zip(grid, ims):
+        ax.set_title(
+            f"{var1}={row[var1]:.{sigdigits}f}\n{var2} = {row[var2]:.{sigdigits}f}",
+            fontsize=6,
+        )
+        ax.imshow(im, cmap="viridis", vmin=f_min, vmax=f_max)
+        ax.set_aspect("equal")
+        ax.axis("off")
+
+    row = df.iloc[0]
+    if frame == -1:
+        time = row["dt"] * row["Nt"]
+    else:
+        time = row["dt"] * frame * row["Nt"] / row["n_snapshots"]
+    fig.suptitle(
+        f"{row['model'].capitalize()}, Nx={row['Nx']}, dx={row['dx']}, dt={row['dt']}, T={time:.2f}",
+        fontsize=16,
+    )
+
+    if filename == "":
+        plt.show()
+    else:
+        plt.savefig(filename, dpi=100)
+        plt.close()
+    return grid
+
+
+def metrics_grid(
+    df, start_frame, sigdigits=3, var1="A", var2="B", metric="dev", filename=""
+):
+    if metric == "dev":
+        text = "Deviation ||u(t) - u*||"
+    elif metric == "dx":
+        text = "Spatial Derivative ||∇u(t)||"
+    elif metric == "dt":
+        text = "Time Derivative ||du/dt||"
+    else:
+        raise ValueError("metric must be 'dev', 'dx', or 'dt'")
+
+    if len(df) == 0:
+        return None
+
+    if var2 == "":
+        df = df.sort_values(by=[var1])
+        df[var2] = 0
+        B_count = 1
+    else:
+        df = df.sort_values(by=[var1, var2])
+        A_count = len(df[var1].unique())
+        B_count = int(len(df) / A_count)
+
+    df = df.reset_index(drop=True)
+    fig, axes = plt.subplots(A_count, B_count, figsize=(3 * B_count + 1, 5 * A_count))
+
+    axes = np.atleast_2d(axes)
+
+    for i, row in df.iterrows():
+        ds = nc.Dataset(row["filename"])
+        data = ds.variables["data"][:]
+        steady_state = np.zeros_like(data[0, 0, :, :])
+
+        steady_state[:, 0::2] = row["A"]
+        steady_state[:, 1::2] = row["B"] / row["A"]
+
+        deviations = []
+        time_derivatives = []
+        spatial_derivatives = []
+
+        du_dt = np.gradient(data[0, :, :, 0::2], row["dt"], axis=0)
+        for j in range(start_frame, data.shape[1]):
+            u = data[0, j, :, 0::2]
+            v = data[0, j, :, 1::2]
+            du_dx = np.gradient(u, row["dx"], axis=0)
+            dv_dx = np.gradient(v, row["dx"], axis=0)
+            deviations.append(np.linalg.norm(data[0, j, :, :] - steady_state))
+            time_derivatives.append(np.linalg.norm(du_dt[j]))
+            spatial_derivatives.append(np.linalg.norm(du_dx) + np.linalg.norm(dv_dx))
+
+        if metric == "dev":
+            values = deviations
+        elif metric == "dx":
+            values = spatial_derivatives
+        elif metric == "dt":
+            values = time_derivatives
+
+        row_idx = i // B_count if B_count > 1 else 0
+        col_idx = i % B_count if B_count > 1 else i
+        axes[row_idx, col_idx].plot(
+            np.arange(0, data.shape[1] - start_frame)
+            * row["dt"]
+            * row["Nt"]
+            / row["n_snapshots"],
+            values,
+        )
+        axes[row_idx, col_idx].set_title(
+            f"{var1}={row[var1]:.{sigdigits}f}\n{var2} = {row[var2]:.{sigdigits}f}",
+            fontsize=6,
+        )
+        # axes[row_idx, col_idx].axis("off")
+
+    row = df.iloc[0]
+    time = row["dt"] * row["Nt"]
+    fig.suptitle(
+        f"{row['model'].capitalize()}, Nx={row['Nx']}, dx={row['dx']}, dt={row['dt']}, T={time:.2f}, {text}",
+        fontsize=4 * B_count,
+    )
+
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.95)
+
+    if filename == "":
+        plt.show()
+    else:
+        plt.savefig(filename, dpi=100)
+        plt.close()
+
+    return axes
+
+
+def delete_run(df, run_id) -> pd.DataFrame:
+    for i, row in df.iterrows():
+        if row["run_id"] == run_id:
+            filename = row["filename"]
+            df.drop(i, inplace=True)
+            os.remove(filename)
+            os.remove(filename.replace("_output.nc", ".json"))
+            os.remove(filename.replace("_output.nc", ".nc"))
+
+    return df

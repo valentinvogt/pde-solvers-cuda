@@ -1,12 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=abd-run
-#SBATCH --output=abd-run-%j.out
-#SBATCH --error=abd-run-%j.err
+#SBATCH --job-name=abd-big
+#SBATCH --output=abd-big-%j.out
+#SBATCH --error=abd-big-%j.err
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
-#SBATCH --gpus-per-node=4
+#SBATCH --gpus-per-node=2
 #SBATCH --mem-per-cpu=2048
-#SBATCH --time=04:00:00
+#SBATCH --time=20:00:00
+#SBATCH --mail-type=END
 
 module load stack/2024-06
 module load gcc/12.2.0
@@ -39,26 +40,29 @@ Du=2.0
 Dv=22.0
 n_snapshots=100
 model="bruss"
-run_id="abd_test"
+run_id="abd_big"
 
 mkdir -p $DATAPATH/$model/$run_id
 
-for A in 0.1 0.5 1 2 5 10; do
-        for B_mult in 1.25 1.75 2 2.5 3 4 5; do
+for A in 0.5 0.75 1 1.25 1.5 2 3 5; do
+        for B_mult in 1.25 1.75 2 2.5 3; do
                 for Du in 1.0 2.0 3.0; do
-                        for D_mult in 4 11 18; do
-                                start=`date +%s`
-                                B=$(python -c "print($A * $B_mult)")
-                                Dv=$(python -c "print($Du * $D_mult)")
-                                FILENAME="${DATAPATH}/${model}/${run_id}/$(uuidgen).nc"
-                                echo "(A, B, Du, Dv) = ($A, $B, $Du, $Dv)"
-                                FILE=$(python scripts/rd_runner.py --model $model --A $A --B $B \
-                                        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
-                                build/run_from_netcdf $FILE 1
-                                end=`date +%s`
-                                runtime=$((end-start))
-                                echo "Took $runtime seconds"
+                        for D_mult in 4 8 11 14 16 18; do
+                                for seed in $(seq 1 5); do
+                                        start=`date +%s`
+                                        B=$(python -c "print($A * $B_mult)")
+                                        Dv=$(python -c "print($Du * $D_mult)")
+                                        FILENAME="${DATAPATH}/${model}/${run_id}/$(uuidgen).nc"
+                                        echo "(A, B, Du, Dv) = ($A, $B, $Du, $Dv)"
+                                        FILE=$(python scripts/rd_runner.py --model $model --A $A --B $B \
+                                                --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
+                                                --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id \
+                                                --random_seed $seed)
+                                        build/run_from_netcdf $FILE 1
+                                        end=`date +%s`
+                                        runtime=$((end-start))
+                                        echo "Took $runtime seconds"
+                                done
                         done
                 done
         done
