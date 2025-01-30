@@ -1,7 +1,6 @@
 import numpy as np
 import os
 import sys
-import argparse
 from dotenv import load_dotenv
 from functools import partial
 from uuid import uuid4
@@ -147,11 +146,13 @@ def run_wrapper(
     )
 
 
-def sample_ball(A, B, Du, Dv, sigma, num_samples, path):
-    Nx=128
-    dx=1.0
-    Nt=40_000
-    dt=0.0025
+def sample_ball(A, B, Du, Dv, sigma, num_samples, sim_params):
+    Nx=sim_params["Nx"]
+    dx=sim_params["dx"]
+    Nt=sim_params["Nt"]
+    dt=sim_params["dt"]
+    path = sim_params["path"]
+
     for i in range(num_samples):
         A_new = A + np.random.normal(0, sigma[0])
         B_new = B + np.random.normal(0, sigma[1])
@@ -165,9 +166,10 @@ def sample_ball(A, B, Du, Dv, sigma, num_samples, path):
             Nt, dt,
             Du_new, Dv_new,
             "normal", [0.1, 0.1],
-            i,
+            random_seed=i,
             n_snapshots=100,
             filename=os.path.join(path, f"{uuid4()}.nc"),
+            run_id="ball_sampling_local",
         )
 
 if __name__ == "__main__":
@@ -182,10 +184,18 @@ if __name__ == "__main__":
     center_df = pd.read_csv("data/sampling_centers.csv")
     sigma = center_df[["A", "B", "Du", "Dv"]].std() * 0.1
 
+    sim_params = {
+        "Nx": 128,
+        "dx": 1.0,
+        "Nt": 60_000,
+        "dt": 0.0025,
+        "path": path
+    }
+
     for i, row in center_df.iterrows():
         A = row["A"]
         B = row["B"]
         Du = row["Du"]
         Dv = row["Dv"]
 
-        sample_ball(A, B, Du, Dv, sigma, 100, path)
+        sample_ball(A, B, Du, Dv, sigma, 50, sim_params)
