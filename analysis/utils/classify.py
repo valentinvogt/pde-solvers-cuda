@@ -12,7 +12,7 @@ import json
 from dotenv import load_dotenv
 from functools import partial
 
-from db_tools import get_db, classify_trajectories
+from utils.db_tools import get_db, classify_trajectories
 
 model = "bruss"
 run_id = "abd_big"

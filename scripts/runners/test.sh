@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --job-name=blowup-test
-#SBATCH --output=blowup-test-%j.out
-#SBATCH --error=blowup-test-%j.err
+#SBATCH --job-name=splitting
+#SBATCH --output=splitting-%j.out
+#SBATCH --error=splitting-%j.err
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
-#SBATCH --gpus-per-node=2
+#SBATCH --gpus-per-node=4
 #SBATCH --mem-per-cpu=2048
 #SBATCH --time=04:00:00
 
@@ -31,20 +31,20 @@ DATAPATH="/cluster/scratch/vogtva/data"
 
 Nx=128
 dx=1.0
-Nt=10_000
-dt=0.0001
+Nt=200_000
+dt=0.0025
 n_snapshots=500
 model="bruss"
-run_id="blowup_test"
+run_id="splitting_4"
 
 mkdir -p $DATAPATH/$model/$run_id
 
-A=11
-B=55
+A=0.5
+B=1.25
 Du=1.0
-Dv=18.0
+Dv=14.0
 
-for random_seed in 1 2 3 4 5; do
+for random_seed in $(seq 1 10); do
         start=`date +%s`
         FILENAME="${DATAPATH}/${model}/${run_id}/$(uuidgen).nc"
         echo "(A, B) = ($A, $B)"
@@ -52,11 +52,13 @@ for random_seed in 1 2 3 4 5; do
                 --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
                 --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id \
                 --random_seed $random_seed)
-        build/run_from_netcdf $FILE 1
+        build/run_from_netcdf $FILE 1 &
         end=`date +%s`
-        runtime=$((end-start))
-        echo "Took $runtime seconds"
+        # runtime=$((end-start))
+        # echo "Took $runtime seconds"
 done
+
+wait 
 
 # Sanitization
 # for file in ${DATAPATH}/*; do

@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from functools import partial
 import argparse
 
-from db_tools import make_animation, get_db
+from db_tools import make_animation, get_db, filter_df
 
 
 def ab_grid_animation(
@@ -22,9 +22,16 @@ def ab_grid_animation(
     if len(df) == 0:
         return None
 
-    df = df.sort_values(by=[var1, var2])
     A_count = len(df[var1].unique())
-    B_count = int(len(df) / A_count)
+    if var2 == "":
+        df = df.sort_values(by=[var1])
+        df[var2] = 0
+        B_count = A_count
+        A_count = 1
+    else:
+        df = df.sort_values(by=[var1, var2])
+        B_count = int(len(df) / A_count)
+
 
     fig = plt.figure(figsize=(15, 12))
     grid = ImageGrid(fig, 111, nrows_ncols=(A_count, B_count), axes_pad=(0.1, 0.3))
@@ -117,21 +124,44 @@ def main():
     if Nt != 0:
         df = df[df["Nt"] == Nt]
 
-    df = df[(df['A'] == 0.5) & (df['B'] == 2.5)]
+    df = filter_df(df, A=0.5, B=1.25, Du=1.0, Dv=14.0)
 
-    for i, row in df.iterrows():
-        ds = nc.Dataset(row["filename"])
-        data = ds.variables["data"][:]
-        A, B = row["A"], row["B"]
-        make_animation(data, f"{model}-{A}-{B}", output_dir, coupled_idx=0)
-        print(f"created ({A},{B})")
+    # for i, row in df.iterrows():
+    #     ds = nc.Dataset(row["filename"])
+    #     data = ds.variables["data"][:]
+    #     A, B = row["A"], row["B"]
+    #     make_animation(data, f"{model}-{A}-{B}", output_dir, coupled_idx=0)
+    #     print(f"created ({A},{B})")
 
     # replace ending of outfile with _u.<ending> and _v.<ending>
     # should work for .gif and .mp4
-    # file_u = outfile.replace(".", "_u.")
-    # file_v = outfile.replace(".", "_v.")
-    # ab_grid_animation(df, 0, sigdigits=2, var1=var1, var2=var2, file=file_u, fps=fps, dpi=dpi)
-    # ab_grid_animation(df, 1, sigdigits=2, var1=var1, var2=var2, file=file_v, fps=fps, dpi=dpi)
+    file_u = outfile.replace(".", "_u.")
+    file_v = outfile.replace(".", "_v.")
+    ab_grid_animation(df, 0, sigdigits=2, var1="random_seed", var2="", file=file_u, fps=fps, dpi=dpi)
+    ab_grid_animation(df, 1, sigdigits=2, var1="random_seed", var2="", file=file_v, fps=fps, dpi=dpi)
         
 if __name__ == "__main__":
-    main()
+    model = "bruss"
+    run_id = "splitting"
+
+    load_dotenv()
+    data_dir = os.getenv("DATA_DIR")
+    output_dir = os.getenv("OUT_DIR")
+    output_dir = os.path.join(output_dir, model)
+    os.makedirs(output_dir, exist_ok=True)
+
+    path = os.path.join(data_dir, model, run_id)
+    df = get_db(path)
+    df = df[df.run_id == run_id]
+    # A = 0.5
+    # B = 1.25
+    # Du = 1.0
+    # Dv = 14.0
+    # df = filter_df(df, A, B, Du, Dv)
+
+    outfile = "anim-splitting.gif"
+    file_u = outfile.replace(".", "_u.")
+    file_v = outfile.replace(".", "_v.")
+    ab_grid_animation(df, 0, sigdigits=2, var1="random_seed", var2="", file=file_u, fps=10, dpi=150)
+    ab_grid_animation(df, 1, sigdigits=2, var1="random_seed", var2="", file=file_v, fps=10, dpi=150)
+     

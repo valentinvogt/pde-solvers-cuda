@@ -5,12 +5,14 @@ import argparse
 from dotenv import load_dotenv
 from functools import partial
 from uuid import uuid4
+import pandas as pd
 
 from create_netcdf_input import create_input_file
 from helpers import f_scalings, zero_func, const_sigma, create_json
+
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
-
 
 """
 Usage:
@@ -51,7 +53,9 @@ def initial_sparse_sources(member, coupled_idx, x_position, y_position, sparsity
     return u
 
 
-def steady_state_plus_noise(member, coupled_idx, x_position, y_position, ic_type, ic_param):
+def steady_state_plus_noise(member, coupled_idx, x_position, y_position, params, ic_type, ic_param):
+    A = params[0]
+    B = params[1]
     if coupled_idx == 0:
         u = A * np.ones(shape=x_position.shape) + np.random.normal(
             0.0, ic_param[0], size=x_position.shape
@@ -87,11 +91,13 @@ def run_wrapper(
     output_filename = filename.replace(".nc", "_output.nc")
 
     if model == "bruss":
-        initial_condition = partial(steady_state_plus_noise, ic_type=ic_type, ic_param=ic_param)
+        initial_condition = partial(steady_state_plus_noise, params=(A, B), ic_type=ic_type, ic_param=ic_param)
     elif model == "gray_scott":
-        initial_condition = initial_sparse_sources
+        initial_condition = partial(initial_sparse_sources, sparsity=0.2)
     else:
-        initial_condition = steady_state_plus_noise
+        initial_condition = partial(
+            steady_state_plus_noise, params=(A, B), ic_type=ic_type, ic_param=ic_param
+        )
 
     create_input_file(
         input_filename,
@@ -173,4 +179,13 @@ if __name__ == "__main__":
     path = os.path.join(data_dir, model, run_id)
     os.makedirs(path, exist_ok=True)
 
-    
+    center_df = pd.read_csv("data/sampling_centers.csv")
+    sigma = center_df[["A", "B", "Du", "Dv"]].std() * 0.1
+
+    for i, row in center_df.iterrows():
+        A = row["A"]
+        B = row["B"]
+        Du = row["Du"]
+        Dv = row["Dv"]
+
+        sample_ball(A, B, Du, Dv, sigma, 100, path)

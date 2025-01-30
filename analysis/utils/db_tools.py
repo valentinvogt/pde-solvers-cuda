@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.axes_grid1 import ImageGrid
 from matplotlib.animation import FuncAnimation
+from typing import Tuple
 
 import os
 import glob
@@ -73,8 +74,22 @@ def check_data_dir(data_dir):
     return valid
                     
 
-def filter_df(df, A, B, Du, Dv):
-    return df[(df["A"] == A) & (df["B"] == B) & (df["Du"] == Du) & (df["Dv"] == Dv)]
+def filter_df(df, A=None, B=None, Du=None, Dv=None):
+    filter_criteria = {}
+    if A is not None:
+        filter_criteria["A"] = A
+    if B is not None:
+        filter_criteria["B"] = B
+    if Du is not None:
+        filter_criteria["Du"] = Du
+    if Dv is not None:
+        filter_criteria["Dv"] = Dv
+
+    # Filter the dataframe based on provided parameters
+    filtered_df = df
+    for key, value in filter_criteria.items():
+        filtered_df = filtered_df[filtered_df[key] == value]
+    return filtered_df
 
 
 def get_data(row):
@@ -201,10 +216,15 @@ def plot_grid(
     if len(df) == 0:
         return None
 
-    df = df.sort_values(by=[var1, var2])
     A_count = len(df[var1].unique())
-    B_count = int(len(df) / A_count)
-    print(var1, ": ", A_count, " values, ", var2, ": ", B_count, " values")
+    if var2 == "":
+        df = df.sort_values(by=[var1])
+        df[var2] = 0
+        B_count = A_count
+        A_count = 1
+    else:
+        df = df.sort_values(by=[var1, var2])
+        B_count = int(len(df) / A_count)
 
     fig = plt.figure(figsize=(15, 12))
     grid = ImageGrid(fig, 111, nrows_ncols=(A_count, B_count), axes_pad=(0.1, 0.3))
@@ -218,8 +238,11 @@ def plot_grid(
         ims.append((row, data[0, frame, :, component_idx::2], f_min, f_max))
 
     for ax, (row, im, f_min, f_max) in zip(grid, ims):
+        label = f"{var1}={row[var1]:.{sigdigits}f}"
+        if var2 != "":
+            label += f"\n{var2} = {row[var2]:.{sigdigits}f}"
         ax.set_title(
-            f"{var1}={row[var1]:.{sigdigits}f}\n{var2} = {row[var2]:.{sigdigits}f}",
+            label,
             fontsize=6,
         )
         ax.imshow(im, cmap="viridis", vmin=f_min, vmax=f_max)
@@ -244,6 +267,34 @@ def plot_grid(
     return grid
 
 
+def compute_metrics(row, start_frame, end_frame=-1):
+    deviations = []
+    time_derivatives = []
+    spatial_derivatives = []
+
+    data = get_data(row)
+    steady_state = np.zeros_like(data[0, 0, :, :])
+
+    steady_state[:, 0::2] = row["A"]
+    steady_state[:, 1::2] = row["B"] / row["A"]
+
+    du_dt = np.gradient(data[0, :, :, 0::2], row["dt"], axis=0)
+
+    if end_frame == -1:
+        end_frame = data.shape[1]
+
+    for j in range(start_frame, end_frame): 
+        u = data[0, j, :, 0::2]
+        v = data[0, j, :, 1::2]
+        du_dx = np.gradient(u, row["dx"], axis=0)
+        dv_dx = np.gradient(v, row["dx"], axis=0)
+        deviations.append(np.linalg.norm(data[0, j, :, :] - steady_state))
+        time_derivatives.append(np.linalg.norm(du_dt[j]))
+        spatial_derivatives.append(np.linalg.norm(du_dx) + np.linalg.norm(dv_dx))
+
+    return deviations, time_derivatives, spatial_derivatives
+
+
 def metrics_grid(
     df, start_frame, sigdigits=3, var1="A", var2="B", metric="dev", filename=""
 ):
@@ -259,13 +310,17 @@ def metrics_grid(
     if len(df) == 0:
         return None
 
-    A_count = len(df[var1].unique())
-    if var2 == "":
+    if var1 == "":
+        A_count = 1
+        B_count = len(df)
+    elif var2 == "":
+        A_count = len(df[var1].unique())
         df = df.sort_values(by=[var1])
         df[var2] = 0
         B_count = A_count
         A_count = 1
     else:
+        A_count = len(df[var1].unique())
         df = df.sort_values(by=[var1, var2])
         B_count = int(len(df) / A_count)
 
@@ -275,33 +330,19 @@ def metrics_grid(
     axes = np.atleast_2d(axes)
 
     for i, row in df.iterrows():
-        ds = nc.Dataset(row["filename"])
-        data = ds.variables["data"][:]
+        data = get_data(row)
         steady_state = np.zeros_like(data[0, 0, :, :])
 
         steady_state[:, 0::2] = row["A"]
         steady_state[:, 1::2] = row["B"] / row["A"]
 
-        deviations = []
-        time_derivatives = []
-        spatial_derivatives = []
-
-        du_dt = np.gradient(data[0, :, :, 0::2], row["dt"], axis=0)
-        for j in range(start_frame, data.shape[1]):
-            u = data[0, j, :, 0::2]
-            v = data[0, j, :, 1::2]
-            du_dx = np.gradient(u, row["dx"], axis=0)
-            dv_dx = np.gradient(v, row["dx"], axis=0)
-            deviations.append(np.linalg.norm(data[0, j, :, :] - steady_state))
-            time_derivatives.append(np.linalg.norm(du_dt[j]))
-            spatial_derivatives.append(np.linalg.norm(du_dx) + np.linalg.norm(dv_dx))
-
+        metrics = compute_metrics(row, start_frame)
         if metric == "dev":
-            values = deviations
+            values = metrics[0]
         elif metric == "dx":
-            values = spatial_derivatives
+            values = metrics[1]
         elif metric == "dt":
-            values = time_derivatives
+            values = metrics[2]
 
         row_idx = i // B_count if B_count > 1 else i
         col_idx = i % B_count if B_count > 1 else 0
@@ -312,8 +353,11 @@ def metrics_grid(
             / row["n_snapshots"],
             values,
         )
+        label = f"{var1}={row[var1]:.{sigdigits}f}" if var1 != "" else ""
+        if var2 != "":
+            label += f"\n{var2} = {row[var2]:.{sigdigits}f}"
         axes[row_idx, col_idx].set_title(
-            f"{var1}={row[var1]:.{sigdigits}f}\n{var2} = {row[var2]:.{sigdigits}f}",
+            label,
             fontsize=6,
         )
         # axes[row_idx, col_idx].axis("off")

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Specify the directory
-DIR="/cluster/scratch/vogtva/data/bruss/blowup"
+DIR="/cluster/scratch/vogtva/data/bruss/blowup_test"
 
 # Iterate over all .json files
 for json_file in "$DIR"/*.json; do
