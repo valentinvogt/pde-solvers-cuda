@@ -166,10 +166,10 @@ def sample_ball(A, B, Du, Dv, sigma, num_samples, sim_params):
             Nt, dt,
             Du_new, Dv_new,
             "normal", [0.1, 0.1],
-            random_seed=i,
+            random_seed=1,
             n_snapshots=100,
             filename=os.path.join(path, f"{uuid4()}.nc"),
-            run_id="ball_sampling_local",
+            run_id="ball_sampling",
         )
 
 if __name__ == "__main__":
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     path = os.path.join(data_dir, model, run_id)
     os.makedirs(path, exist_ok=True)
 
-    center_df = pd.read_csv("data/sampling_centers.csv", comment="#")
+    center_df = pd.read_csv("data/sampling_centers.csv")
     sigma = center_df[["A", "B", "Du", "Dv"]].std() * 0.1
 
     sim_params = {
@@ -198,4 +198,4 @@ if __name__ == "__main__":
         Du = row["Du"]
         Dv = row["Dv"]
 
-        sample_ball(A, B, Du, Dv, sigma, 1, sim_params)
+        sample_ball(A, B, Du, Dv, sigma, 25, sim_params)
