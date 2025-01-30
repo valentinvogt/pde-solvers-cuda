@@ -154,10 +154,10 @@ def sample_ball(A, B, Du, Dv, sigma, num_samples, sim_params):
     path = sim_params["path"]
 
     for i in range(num_samples):
-        A_new = A + np.random.normal(0, sigma[0])
-        B_new = B + np.random.normal(0, sigma[1])
-        Du_new = Du + np.random.normal(0, sigma[2])
-        Dv_new = Dv + np.random.normal(0, sigma[3])
+        A_new = A + np.random.normal(0, sigma.A)
+        B_new = B + np.random.normal(0, sigma.B)
+        Du_new = Du + np.random.normal(0, sigma.Du)
+        Dv_new = Dv + np.random.normal(0, sigma.Dv)
 
         run_wrapper(
             "bruss",
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     path = os.path.join(data_dir, model, run_id)
     os.makedirs(path, exist_ok=True)
 
-    center_df = pd.read_csv("data/sampling_centers.csv")
+    center_df = pd.read_csv("data/sampling_centers.csv", comment="#")
     sigma = center_df[["A", "B", "Du", "Dv"]].std() * 0.1
 
     sim_params = {
@@ -198,4 +198,4 @@ if __name__ == "__main__":
         Du = row["Du"]
         Dv = row["Dv"]
 
-        sample_ball(A, B, Du, Dv, sigma, 50, sim_params)
+        sample_ball(A, B, Du, Dv, sigma, 1, sim_params)
