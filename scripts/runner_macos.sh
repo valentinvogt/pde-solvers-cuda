@@ -1,22 +1,3 @@
-#!/bin/bash
-#SBATCH --job-name=vary-both
-#SBATCH --output=vary-both-%j.out
-#SBATCH --error=vary-both-%j.err
-#SBATCH --ntasks=1
-#SBATCH --nodes=1
-#SBATCH --gpus-per-node=1
-#SBATCH --mem-per-cpu=2048
-#SBATCH --time=04:00:00
-
-# module load stack/2024-06
-# module load gcc/12.2.0
-# module load cmake/3.27.7
-# module load cuda/12.1.1
-# module load hdf5/1.14.3
-# module load openmpi/4.1.6
-# module load netcdf-c/4.9.2
-# module load python/3.11.6
-
 # A: float = 5
 # B: float = 9
 # Nx: int = 100
@@ -26,39 +7,44 @@
 # Du: float = 2.0
 # Dv: float = 22.0
 # n_snapshots: int = 100
+
 PYTHON=".venv/bin/python"
 DATAPATH="/Users/vv/eth/bachelor/pde-solvers-cuda/data"
 
 A=5
 B=9
-Nx=50
-dx=0.5
-Nt=1_000
+Nx=32
+dx=1.0
+Nt=10_000
 dt=0.0025
 Du=2.0
 Dv=22.0
 n_snapshots=100
 model="bruss"
-run_id="dist"
+run_id="abd_big"
 
-mkdir -p $DATAPATH/$model
+mkdir -p $DATAPATH/$model/$run_id
 
-for seed in $(seq 1 50); do
-        for eps_u in 0.01 0.05 0.2; do
-                for eps_v in 0.01 0.05 0.2; do
-                    FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
-                    echo $FILENAME
-                    FILE=$($PYTHON scripts/rd_runner.py --model $model --A $A --B $B \
-                            --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv --sigma_ic_u $eps_u \
-                            --sigma_ic_v $eps_v --random_seed $seed \
-                            --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
-                    build/run_from_netcdf $FILE 1
+for A in 0.5 1 2; do
+        for B_mult in 2 3; do
+                for Du in 1.0 2.0; do
+                        for D_mult in 4 8; do
+                                for seed in $(seq 1 5); do
+                                        start=`date +%s`
+                                        B=$($PYTHON -c "print($A * $B_mult)")
+                                        Dv=$($PYTHON -c "print($Du * $D_mult)")
+                                        FILENAME="${DATAPATH}/${model}/${run_id}/$(uuidgen).nc"
+                                        echo "(A, B, Du, Dv) = ($A, $B, $Du, $Dv)"
+                                        FILE=$($PYTHON scripts/rd_runner.py --model $model --A $A --B $B \
+                                                --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
+                                                --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id \
+                                                --random_seed $seed)
+                                        build/run_from_netcdf $FILE 1
+                                        end=`date +%s`
+                                        runtime=$((end-start))
+                                        echo "Took $runtime seconds"
+                                done
+                        done
                 done
         done
 done
-
-
-# Sanitization
-# for file in ${DATAPATH}/*; do
-#         mv "$file" "$(echo "$file" | sed 's/\xA0//g')"
-# done
