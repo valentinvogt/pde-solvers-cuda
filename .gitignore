@@ -1,5 +1,6 @@
 dummy
 out/*
+analysis/out/
 videos/
 data
 *.err

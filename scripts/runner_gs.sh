@@ -4,7 +4,8 @@
 #SBATCH --error=vary-both-%j.err
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
-#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=4
+#SBATCH --gpus-per-node=2
 #SBATCH --mem-per-cpu=2048
 #SBATCH --time=04:00:00
 
@@ -31,31 +32,36 @@ DATAPATH="/cluster/scratch/vogtva/data"
 
 # A=0.037
 # B=0.06
-Nx=400
+Nx=128
 dx=1.0
-Nt=50000
+Nt=50_000
 dt=0.01
 Du=0.2
 Dv=0.1
 n_snapshots=100
 model="gray_scott"
-run_id="gs_vary_ab_next"
+run_id="abd"
 
 mkdir -p $DATAPATH/$model
 
 for A in 0.035 0.036 0.037 0.038 0.039; do
-        for mult in 1.0 1.2 1.4 1.6 1.8 2.0; do
-                B=$(python3 -c "print($A * $mult)")
-                FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
-                echo $FILENAME
-                FILE=$(python3 scripts/rd_runner.py --model $model --A $A --B $B \
-                        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
-                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
-                build/run_from_netcdf $FILE 1
+        for B_mult in 1.0 1.2 1.4 1.6 1.8 2.0; do
+                for Du in 0.1 0.15 0.19 0.2 0.21 0.25 0.3; do
+                        for Dv_mult in 0.3 0.4 0.5; do
+                                B=$(python3 -c "print($A * $B_mult)")
+                                Dv=$(python3 -c "print($Du * $Dv_mult)")
+                                FILENAME="${DATAPATH}/${model}/$(uuidgen).nc"
+                                echo $FILENAME
+                                FILE=$(python3 scripts/rd_runner.py --model $model --A $A --B $B \
+                                        --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
+                                        --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id)
+                                build/run_from_netcdf $FILE 1
+                        done
+                done
         done
 done
 
 # Sanitization
-for file in ${DATAPATH}/*; do
-        mv "$file" "$(echo "$file" | sed 's/\xA0//g')"
-done
+# for file in ${DATAPATH}/*; do
+#         mv "$file" "$(echo "$file" | sed 's/\xA0//g')"
+# done

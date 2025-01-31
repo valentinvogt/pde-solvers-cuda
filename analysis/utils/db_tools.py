@@ -59,6 +59,7 @@ def get_db(data_dir) -> pd.DataFrame:
     df = pd.DataFrame(data_list)
     return df
 
+
 def check_data_dir(data_dir):
     valid = True
     for root, dirs, files in os.walk(data_dir):
@@ -72,7 +73,7 @@ def check_data_dir(data_dir):
                         valid = False
 
     return valid
-                    
+
 
 def filter_df(df, A=None, B=None, Du=None, Dv=None):
     filter_criteria = {}
@@ -93,6 +94,11 @@ def filter_df(df, A=None, B=None, Du=None, Dv=None):
 
 
 def get_data(row):
+    if isinstance(row, pd.DataFrame):
+        if len(row) == 1:
+            row = row.iloc[0]
+        else:
+            raise ValueError("row should be Series or single-row DataFrame")
     ds = nc.Dataset(row["filename"])
     data = ds.variables["data"][:]
     ds.close()
@@ -135,73 +141,6 @@ def make_animation(data, name, out_dir):
     out_name = os.path.join(out_dir, f"{name}_output.gif")
     ani.save(out_name, writer="ffmpeg", dpi=150)
     plt.close(fig)
-
-
-def classify_trajectories(
-    df,
-    start_frame,
-    steady_threshold=1e-3,
-    osc_threshold=1e-2,
-    dev_threshold=1e-2,
-) -> pd.DataFrame:
-    """
-    Classify runs based on behavior: inserts column 'category' into DataFrame.
-    Possible categories: 'steady_state', 'interesting', 'divergent_or_unknown'.
-    Args:
-        df: DataFrame containing run metadata.
-        steady_threshold: Threshold for ||du/dt|| to classify as steady.
-        osc_threshold: Threshold for oscillatory behavior.
-        dev_threshold: Threshold for deviation from the steady state.
-
-    Returns:
-        Updated DataFrame with classification labels.
-    """
-
-    if len(df) == 0:
-        return None
-
-    start_frame = 80  # Ignore early frames to avoid transients
-
-    classifications = []
-    for i, row in df.iterrows():
-        Nt = row["n_snapshots"]
-        assert start_frame < Nt, "start_frame must be less than Nt"
-
-        ds = nc.Dataset(row["filename"])
-        data = ds.variables["data"][:]  # Assume shape [time, spatial, ...]
-        steady_state = np.zeros_like(data[0, 0, :, :])
-        steady_state[:, 0::2] = row["A"]  # u = A
-        steady_state[:, 1::2] = row["B"] / row["A"]  # v = B / A
-
-        deviations = []
-        time_derivatives = []
-
-        du_dt = np.gradient(
-            data[0, :, :, :], row["dt"], axis=0
-        )  # Time derivative of (u, v)
-
-        for j in range(start_frame, Nt):
-            deviations.append(np.linalg.norm(data[0, j, :, :] - steady_state))
-            time_derivatives.append(np.linalg.norm(du_dt[j]))
-
-        final_dev = deviations[-1]
-        mean_dev = np.mean(deviations)
-        std_dev = np.std(time_derivatives)
-        max_derivative = np.max(time_derivatives)
-
-        if final_dev < dev_threshold or (
-            final_dev < 5 * dev_threshold and max_derivative < steady_threshold
-        ):
-            category = "steady_state"
-        elif std_dev > osc_threshold or mean_dev > dev_threshold:
-            category = "interesting_behavior"
-        else:
-            category = "divergent_or_unknown"
-        classifications.append(category)
-        ds.close()
-
-    df["category"] = classifications
-    return df
 
 
 def plot_grid(
@@ -283,7 +222,7 @@ def compute_metrics(row, start_frame, end_frame=-1):
     if end_frame == -1:
         end_frame = data.shape[1]
 
-    for j in range(start_frame, end_frame): 
+    for j in range(start_frame, end_frame):
         u = data[0, j, :, 0::2]
         v = data[0, j, :, 1::2]
         du_dx = np.gradient(u, row["dx"], axis=0)
@@ -339,9 +278,9 @@ def metrics_grid(
         metrics = compute_metrics(row, start_frame)
         if metric == "dev":
             values = metrics[0]
-        elif metric == "dx":
-            values = metrics[1]
         elif metric == "dt":
+            values = metrics[1]
+        elif metric == "dx":
             values = metrics[2]
 
         row_idx = i // B_count if B_count > 1 else i

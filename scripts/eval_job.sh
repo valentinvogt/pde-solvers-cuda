@@ -15,4 +15,4 @@ module load openmpi/4.1.6
 module load netcdf-c/4.9.2
 module load python/3.11.6
 
-python3 analysis/utils/animation.py
+python3 analysis/utils/classify.py --run_id "ball_sampling" --outfile "classification_metrics.csv"
