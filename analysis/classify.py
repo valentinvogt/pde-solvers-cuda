@@ -7,7 +7,7 @@ import argparse
 from dotenv import load_dotenv
 from scipy.fft import fft, fftfreq
 
-from db_tools import get_db
+from utils.db_tools import get_db
 
 
 def compute_classification_metrics(
@@ -42,6 +42,10 @@ def compute_classification_metrics(
         u = data[0, :, :, 0::2]
         v = data[0, :, :, 1::2]
 
+        # Compute max_u and max_v
+        max_u = np.max(u)
+        max_v = np.max(v)
+
         mean_dev_u = np.mean(np.abs(u - u_ss), axis=(1, 2))
         mean_dev_v = np.mean(np.abs(v - v_ss), axis=(1, 2))
         total_dev = mean_dev_u + mean_dev_v
@@ -56,13 +60,16 @@ def compute_classification_metrics(
         fft_u = np.abs(fft(u_avg - u_ss)) / len(u_avg)
         fft_u[0] = 0  # Ignore DC component
 
-        df.loc[i, "final_deviation"] = total_dev[-1]
-        df.loc[i, "mean_deviation"] = np.mean(last_dev)
-        df.loc[i, "std_deviation"] = np.std(last_dev)
-        df.loc[i, "max_derivative"] = np.max(deriv_norm)
-        df.loc[i, "mean_derivative"] = np.mean(last_deriv)
-        df.loc[i, "dominant_power"] = np.max(fft_u)
-        df.loc[i, "total_power"] = np.sum(fft_u)
+        # Store computed metrics in the DataFrame
+        df.at[i, "final_deviation"] = total_dev[-1]
+        df.at[i, "mean_deviation"] = np.mean(last_dev)
+        df.at[i, "std_deviation"] = np.std(last_dev)
+        df.at[i, "max_derivative"] = np.max(deriv_norm)
+        df.at[i, "mean_derivative"] = np.mean(last_deriv)
+        df.at[i, "dominant_power"] = np.max(fft_u)
+        df.at[i, "total_power"] = np.sum(fft_u)
+        df.at[i, "max_u"] = max_u
+        df.at[i, "max_v"] = max_v
 
         ds.close()
 

@@ -15,9 +15,9 @@
 
 template <typename Scalar> class NetCDFPDEWriter {
 public:
-  // initializes reader and alredy saves member, time, n_x and n_y values
-  // make shure the folder of filename exists, for example if the file
-  // has to be savet at out/result.nc, make sure that the out folder is created
+  // initializes reader and already saves member, time, n_x and n_y values
+  // make sure the folder of filename exists, for example if the file
+  // has to be saved at out/result.nc, make sure that the out folder is created
   NetCDFPDEWriter(int n_snapshots, Scalar T, int n_members, int n_x,
                   Scalar x_length, int n_y, Scalar y_length,
                   int type_of_equation, int boundary_value_type, int n_coupled,
@@ -67,7 +67,7 @@ public:
     check(nc_put_att_int(ncid_, NC_GLOBAL, "number_snapshots", NC_INT, 1,
                          &number_snapshots));
 
-    // create dimiensions for variables
+    // create dimensions for variables
     int dims_data[4];
     check(nc_def_dim(ncid_, "n_members", n_members_, &dims_data[0]));
     check(nc_def_dim(ncid_, "n_snapshots", n_snapshots_, &dims_data[1]));

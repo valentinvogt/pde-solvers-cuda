@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from functools import partial
 import argparse
 
-from db_tools import make_animation, get_db, filter_df
+from db_tools import get_db, get_data, filter_df, make_animation
 
 
 def ab_grid_animation(
@@ -40,8 +40,7 @@ def ab_grid_animation(
     # Preload data and calculate global min/max for normalization
     global_min, global_max = float("inf"), float("-inf")
     for i, row in df.iterrows():
-        ds = nc.Dataset(row["filename"])
-        data = ds.variables["data"][:]
+        data = get_data(row)
         ims.append((row, data))
         global_min = min(global_min, data[0, :, :, component_idx::2].min())
         global_max = max(global_max, data[0, :, :, component_idx::2].max())
@@ -127,8 +126,7 @@ def main():
     df = filter_df(df, A=0.5, B=1.25, Du=1.0, Dv=14.0)
 
     # for i, row in df.iterrows():
-    #     ds = nc.Dataset(row["filename"])
-    #     data = ds.variables["data"][:]
+    #     data = get_data(row)
     #     A, B = row["A"], row["B"]
     #     make_animation(data, f"{model}-{A}-{B}", output_dir, coupled_idx=0)
     #     print(f"created ({A},{B})")

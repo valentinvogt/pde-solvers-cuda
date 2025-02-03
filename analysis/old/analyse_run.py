@@ -117,6 +117,7 @@ def main():
         print(f"Processing {f}")
         d = nc.Dataset(os.path.join(dir_path, f))
         data = d["data"][:]
+        d.close()
         if anim:
             make_animation(data, param, out_dir)
         if save_final:

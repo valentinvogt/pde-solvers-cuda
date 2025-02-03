@@ -94,6 +94,10 @@ def filter_df(df, A=None, B=None, Du=None, Dv=None):
 
 
 def get_data(row):
+    """
+    Returns the data array associated with a row or
+    a one-row df.
+    """
     if isinstance(row, pd.DataFrame):
         if len(row) == 1:
             row = row.iloc[0]
@@ -170,8 +174,7 @@ def plot_grid(
     ims = []
 
     for i, row in df.iterrows():
-        ds = nc.Dataset(row["filename"])
-        data = ds.variables["data"][:]
+        data = get_data(row)
         f_min = data.min()
         f_max = data.max()
         ims.append((row, data[0, frame, :, component_idx::2], f_min, f_max))
@@ -285,6 +288,7 @@ def metrics_grid(
 
         row_idx = i // B_count if B_count > 1 else i
         col_idx = i % B_count if B_count > 1 else 0
+
         axes[row_idx, col_idx].plot(
             np.arange(0, data.shape[1] - start_frame)
             * row["dt"]
@@ -292,7 +296,11 @@ def metrics_grid(
             / row["n_snapshots"],
             values,
         )
-        label = f"{var1}={row[var1]:.{sigdigits}f}" if var1 != "" else ""
+
+        if isinstance(row[var1], float):
+            label = f"{var1}={row[var1]:.{sigdigits}f}" if var1 != "" else ""
+        else:
+            label = f"{var1}={row[var1]}" if var1 != "" else ""
         if var2 != "":
             label += f"\n{var2} = {row[var2]:.{sigdigits}f}"
         axes[row_idx, col_idx].set_title(
