@@ -117,14 +117,14 @@ def classify_trajectories(
             elif row["dominant_power"] > osc_threshold * row["total_power"]:
                 category = "OSC"  # Oscillatory
             else:
-                category = "ND"  # No clear classification
+                category = "I"  # No clear classification / interesting behavior
         else:
             if final_dev < dev_threshold or (
                 final_dev < 5 * dev_threshold and max_derivative < steady_threshold
             ):
                 category = "SS"  # Steady state
             elif std_dev > osc_threshold or mean_dev > dev_threshold:
-                category = "ND"  # No clear classification / interesting behavior
+                category = "I"  # No clear classification / interesting behavior
             else:
                 category = "BU"  # Blowup / divergent
 

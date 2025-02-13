@@ -210,6 +210,9 @@ def plot_grid(
 
 
 def compute_metrics(row, start_frame, end_frame=-1):
+    """
+    Returns deviations, time_derivatives, spatial_derivatives
+    """
     deviations = []
     time_derivatives = []
     spatial_derivatives = []
