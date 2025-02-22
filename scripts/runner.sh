@@ -30,25 +30,26 @@ module load python/3.11.6
 
 DATAPATH="/cluster/scratch/vogtva/data"
 
-A=5
-B=9
 Nx=128
 dx=1.0
 Nt=40_000
 dt=0.0025
-Du=2.0
-Dv=22.0
 n_snapshots=100
 model="bruss"
-run_id="abd_big"
+run_id="ball_prelim"
 
 mkdir -p $DATAPATH/$model/$run_id
 
-for A in 0.5 0.75 1 1.25 1.5 2 3 5; do
-        for B_mult in 1.25 1.75 2 2.5 3; do
-                for Du in 1.0 2.0 3.0; do
-                        for D_mult in 4 8 11 14 16 18; do
-                                for seed in $(seq 1 5); do
+A_vals=(0.5 1.5 4.5)
+B_mults=(1.5 2 2.5)
+Du_vals=(0.5 1 2)
+Dv_mults=(11.0 15.0 19.0)
+
+for A in "${A_vals[@]}"; do
+        for B_mult in "${B_mults[@]}"; do
+                for Du in "${Du_vals[@]}"; do
+                        for D_mult in "${Dv_mults[@]}"; do
+                                for seed in $(seq 1 2); do
                                         start=`date +%s`
                                         B=$(python -c "print($A * $B_mult)")
                                         Dv=$(python -c "print($Du * $D_mult)")
