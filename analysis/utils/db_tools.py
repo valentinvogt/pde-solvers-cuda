@@ -299,17 +299,19 @@ def metrics_grid(
             / row["n_snapshots"],
             values,
         )
-
-        if isinstance(row[var1], float):
-            label = f"{var1}={row[var1]:.{sigdigits}f}" if var1 != "" else ""
+        if var1 == "":
+            label = ""
         else:
-            label = f"{var1}={row[var1]}" if var1 != "" else ""
-        if var2 != "":
-            label += f"\n{var2} = {row[var2]:.{sigdigits}f}"
-        axes[row_idx, col_idx].set_title(
-            label,
-            fontsize=6,
-        )
+            if isinstance(row[var1], float):
+                label = f"{var1}={row[var1]:.{sigdigits}f}"
+            else:
+                label = f"{var1}={row[var1]}"
+            if var2 != "":
+                label += f"\n{var2} = {row[var2]:.{sigdigits}f}"
+            axes[row_idx, col_idx].set_title(
+                label,
+                fontsize=6,
+            )
         # axes[row_idx, col_idx].axis("off")
 
     row = df.iloc[0]

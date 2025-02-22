@@ -14,8 +14,7 @@ def compute_classification_metrics(
     df, time_ratio=0.1, start_frame=0, end_frame=-1
 ) -> pd.DataFrame:
     """
-    Compute classification metrics for a given range of frames, including
-    all metrics used in the detailed classifier.
+    Compute classification metrics for a given range of frames
     """
     if len(df) == 0:
         return None
@@ -38,7 +37,6 @@ def compute_classification_metrics(
 
         time_steps = data.shape[1]
         last_stretch_start = int(time_steps * time_ratio)
-
         u = data[0, :, :, 0::2]
         v = data[0, :, :, 1::2]
 
@@ -53,19 +51,23 @@ def compute_classification_metrics(
 
         du = np.diff(u, axis=0)
         dv = np.diff(v, axis=0)
-        deriv_norm = np.linalg.norm(du, axis=(1, 2)) + np.linalg.norm(dv, axis=(1, 2))
-        last_deriv = deriv_norm[-last_stretch_start:]
+        dx_norm = np.linalg.norm(du, axis=(1, 2)) + np.linalg.norm(dv, axis=(1, 2))
+        last_dx = dx_norm[-last_stretch_start:]
+
+        du_dt = np.gradient(data[0, :, :, 0::2], row["dt"], axis=0)
+        last_dt = np.linalg.norm(du_dt[-last_stretch_start:], axis=(1, 2))
 
         u_avg = np.mean(u, axis=(1, 2))
         fft_u = np.abs(fft(u_avg - u_ss)) / len(u_avg)
         fft_u[0] = 0  # Ignore DC component
 
         # Store computed metrics in the DataFrame
-        df.at[i, "final_deviation"] = total_dev[-1]
         df.at[i, "mean_deviation"] = np.mean(last_dev)
         df.at[i, "std_deviation"] = np.std(last_dev)
-        df.at[i, "max_derivative"] = np.max(deriv_norm)
-        df.at[i, "mean_derivative"] = np.mean(last_deriv)
+        df.at[i, "max_dx"] = np.max(last_dx)
+        df.at[i, "mean_dx"] = np.mean(last_dx)
+        df.at[i, "max_dt"] = np.max(last_dt)
+        df.at[i, "mean_dt"] = np.mean(last_dt)
         df.at[i, "dominant_power"] = np.max(fft_u)
         df.at[i, "total_power"] = np.sum(fft_u)
         df.at[i, "max_u"] = max_u
@@ -79,9 +81,9 @@ def compute_classification_metrics(
 def classify_trajectories(
     df,
     detailed=False,
-    dev_threshold=1e-2,
-    steady_threshold=1e-3,
-    osc_threshold=1e-2,
+    deviation_threshold=1e-2,
+    dt_threshold=50,
+    osc_power_threshold=5e-2
 ) -> pd.DataFrame:
     """
     Classify runs based on precomputed metrics.
@@ -102,31 +104,32 @@ def classify_trajectories(
 
     classifications = []
     for i, row in df.iterrows():
-        final_dev = row["final_deviation"]
         mean_dev = row["mean_deviation"]
         std_dev = row["std_deviation"]
-        max_derivative = row["max_derivative"]
+        mean_dt = row["mean_dt"]
+        dom_power = row["dominant_power"]
 
-        if detailed:
-            if max(row["max_u"], row["max_v"]) > 1e6:
-                category = "BU"  # Blowup
-            elif mean_dev < 1e-3 and np.all(np.diff(row["last_dev"]) <= 1e-3):
-                category = "SS"  # Steady state
-            elif row["mean_derivative"] < 1e-3 and mean_dev >= 1e-3 and std_dev < 1e-3:
-                category = "DS"  # Different steady state
-            elif row["dominant_power"] > osc_threshold * row["total_power"]:
-                category = "OSC"  # Oscillatory
-            else:
-                category = "I"  # No clear classification / interesting behavior
+        # OLD
+        # if detailed:
+        #     if max(row["max_u"], row["max_v"]) > 1e6:
+        #         category = "BU"  # Blowup
+        #     elif mean_dev < 1e-3 and np.all(np.diff(row["last_dev"]) <= 1e-3):
+        #         category = "SS"  # Steady state
+        #     elif row["mean_derivative"] < 1e-3 and mean_dev >= 1e-3 and std_dev < 1e-3:
+        #         category = "DS"  # Different steady state
+        #     elif row["dominant_power"] > osc_threshold * row["total_power"]:
+        #         category = "OSC"  # Oscillatory
+        #     else:
+        #         category = "I"  # No clear classification / interesting behavior
+
+        if mean_dev < deviation_threshold:
+            category = "SS"  # Steady state
+        elif mean_dt < dt_threshold:
+            category = "DSS"  # Different steady state
+        elif dom_power > osc_power_threshold:
+            category = "OSC" # Oscillatory
         else:
-            if final_dev < dev_threshold or (
-                final_dev < 5 * dev_threshold and max_derivative < steady_threshold
-            ):
-                category = "SS"  # Steady state
-            elif std_dev > osc_threshold or mean_dev > dev_threshold:
-                category = "I"  # No clear classification / interesting behavior
-            else:
-                category = "BU"  # Blowup / divergent
+            category = "I" # Other, "interesting" behavior
 
         classifications.append(category)
 
@@ -139,7 +142,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", default="bruss")
     parser.add_argument("--run_id", default="")
     parser.add_argument("--outfile", default="")
-    parser.add_argument("--time_ratio", default=0.1)
+    parser.add_argument("--time_ratio", default=0.1, type=float)
 
     args = parser.parse_args()
     model = args.model
