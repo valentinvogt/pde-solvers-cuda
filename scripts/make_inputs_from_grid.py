@@ -9,6 +9,8 @@ import pandas as pd
 from create_netcdf_input import create_input_file
 from helpers import f_scalings, zero_func, const_sigma, create_json
 
+j = 0
+
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -19,7 +21,7 @@ def initial_sparse_sources(member, coupled_idx, x_position, y_position, sparsity
         u = np.ones(x_position.shape)
     elif coupled_idx == 1:
         u = np.zeros(x_position.shape)
-        for i in range(0, sparsity * x_position.shape[0]):
+        for i in range(0, int(np.floor(sparsity * x_position.shape[0]))):
             i = np.random.randint(0, x_position.shape[0])
             j = np.random.randint(0, x_position.shape[1])
             u[i, j] = 1.0
@@ -54,7 +56,9 @@ def steady_state_plus_noise(
             * (
                 np.cos(2 * np.pi * x_position / ic_params["wavelength"])
                 + np.sin(2 * np.pi * y_position / ic_params["wavelength"])
-                + np.cos(2 * np.pi * (x_position + y_position) / ic_params["wavelength"])
+                + np.cos(
+                    2 * np.pi * (x_position + y_position) / ic_params["wavelength"]
+                )
             )
         )
         v += (
@@ -63,7 +67,9 @@ def steady_state_plus_noise(
             * (
                 np.cos(2 * np.pi * x_position / ic_params["wavelength"])
                 + np.sin(2 * np.pi * y_position / ic_params["wavelength"])
-                + np.cos(2 * np.pi * (x_position + y_position) / ic_params["wavelength"])
+                + np.cos(
+                    2 * np.pi * (x_position + y_position) / ic_params["wavelength"]
+                )
             )
         )
     else:
@@ -89,6 +95,8 @@ def run_wrapper(
     run_id,
     original_point,
 ):
+    global j
+    j += 1
     fn_order = 4 if model == "fhn" else 3
     fn_scalings = f_scalings(model, A, B)
     input_filename = filename
@@ -100,7 +108,9 @@ def run_wrapper(
             steady_state_plus_noise, params=(A, B), ic_params=ic_params
         )
     elif model == "gray_scott":
-        initial_condition = partial(initial_sparse_sources, sparsity=0.2)
+        initial_condition = partial(
+            initial_sparse_sources, sparsity=ic_params["density"]
+        )
     else:
         initial_condition = partial(
             steady_state_plus_noise, params=(A, B), ic_params=ic_params
@@ -130,7 +140,7 @@ def run_wrapper(
         Dv=Dv,
     )
 
-    print(input_filename)
+    # print(input_filename)
 
     create_json(
         {
@@ -155,7 +165,17 @@ def run_wrapper(
 
 
 def sample_ball(
-    A, B, Du, Dv, sampling_std, num_samples, num_samples_per_ic, sim_params, initial_conditions, run_id
+    model,
+    A,
+    B,
+    Du,
+    Dv,
+    sampling_std,
+    num_samples,
+    num_samples_per_ic,
+    sim_params,
+    initial_conditions,
+    run_id,
 ):
     """
     A, B, Du, Dv: parameters; center of the ball
@@ -185,7 +205,7 @@ def sample_ball(
         for ic in initial_conditions:
             for _ in range(num_samples_per_ic):
                 run_wrapper(
-                    "bruss",
+                    model,
                     A_new,
                     B_new,
                     Nx,
@@ -203,7 +223,7 @@ def sample_ball(
                 )
 
 
-if __name__ == "__main__":
+def main_bruss():
     model = "bruss"
     run_id = "ball_big"
     load_dotenv()
@@ -211,7 +231,7 @@ if __name__ == "__main__":
     data_dir = os.getenv("DATA_DIR")
     path = os.path.join(data_dir, model, run_id)
     os.makedirs(path, exist_ok=True)
-    
+
     initial_conditions = [
         {"type": "normal", "sigma_u": 0.1, "sigma_v": 0.1},
         {"type": "normal", "sigma_u": 0.25, "sigma_v": 0.25},
@@ -223,7 +243,7 @@ if __name__ == "__main__":
     B_mul_arr = [1.25, 2, 3, 4]
     Du_arr = [1, 3]
     Dv_mul_arr = [4, 11, 18]
-    
+
     sampling_std = {key: 0.1 for key in ["A", "B", "Du", "Dv"]}
 
     sim_params = {"Nx": 128, "dx": 1.0, "Nt": 60_000, "dt": 0.0025, "path": path}
@@ -235,10 +255,73 @@ if __name__ == "__main__":
                     B = B_mul * A
                     Dv = Dv_mul * Du
 
-                    sample_ball(A, B, Du, Dv, sampling_std,
-                                num_samples=15,
-                                num_samples_per_ic=1,
-                                sim_params=sim_params,
-                                initial_conditions=initial_conditions,
-                                run_id=run_id,
+                    sample_ball(
+                        model,
+                        A,
+                        B,
+                        Du,
+                        Dv,
+                        sampling_std,
+                        num_samples=15,
+                        num_samples_per_ic=1,
+                        sim_params=sim_params,
+                        initial_conditions=initial_conditions,
+                        run_id=run_id,
                     )
+
+
+def main_gray_scott():
+    model = "gray_scott"
+    run_id = "ball_small"
+    load_dotenv()
+
+    data_dir = os.getenv("DATA_DIR")
+    path = os.path.join(data_dir, model, run_id)
+    os.makedirs(path, exist_ok=True)
+
+    initial_conditions = [
+        {"type": "point_sources", "density": 0.05},
+        {"type": "point_sources", "density": 0.15},
+    ]
+
+    A_arr = [0.035]
+    B_mul_arr = [1.0]
+    Du_arr = [0.1]
+    Dv_mul_arr = [0.3, 0.4, 0.5, 0.6]
+    # A_arr = [0.035, 0.036, 0.037, 0.038, 0.039]
+    # B_mul_arr = [1.0, 1.5, 2.0]
+    # Du_arr = [0.1, 0.15, 0.2, 0.25, 0.3]
+    # Dv_mul_arr = [0.3, 0.4, 0.5]
+
+    sampling_std = {key: 0.05 for key in ["A", "B", "Du", "Dv"]}
+
+    sim_params = {"Nx": 128, "dx": 1.0, "Nt": 50_000, "dt": 0.01, "path": path}
+
+    for i, A in enumerate(A_arr):
+        for B_mul in B_mul_arr:
+            for Du in Du_arr:
+                for Dv_mul in Dv_mul_arr:
+                    B = B_mul * A
+                    Dv = Dv_mul * Du
+
+                    sample_ball(
+                        model,
+                        A,
+                        B,
+                        Du,
+                        Dv,
+                        sampling_std,
+                        num_samples=15,
+                        num_samples_per_ic=1,
+                        sim_params=sim_params,
+                        initial_conditions=initial_conditions,
+                        run_id=run_id,
+                    )
+
+        print(f"{i + 1} / {len(A_arr)}")
+    global j
+    print(j)
+
+
+if __name__ == "__main__":
+    main_gray_scott()

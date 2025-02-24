@@ -7,7 +7,7 @@ import argparse
 from dotenv import load_dotenv
 from scipy.fft import fft, fftfreq
 
-from utils.db_tools import get_db
+from utils.db_tools import get_db, get_data
 
 
 def compute_classification_metrics(
@@ -27,8 +27,12 @@ def compute_classification_metrics(
         if end_frame == -1:
             end_frame = num_snapshots
 
-        ds = nc.Dataset(row["filename"])
-        data = ds.variables["data"][:]  # Assume shape [time, spatial, ...]
+        data = get_data(row)
+
+        if np.any(data.mask):
+            df.drop(i, inplace=True)
+            continue
+
         A, B = row["A"], row["B"]
         u_ss, v_ss = A, B / A
         steady_state = np.zeros_like(data[0, 0, :, :])
@@ -72,8 +76,6 @@ def compute_classification_metrics(
         df.at[i, "total_power"] = np.sum(fft_u)
         df.at[i, "max_u"] = max_u
         df.at[i, "max_v"] = max_v
-
-        ds.close()
 
     return df
 
