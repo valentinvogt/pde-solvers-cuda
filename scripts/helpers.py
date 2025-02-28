@@ -1,5 +1,39 @@
 import numpy as np
 import json
+from pydantic import BaseModel, Field
+from typing import Union, List, Callable, Literal, Dict
+
+
+class ModelParams(BaseModel):
+    A: float
+    B: float
+    Du: float
+    Dv: float
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, float]) -> "ModelParams":
+        return cls(**d)
+
+
+class SimParams(BaseModel):
+    Nx: int
+    dx: float
+    Nt: int
+    dt: float
+    n_snapshots: int
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Union[int, float]]) -> "SimParams":
+        return cls(**d)
+
+
+class RunInfo(BaseModel):
+    model: str
+    run_id: str
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, str]) -> "RunInfo":
+        return cls(**d)
 
 
 def zero_func(member, coupled_idx, x_position, y_position):

@@ -1,0 +1,55 @@
+model: "bruss"
+run_type: "from_grid"
+run_id: "default"
+
+simulation:
+  Nx: 128
+  dx: 1.0
+  Nt: 60000
+  dt: 0.0025
+  n_snapshots: 100
+
+model_params:
+  bruss:
+    A_values: [0.5, 1.0, 1.5, 2.0, 5.0]
+    B_multipliers: [1.25, 2, 3, 4]
+    Du_values: [1, 3]
+    Dv_multipliers: [4, 11, 18]
+    initial_conditions:
+      - type: "normal"
+        sigma_u: 0.1
+        sigma_v: 0.1
+      - type: "normal"
+        sigma_u: 0.25
+        sigma_v: 0.25
+      - type: "uniform"
+        u_min: 0.0
+        u_max: 0.25
+        v_min: 0.0
+        v_max: 0.25
+      - type: "hex_pattern"
+        amplitude: 0.25
+        wavelength: 0.1
+
+  gray_scott:
+    A_values: [0.035, 0.036, 0.037, 0.038, 0.039]
+    B_multipliers: [1.0, 1.5, 2.0]
+    Du_values: [0.1, 0.15, 0.2, 0.25, 0.3]
+    Dv_multipliers: [0.3, 0.4, 0.5]
+    initial_conditions:
+      - type: "point_sources"
+        density: 0.05
+      - type: "point_sources"
+        density: 0.15
+
+sampling:
+  num_samples: 15
+  num_samples_per_ic: 1
+  std:
+    A: 0.1
+    B: 0.1
+    Du: 0.1
+    Dv: 0.1
+
+paths:
+  data_dir: "${DATA_DIR}" 
