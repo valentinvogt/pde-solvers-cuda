@@ -1,22 +1,15 @@
-import numpy as np
 from numpy.random import normal, uniform, randint
-from functools import partial
 import os
 from dotenv import load_dotenv
 from uuid import uuid4
 import pandas as pd
-import argparse
-from typing import List
+from typing import List, Dict
 from itertools import product
-import sys
 from create_netcdf_input import create_input_file
-from helpers import f_scalings, zero_func, const_sigma, create_json
+from helpers import f_scalings, zero_func, const_sigma, create_json, ModelParams, SimParams, RunInfo
 from initial_conditions import (
     get_ic_function,
     InitialCondition,
-    ModelParams,
-    SimParams,
-    RunInfo,
     ic_from_dict,
 )
 
@@ -34,14 +27,14 @@ def run_wrapper(
 ):
     model = run_info.model
     run_id = run_info.run_id
-    
+
     params = model_params.model_dump()
     A, B, Du, Dv = params.values()
-    
+
     sim_values = sim_params.model_dump()
     Nx, dx, Nt, dt, n_snapshots = sim_values.values()
-    
-    ic_data = initial_condition.model_dump(mode='json')
+
+    ic_data = initial_condition.model_dump(mode="json")
 
     fn_order = 4 if model == "fhn" else 3
     fn_scalings = f_scalings(model, A, B)
@@ -102,6 +95,8 @@ def run_wrapper(
         log_dict,
         filename.replace(".nc", ".json"),
     )
+
+    print(input_filename)
 
 def sample_ball(
     model_params: ModelParams,
@@ -166,10 +161,7 @@ def ball_sampling(
         )
 
 
-def parameters_on_grid():
-    config = CONFIG
-    model = config["model"]
-    run_id = config["run_id"]
+def parameters_from_grid(config) -> List[Dict[str, float]]:
     grid_mode = config["grid_mode"]
     grid_config = config["grid_config"]
 
@@ -181,7 +173,7 @@ def parameters_on_grid():
             grid_config["Dv"],
         ]
         return [
-            {"A": A, "B": B, "Du": Du, "Dv": Dv} 
+            {"A": A, "B": B, "Du": Du, "Dv": Dv}
             for A, B, Du, Dv in product(*param_ranges)
         ]
     elif grid_mode == "relative":
@@ -198,6 +190,12 @@ def parameters_on_grid():
         raise ValueError(f"Invalid range type: {grid_mode}")
 
 
+def parameters_from_df(df_path: str) -> pd.DataFrame:
+    df = pd.read_csv(df_path)
+    df = df[["A", "B", "Du", "Dv"]]
+    return df.to_dict(orient="records")
+
+
 def main():
     load_dotenv()
     config = CONFIG
@@ -208,20 +206,23 @@ def main():
     data_dir = os.getenv("DATA_DIR")
     path = os.path.join(data_dir, model, run_id)
     os.makedirs(path, exist_ok=True)
+    
+    with open(os.path.join(path, "_config.json"), "w") as f:
+        f.write(str(config))
 
     sim_params = SimParams(**config["sim_params"])
     run_info = RunInfo(model=model, run_id=run_id)
     initial_conditions = [ic_from_dict(ic) for ic in config["initial_conditions"]]
-    sampling_std = ModelParams(**config["sampling_std"])
 
     if center_definition == "from_grid":
-        param_grid = parameters_on_grid()
+        param_grid = parameters_from_grid(config)
     elif center_definition == "from_df":
-        param_grid = pd.read_csv(config["df_path"])
+        param_grid = parameters_from_df(config["df_path"])
     else:
         raise ValueError(f"Invalid center definition: {center_definition}")
 
     if run_type == "ball":
+        sampling_std = ModelParams(**config["sampling_std"])
         centers = [ModelParams(**center) for center in param_grid]
         num_samples_per_point = config["num_samples_per_point"]
         num_samples_per_ic = config["num_samples_per_ic"]

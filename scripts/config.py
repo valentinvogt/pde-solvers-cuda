@@ -2,17 +2,17 @@ import numpy as np
 
 CONFIG = {
     "model": "bruss",
-    "run_id": "faa",
-    "run_type": "ball",  # "ball" or "one_trajectory"
-    "center_definition": "from_grid",  # "from_grid" or "from_df"
-    "grid_mode": "relative",  # "relative" or "absolute"
-    "grid_config": {  # only used if center_definition is "from_grid"
-        "A": list(np.linspace(0.1, 1.0, 3)),
-        "B_over_A": list(np.linspace(1.5, 2.0, 3)),
-        "Du": [1, 2, 3],
-        "Dv_over_Du": [9],
-    },
-    "df_path": "",  # must be set if center_definition is "from_df"
+    "run_id": "pt_big",
+    "run_type": "one_trajectory",  # "ball" or "one_trajectory"
+    "center_definition": "from_df",  # "from_grid" or "from_df"
+    # "grid_mode": "relative",  # "relative" or "absolute"
+    # "grid_config": {  # only used if center_definition is "from_grid"
+    #     "A": list(np.linspace(0.1, 1.0, 3)),
+    #     "B_over_A": list(np.linspace(1.5, 2.0, 3)),
+    #     "Du": [1, 2, 3],
+    #     "Dv_over_Du": [9],
+    # },
+    "df_path": "data/pt.csv",  # must be set if center_definition is "from_df"
     "sim_params": {
         "Nx": 128,
         "dx": 1.0,
@@ -26,11 +26,11 @@ CONFIG = {
             "sigma_u": 0.1,
             "sigma_v": 0.1,
         },
-        {
-            "type": "normal",
-            "sigma_u": 0.25,
-            "sigma_v": 0.25,
-        },
+        # {
+        #     "type": "normal",
+        #     "sigma_u": 0.25,
+        #     "sigma_v": 0.25,
+        # },
         # {
         #     "type": "point_sources",
         #     "density": 0.1,
@@ -48,12 +48,12 @@ CONFIG = {
         #     "wavelength": 10,
         # },
     ],
-    "sampling_std": {
-        "A": 0.1,
-        "B": 0.1,
-        "Du": 0.1,
-        "Dv": 0.1,
-    },
-    "num_samples_per_point": 2,
+    # "sampling_std": {
+    #     "A": 0.1,
+    #     "B": 0.1,
+    #     "Du": 0.1,
+    #     "Dv": 0.1,
+    # },
+    "num_samples_per_point": 1,
     "num_samples_per_ic": 1,
 }

@@ -16,4 +16,5 @@ module load netcdf-c/4.9.2
 module load python/3.11.6
 
 # --model "gray_scott"
-python3 analysis/classify.py --run_id "phase_transition" --outfile "classification_metrics.csv" --time_ratio 0.2
+# python3 analysis/classify.py --run_id "phase_transition" --outfile "classification_metrics.csv" --time_ratio 0.2
+python3 scripts/make_inputs.py
