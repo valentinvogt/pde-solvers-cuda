@@ -5,15 +5,10 @@ from dotenv import load_dotenv
 from functools import partial
 from uuid import uuid4
 import pandas as pd
+import argparse
 
 from create_netcdf_input import create_input_file
 from helpers import f_scalings, zero_func, const_sigma, create_json
-
-j = 0
-
-
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 
 
 def initial_sparse_sources(member, coupled_idx, x_position, y_position, sparsity):
@@ -95,8 +90,6 @@ def run_wrapper(
     run_id,
     original_point,
 ):
-    global j
-    j += 1
     fn_order = 4 if model == "fhn" else 3
     fn_scalings = f_scalings(model, A, B)
     input_filename = filename
@@ -284,14 +277,14 @@ def main_gray_scott():
         {"type": "point_sources", "density": 0.15},
     ]
 
-    A_arr = [0.035]
-    B_mul_arr = [1.0]
-    Du_arr = [0.1]
-    Dv_mul_arr = [0.3, 0.4, 0.5, 0.6]
-    # A_arr = [0.035, 0.036, 0.037, 0.038, 0.039]
-    # B_mul_arr = [1.0, 1.5, 2.0]
-    # Du_arr = [0.1, 0.15, 0.2, 0.25, 0.3]
-    # Dv_mul_arr = [0.3, 0.4, 0.5]
+    # A_arr = [0.035]
+    # B_mul_arr = [1.0]
+    # Du_arr = [0.1]
+    # Dv_mul_arr = [0.3, 0.4, 0.5, 0.6]
+    A_arr = [0.035, 0.036, 0.037, 0.038, 0.039]
+    B_mul_arr = [1.0, 1.5, 2.0]
+    Du_arr = [0.1, 0.15, 0.2, 0.25, 0.3]
+    Dv_mul_arr = [0.3, 0.4, 0.5]
 
     sampling_std = {key: 0.05 for key in ["A", "B", "Du", "Dv"]}
 
@@ -319,9 +312,101 @@ def main_gray_scott():
                     )
 
         print(f"{i + 1} / {len(A_arr)}")
-    global j
-    print(j)
+
+
+def main_phase_transition():
+    model = "bruss"
+    run_id = "phase_transition2"
+    load_dotenv()
+    data_dir = os.getenv("DATA_DIR")
+    path = os.path.join(data_dir, model, run_id)
+    os.makedirs(path, exist_ok=True)
+
+    sim_params = {"Nx": 128, "dx": 1.0, "Nt": 60_000, "dt": 0.0025}
+    Du = 2.0
+    Dv = 22.0
+    initial_condition = {"type": "normal", "sigma_u": 0.1, "sigma_v": 0.1}
+
+    A_values = np.arange(0.5, 2.5, 0.1)
+
+    B_A_values_coarse = np.arange(1.5, 2.5, 0.1)
+    B_A_values_fine = np.arange(1.8, 2.2, 0.01)
+
+    B_A_values = np.concatenate((B_A_values_coarse, B_A_values_fine))
+    # remove duplicates
+    B_A_values = np.unique(B_A_values)
+
+    for A in A_values:
+        for B_A in B_A_values:
+            B = A * B_A
+
+            run_wrapper(
+                model=model,
+                A=A,
+                B=B,
+                Nx=sim_params["Nx"],
+                dx=sim_params["dx"],
+                Nt=sim_params["Nt"],
+                dt=sim_params["dt"],
+                Du=Du,
+                Dv=Dv,
+                ic_params=initial_condition,
+                random_seed=np.random.randint(0, 1000000),
+                n_snapshots=100,
+                filename=os.path.join(path, f"{uuid4()}.nc"),
+                run_id=run_id,
+                original_point=(A, B_A),
+            )
+
+
+def main_from_df(run_id, df_file):
+    model = "bruss"
+    run_id = "ball_int"
+    initial_conditions = [
+        {"type": "normal", "sigma_u": 0.1, "sigma_v": 0.1},
+        {"type": "normal", "sigma_u": 0.25, "sigma_v": 0.25},
+    ]
+    load_dotenv()
+    data_dir = os.getenv("DATA_DIR")
+    path = os.path.join(data_dir, model, run_id)
+    os.makedirs(path, exist_ok=True)
+
+    center_df = pd.read_csv("data/varied_points.csv")
+    sigma = {key: 0.1 for key in center_df.columns}
+    sim_params = {"Nx": 128, "dx": 1.0, "Nt": 60_000, "dt": 0.0025, "path": path}
+
+    for i, row in center_df.iterrows():
+        A = row["A"]
+        B = row["B"]
+        Du = row["Du"]
+        Dv = row["Dv"]
+
+        sample_ball(
+            A, B, Du, Dv, sigma, 100, sim_params, initial_conditions, run_id=run_id
+        )
 
 
 if __name__ == "__main__":
-    main_gray_scott()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default="bruss")
+    parser.add_argument("--run_id", default="")
+    parser.add_argument("--run_type", default="from_grid")
+    
+    args = parser.parse_args()
+    model = args.model
+    run_id = args.run_id
+    run_type = args.run_type
+
+    if run_type == "from_grid":
+        if model == "bruss":
+            main_bruss()
+        elif model == "gray_scott":
+            main_gray_scott()
+        elif run_type == "phase_transition":
+            main_phase_transition()
+    elif run_type == "from_df":
+        main_from_df(run_id, "data/varied_points.csv")
+    else:
+        print("Invalid run type")
+        sys.exit(1)
+        

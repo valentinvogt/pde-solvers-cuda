@@ -5,6 +5,7 @@ import matplotlib.animation as animation
 from mpl_toolkits.axes_grid1 import ImageGrid
 from matplotlib.animation import FuncAnimation
 from typing import Tuple
+import plotly.graph_objects as go
 
 import os
 import glob
@@ -343,3 +344,52 @@ def delete_run(df, run_id) -> pd.DataFrame:
             os.remove(filename.replace("_output.nc", ".nc"))
 
     return df
+
+
+def plot_all_trajectories(df, start_frame=0, metric="dev"):
+    t = np.linspace(0, 100, 100)
+    title = ""
+
+    # Create figure
+    fig = go.Figure()
+
+    for _, row in df.iterrows():
+        d = get_data(row)
+        metrics = compute_metrics(row, start_frame=start_frame)
+
+        # Select the metric based on the input argument
+        if metric == "dev":
+            title = "Deviation"
+            values = metrics[0]
+        elif metric == "dt":
+            title = "Time Derivative"
+            values = metrics[1]
+        elif metric == "dx":
+            title = "Spatial Derivative"
+            values = metrics[2]
+
+        # Add a trace for each row's metric values
+        fig.add_trace(
+            go.Scatter(
+                x=t,
+                y=values,
+                mode="lines",
+                name=f"Row {row.name}",  # Use row index or a unique identifier
+                hovertemplate="Index: %{x}<br>Value: %{y:.2f}<extra></extra>",
+            )
+        )
+
+    # Update layout
+    fig.update_layout(
+        title=f"{title} Metrics for All Rows",
+        xaxis_title="Time Step/Index",
+        yaxis_title=f"{title} Value",
+        hovermode="x unified",
+        showlegend=True,
+        template="plotly_white",
+    )
+
+    # Add range slider for better interactivity
+    fig.update_layout(xaxis=dict(rangeslider=dict(visible=True), type="linear"))
+
+    fig.show()
