@@ -52,6 +52,8 @@ def get_db(data_dir) -> pd.DataFrame:
 
     # Iterate through the JSON files and read them
     for file in json_files:
+        if os.path.basename(file).startswith("_"):
+            continue
         with open(file, "r") as f:
             data = json.load(f)
             data_list.append(data)
@@ -62,6 +64,10 @@ def get_db(data_dir) -> pd.DataFrame:
 
 
 def check_data_dir(data_dir):
+    """
+    Asserts that all JSON files in data_dir point to an
+    existing data file.
+    """
     valid = True
     for root, dirs, files in os.walk(data_dir):
         for file in files:
@@ -77,6 +83,9 @@ def check_data_dir(data_dir):
 
 
 def filter_df(df, A=None, B=None, Du=None, Dv=None):
+    """
+    Filter by the provided parameters.
+    """
     filter_criteria = {}
     if A is not None:
         filter_criteria["A"] = A
@@ -133,6 +142,9 @@ def animate(snapshot, data, ims, axes):
 
 
 def make_animation(data, name, out_dir):
+    """
+    Creates .gif animation of the data in the specified directory.
+    """
     global_min = np.min(data)
     global_max = np.max(data)
     fig, axes, ims = plot(data, global_min, global_max)
@@ -160,13 +172,17 @@ def plot_grid(
     if len(df) == 0:
         return None
 
-    A_count = len(df[var1].unique())
-    if var2 == "":
+    if var1 == "":
+        A_count = 1
+        B_count = len(df)
+    elif var2 == "":
+        A_count = len(df[var1].unique())
         df = df.sort_values(by=[var1])
         df[var2] = 0
         B_count = A_count
         A_count = 1
     else:
+        A_count = len(df[var1].unique())
         df = df.sort_values(by=[var1, var2])
         B_count = int(len(df) / A_count)
 
@@ -182,12 +198,19 @@ def plot_grid(
 
     for ax, (row, im, f_min, f_max) in zip(grid, ims):
         label = f"{var1}={row[var1]:.{sigdigits}f}"
-        if var2 != "":
-            label += f"\n{var2} = {row[var2]:.{sigdigits}f}"
-        ax.set_title(
-            label,
-            fontsize=6,
-        )
+        if var1 == "":
+            label = ""
+        else:
+            if isinstance(row[var1], float):
+                label = f"{var1}={row[var1]:.{sigdigits}f}"
+            else:
+                label = f"{var1}={row[var1]}"
+            if var2 != "":
+                label += f"\n{var2} = {row[var2]:.{sigdigits}f}"
+            ax.set_title(
+                label,
+                fontsize=6,
+            )
         ax.imshow(im, cmap="viridis", vmin=f_min, vmax=f_max)
         ax.set_aspect("equal")
         ax.axis("off")
@@ -212,11 +235,19 @@ def plot_grid(
 
 def compute_metrics(row, start_frame, end_frame=-1):
     """
-    Returns deviations, time_derivatives, spatial_derivatives
+    end_frame: works like Python slicing
+    Returns deviations, time_derivatives, spatial_derivatives, relative std
+    as 2D arrays of shape (num_frames, 2)
     """
-    deviations = []
-    time_derivatives = []
-    spatial_derivatives = []
+    if end_frame < 0:
+        end_frame = row["n_snapshots"] + end_frame
+    
+    num_frames = end_frame - start_frame + 1
+
+    deviations = np.zeros((num_frames, 2))
+    time_derivatives = np.zeros((num_frames, 2))
+    spatial_derivatives = np.zeros((num_frames, 2))
+    relative_stds = np.zeros((num_frames, 2))
 
     data = get_data(row)
     steady_state = np.zeros_like(data[0, 0, :, :])
@@ -224,25 +255,38 @@ def compute_metrics(row, start_frame, end_frame=-1):
     steady_state[:, 0::2] = row["A"]
     steady_state[:, 1::2] = row["B"] / row["A"]
 
-    du_dt = np.gradient(data[0, :, :, 0::2], row["dt"], axis=0)
+    u = data[0, :, :, 0::2]
+    v = data[0, :, :, 1::2]
+    du_dt = np.gradient(u, row["dt"], axis=0)
+    dv_dt = np.gradient(v, row["dt"], axis=0)
 
-    if end_frame == -1:
-        end_frame = data.shape[1]
+    for j in range(0, num_frames):
+        u_t = u[j, :, :]
+        v_t = v[j, :, :]
+        du_dx = np.gradient(u_t, row["dx"], axis=0)
+        dv_dx = np.gradient(v_t, row["dx"], axis=0)
+        deviations[j, 0] = np.linalg.norm(u_t - steady_state[:, 0::2])
+        deviations[j, 1] = np.linalg.norm(v_t - steady_state[:, 1::2])
+        time_derivatives[j, 0] = np.linalg.norm(du_dt[j])
+        time_derivatives[j, 1] = np.linalg.norm(dv_dt[j])
+        spatial_derivatives[j, 0] = np.linalg.norm(du_dx)
+        spatial_derivatives[j, 1] = np.linalg.norm(dv_dx)
+        relative_stds[j, 0] = np.std(u_t) / np.mean(u_t)
+        relative_stds[j, 1] = np.std(v_t) / np.mean(v_t)
 
-    for j in range(start_frame, end_frame):
-        u = data[0, j, :, 0::2]
-        v = data[0, j, :, 1::2]
-        du_dx = np.gradient(u, row["dx"], axis=0)
-        dv_dx = np.gradient(v, row["dx"], axis=0)
-        deviations.append(np.linalg.norm(data[0, j, :, :] - steady_state))
-        time_derivatives.append(np.linalg.norm(du_dt[j]))
-        spatial_derivatives.append(np.linalg.norm(du_dx) + np.linalg.norm(dv_dx))
-
-    return deviations, time_derivatives, spatial_derivatives
+    return deviations, time_derivatives, spatial_derivatives, relative_stds
 
 
 def metrics_grid(
-    df, start_frame, sigdigits=3, var1="A", var2="B", metric="dev", filename=""
+    df,
+    start_frame,
+    sigdigits=3,
+    joint=False,
+    var1="A",
+    var2="B",
+    metric="dev",
+    filename="",
+    show_title=True
 ):
     if metric == "dev":
         text = "Deviation ||u(t) - u*||"
@@ -250,6 +294,8 @@ def metrics_grid(
         text = "Spatial Derivative ||∇u(t)||"
     elif metric == "dt":
         text = "Time Derivative ||du/dt||"
+    elif metric == "std":
+        text = "Relative Standard Deviation"
     else:
         raise ValueError("metric must be 'dev', 'dx', or 'dt'")
 
@@ -289,38 +335,61 @@ def metrics_grid(
             values = metrics[1]
         elif metric == "dx":
             values = metrics[2]
+        elif metric == "std":
+            values = metrics[3]
 
         row_idx = i // B_count if B_count > 1 else i
         col_idx = i % B_count if B_count > 1 else 0
 
-        axes[row_idx, col_idx].plot(
-            np.arange(0, data.shape[1] - start_frame)
-            * row["dt"]
-            * row["Nt"]
-            / row["n_snapshots"],
-            values,
-        )
-        if var1 == "":
-            label = ""
-        else:
-            if isinstance(row[var1], float):
-                label = f"{var1}={row[var1]:.{sigdigits}f}"
-            else:
-                label = f"{var1}={row[var1]}"
-            if var2 != "":
-                label += f"\n{var2} = {row[var2]:.{sigdigits}f}"
-            axes[row_idx, col_idx].set_title(
-                label,
-                fontsize=6,
+        if not joint:
+            axes[row_idx, col_idx].plot(
+                np.arange(start_frame, row["n_snapshots"])
+                * row["dt"]
+                * row["Nt"]
+                / row["n_snapshots"],
+                values[:, 0],
+                label="u",
             )
+            axes[row_idx, col_idx].plot(
+                np.arange(start_frame, row["n_snapshots"])
+                * row["dt"]
+                * row["Nt"]
+                / row["n_snapshots"],
+                values[:, 1],
+                label="v",
+            )
+            axes[row_idx, col_idx].legend()
+        else:
+            values = np.linalg.norm(values, axis=1)
+            axes[row_idx, col_idx].plot(
+                np.arange(start_frame, row["n_snapshots"])
+                * row["dt"]
+                * row["Nt"]
+                / row["n_snapshots"],
+                values[:],
+            )
+            if var1 == "":
+                label = ""
+            else:
+                if isinstance(row[var1], float):
+                    label = f"{var1}={row[var1]:.{sigdigits}f}"
+                else:
+                    label = f"{var1}={row[var1]}"
+                if var2 != "":
+                    label += f"\n{var2} = {row[var2]:.{sigdigits}f}"
+                axes[row_idx, col_idx].set_title(
+                    label,
+                    fontsize=6,
+                )
         # axes[row_idx, col_idx].axis("off")
 
     row = df.iloc[0]
     time = row["dt"] * row["Nt"]
-    fig.suptitle(
-        f"{row['model'].capitalize()}, Nx={row['Nx']}, dx={row['dx']}, dt={row['dt']}, T={time:.2f}, {text}",
-        fontsize=4 * B_count,
-    )
+    if show_title:
+        fig.suptitle(
+            f"{row['model'].capitalize()}, Nx={row['Nx']}, dx={row['dx']}, dt={row['dt']}, T={time:.2f}, {text}",
+            fontsize=4 * B_count,
+        )
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.9)
@@ -346,18 +415,20 @@ def delete_run(df, run_id) -> pd.DataFrame:
     return df
 
 
-def plot_all_trajectories(df, start_frame=0, metric="dev"):
-    t = np.linspace(0, 100, 100)
+def get_metrics_array(df, start_frame=0, metric="dev"):
+    """
+    Returns:
+    all_metrics: num_trajectories x n_snapshots array of metric values
+    title: for plotting
+    """
     title = ""
+    if metric not in ["dev", "dt", "dx"]:
+        raise ValueError("Not a valid metric!")
 
-    # Create figure
-    fig = go.Figure()
-
+    all_metrics = []
     for _, row in df.iterrows():
         d = get_data(row)
         metrics = compute_metrics(row, start_frame=start_frame)
-
-        # Select the metric based on the input argument
         if metric == "dev":
             title = "Deviation"
             values = metrics[0]
@@ -367,14 +438,95 @@ def plot_all_trajectories(df, start_frame=0, metric="dev"):
         elif metric == "dx":
             title = "Spatial Derivative"
             values = metrics[2]
+        all_metrics.append(values)
+    all_metrics = np.array(all_metrics)
+    return all_metrics, title
 
+
+def plot_ball_behavior(df, metric="dev", fig=None, label=None):
+    """
+    Plot the mean and mean + std of the given metric,
+    as well as the trajectory with the minimum final value.
+    Returns a Plotly figure.
+    """
+    t = np.linspace(0, 100, 100)
+
+    all_metrics, title = get_metrics_array(df, metric=metric)
+    all_metrics = np.array(all_metrics)
+
+    # Compute mean and std
+    avg_metric = np.mean(all_metrics, axis=0)
+    std_metric = np.std(all_metrics, axis=0)
+
+    min_idx = np.argmin(all_metrics[:, -1])
+    min_row = all_metrics[min_idx, :]
+
+    # Create figure
+    if fig is None:
+        fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=np.concatenate([t, t[::-1]]),
+            y=np.concatenate([avg_metric + std_metric, (avg_metric)[::-1]]),
+            fill="toself",
+            fillcolor="rgba(0,100,80,0.2)",
+            line=dict(color="rgba(255,255,255,0)"),
+            showlegend=False,
+        )
+    )
+
+    # Add mean line
+    fig.add_trace(
+        go.Scatter(
+            x=t,
+            y=avg_metric,
+            mode="lines",
+            name=f"{title}({label})",
+            hovertemplate="Index: %{x}<br>Deviation: %{y:.2f}<extra></extra>",
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=t,
+            y=min_row,
+            mode="lines",
+            name=f"Min({label})",
+            hovertemplate="Index: %{x}<br>Min: %{y:.2f}<extra></extra>",
+        )
+    )
+
+    # Update layout
+    fig.update_layout(
+        title="Deviation Metrics",
+        xaxis_title="Time Step/Index",
+        yaxis_title="Deviation Value",
+        hovermode="x unified",
+        showlegend=True,
+        template="plotly_white",
+    )
+
+    return fig
+
+
+def plot_all_trajectories(df, start_frame=0, metric="dev"):
+    t = np.linspace(0, 100, 100)
+    title = ""
+
+    # Create figure
+    fig = go.Figure()
+
+    all_metrics, title = get_metrics_array(df, start_frame, metric)
+
+    for i, values in enumerate(all_metrics):
         # Add a trace for each row's metric values
         fig.add_trace(
             go.Scatter(
                 x=t,
                 y=values,
                 mode="lines",
-                name=f"Row {row.name}",  # Use row index or a unique identifier
+                name=f"Row {i}",  # Use row index or a unique identifier
                 hovertemplate="Index: %{x}<br>Value: %{y:.2f}<extra></extra>",
             )
         )

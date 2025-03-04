@@ -60,6 +60,11 @@ def compute_classification_metrics(
         fft_u = np.abs(fft(u_avg - u_ss)) / len(u_avg)
         fft_u[0] = 0  # Ignore DC component
 
+        rel_std_u = np.std(u, axis=(1, 2)) / np.mean(u, axis=(1, 2))
+        rel_std_v = np.std(v, axis=(1, 2)) / np.mean(v, axis=(1, 2))
+        rel_std_u_mean = np.mean(rel_std_u[-starting_idx:])
+        rel_std_v_mean = np.mean(rel_std_v[-starting_idx:])
+
         # Store computed metrics in the DataFrame
         df.at[i, "mean_deviation"] = np.mean(deviation)
         df.at[i, "std_deviation"] = np.std(deviation)
@@ -72,6 +77,8 @@ def compute_classification_metrics(
         df.at[i, "total_power"] = np.sum(fft_u)
         df.at[i, "max_u"] = max_u
         df.at[i, "max_v"] = max_v
+        df.at[i, "rel_std_u"] = rel_std_u_mean
+        df.at[i, "rel_std_v"] = rel_std_v_mean
 
     return df
 

@@ -1,3 +1,4 @@
+import numpy as np
 from numpy.random import normal, uniform, randint
 import os
 from dotenv import load_dotenv
@@ -13,8 +14,9 @@ from initial_conditions import (
     ic_from_dict,
 )
 
-from config import CONFIG
+from config_gs import CONFIG
 
+log_filenames = False
 
 def run_wrapper(
     model_params: ModelParams,
@@ -96,7 +98,8 @@ def run_wrapper(
         filename.replace(".nc", ".json"),
     )
 
-    print(input_filename)
+    if log_filenames:
+        print(input_filename)
 
 def sample_ball(
     model_params: ModelParams,
@@ -148,7 +151,12 @@ def ball_sampling(
     path = os.path.join(data_dir, output_dir)
     os.makedirs(path, exist_ok=True)
 
-    for center in centers:
+    j = 0
+    n = len(centers)
+    for i, center in enumerate(centers):
+        if i == j:
+            print(int(np.round(100 * j / n)), "%")
+            j += np.round(0.1 * n)
         sample_ball(
             center,
             sim_params,
@@ -237,7 +245,12 @@ def main():
             path,
         )
     elif run_type == "one_trajectory":
-        for center in param_grid:
+        n = len(param_grid)
+        j = 0
+        for i, center in enumerate(param_grid):
+            if i == j:
+                print(int(np.round(100 * j / n)), "%")
+                j += np.round(0.1 * n)
             for ic in initial_conditions:
                 run_wrapper(
                     ModelParams(**center),

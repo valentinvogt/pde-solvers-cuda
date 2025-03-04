@@ -22,8 +22,8 @@ module load python/3.11.6
 DATAPATH="/cluster/scratch/vogtva/data"
 
 # ADAPT THESE
-model="bruss"
-run_id="phase_transition"
+model="gray_scott"
+run_id="new_ball"
 
 # step=15
 # count=0
