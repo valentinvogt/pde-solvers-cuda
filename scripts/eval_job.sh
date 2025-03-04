@@ -15,4 +15,4 @@ module load openmpi/4.1.6
 module load netcdf-c/4.9.2
 module load python/3.11.6
 
-python3 analysis/classify.py --model "gray_scott" --run_id "ball_big" --outfile "classification_metrics.csv" --time_ratio 0.2
+python3 analysis/classify.py --model "bruss" --run_id "pt_big" --outfile "classification_metrics.json" --time_ratio 0.2

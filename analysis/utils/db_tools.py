@@ -261,14 +261,15 @@ def compute_metrics(row, start_frame, end_frame=-1):
     dv_dt = np.gradient(v, row["dt"], axis=0)
 
     for j in range(0, num_frames):
-        u_t = u[j, :, :]
-        v_t = v[j, :, :]
+        snapshot = start_frame + j
+        u_t = u[snapshot, :, :]
+        v_t = v[snapshot, :, :]
         du_dx = np.gradient(u_t, row["dx"], axis=0)
         dv_dx = np.gradient(v_t, row["dx"], axis=0)
         deviations[j, 0] = np.linalg.norm(u_t - steady_state[:, 0::2])
         deviations[j, 1] = np.linalg.norm(v_t - steady_state[:, 1::2])
-        time_derivatives[j, 0] = np.linalg.norm(du_dt[j])
-        time_derivatives[j, 1] = np.linalg.norm(dv_dt[j])
+        time_derivatives[j, 0] = np.linalg.norm(du_dt[snapshot])
+        time_derivatives[j, 1] = np.linalg.norm(dv_dt[snapshot])
         spatial_derivatives[j, 0] = np.linalg.norm(du_dx)
         spatial_derivatives[j, 1] = np.linalg.norm(dv_dx)
         relative_stds[j, 0] = np.std(u_t) / np.mean(u_t)
@@ -286,7 +287,8 @@ def metrics_grid(
     var2="B",
     metric="dev",
     filename="",
-    show_title=True
+    show_title=True,
+    scale=1
 ):
     if metric == "dev":
         text = "Deviation ||u(t) - u*||"
@@ -317,7 +319,7 @@ def metrics_grid(
         B_count = int(len(df) / A_count)
 
     df = df.reset_index(drop=True)
-    fig, axes = plt.subplots(A_count, B_count, figsize=(3 * B_count + 1, 5 * A_count))
+    fig, axes = plt.subplots(A_count, B_count, figsize=(scale * 3 * B_count + 1, scale * 5 * A_count))
 
     axes = np.atleast_2d(axes)
 
@@ -337,7 +339,6 @@ def metrics_grid(
             values = metrics[2]
         elif metric == "std":
             values = metrics[3]
-
         row_idx = i // B_count if B_count > 1 else i
         col_idx = i % B_count if B_count > 1 else 0
 
@@ -358,7 +359,8 @@ def metrics_grid(
                 values[:, 1],
                 label="v",
             )
-            axes[row_idx, col_idx].legend()
+            if scale >= 1:
+                axes[row_idx, col_idx].legend()
         else:
             values = np.linalg.norm(values, axis=1)
             axes[row_idx, col_idx].plot(
@@ -388,7 +390,7 @@ def metrics_grid(
     if show_title:
         fig.suptitle(
             f"{row['model'].capitalize()}, Nx={row['Nx']}, dx={row['dx']}, dt={row['dt']}, T={time:.2f}, {text}",
-            fontsize=4 * B_count,
+            fontsize=4 * scale * B_count,
         )
 
     plt.tight_layout()
@@ -422,7 +424,7 @@ def get_metrics_array(df, start_frame=0, metric="dev"):
     title: for plotting
     """
     title = ""
-    if metric not in ["dev", "dt", "dx"]:
+    if metric not in ["dev", "dt", "dx", "std"]:
         raise ValueError("Not a valid metric!")
 
     all_metrics = []
@@ -438,64 +440,92 @@ def get_metrics_array(df, start_frame=0, metric="dev"):
         elif metric == "dx":
             title = "Spatial Derivative"
             values = metrics[2]
+        elif metric == "std":
+            title = "Relative std"
+            values = metrics[3]
         all_metrics.append(values)
     all_metrics = np.array(all_metrics)
     return all_metrics, title
 
 
-def plot_ball_behavior(df, metric="dev", fig=None, label=None):
+def plot_ball_behavior(df, start_frame=0, metric="dev", joint=False, fig=None, label=None):
     """
     Plot the mean and mean + std of the given metric,
     as well as the trajectory with the minimum final value.
+    joint: whether to average u and v to get a single time series
+    fig: optional, if several plots are to be combined
+    label: if there are several plots, identify which is which using this
     Returns a Plotly figure.
     """
-    t = np.linspace(0, 100, 100)
-
-    all_metrics, title = get_metrics_array(df, metric=metric)
+    
+    all_metrics, title = get_metrics_array(df, start_frame=start_frame, metric=metric)
     all_metrics = np.array(all_metrics)
-
+    row = df.iloc[0]
+    dt = row["dt"] * row["Nt"] / row["n_snapshots"]
+    t = np.linspace(start_frame * dt, row["n_snapshots"] * dt, row["n_snapshots"] - start_frame)
     # Compute mean and std
     avg_metric = np.mean(all_metrics, axis=0)
     std_metric = np.std(all_metrics, axis=0)
 
-    min_idx = np.argmin(all_metrics[:, -1])
-    min_row = all_metrics[min_idx, :]
+    ids = ["u", "v"]
+    traj_count = 2
+    if joint:
+        avg_metric_uv = avg_metric
+        avg_metric = np.mean(avg_metric_uv, axis=1)
+        std_metric = np.linalg.norm(avg_metric_uv, axis=1)
+        ids = ["u+v"]
+        traj_count = 1
 
-    # Create figure
-    if fig is None:
-        fig = go.Figure()
+    for j in range(traj_count):
+        id = ids[j]
+        min_idx = np.argmin(all_metrics[:, -1, j])
+        min_row = all_metrics[min_idx, :, j]
 
-    fig.add_trace(
-        go.Scatter(
-            x=np.concatenate([t, t[::-1]]),
-            y=np.concatenate([avg_metric + std_metric, (avg_metric)[::-1]]),
-            fill="toself",
-            fillcolor="rgba(0,100,80,0.2)",
-            line=dict(color="rgba(255,255,255,0)"),
-            showlegend=False,
+        avg_metric_loc = avg_metric[:, j]
+        std_metric_loc = std_metric[:, j]
+        # Create figure
+        if fig is None:
+            fig = go.Figure()
+
+        fig.add_trace(
+            go.Scatter(
+                x=np.concatenate([t, t[::-1]]),
+                y=np.concatenate([avg_metric_loc + std_metric_loc, (avg_metric_loc)[::-1]]),
+                fill="toself",
+                fillcolor="rgba(0,100,80,0.2)",
+                line=dict(color="rgba(255,255,255,0)"),
+                showlegend=False,
+            )
         )
-    )
 
-    # Add mean line
-    fig.add_trace(
-        go.Scatter(
-            x=t,
-            y=avg_metric,
-            mode="lines",
-            name=f"{title}({label})",
-            hovertemplate="Index: %{x}<br>Deviation: %{y:.2f}<extra></extra>",
-        )
-    )
+        text_avg = title
+        text_std = f"Min({title})"
+        if label is not None:
+            text_avg += f"({label})"
+            text_std += f"({label})"
+        text_avg += f", {id}"
+        text_std += f", {id}"
 
-    fig.add_trace(
-        go.Scatter(
-            x=t,
-            y=min_row,
-            mode="lines",
-            name=f"Min({label})",
-            hovertemplate="Index: %{x}<br>Min: %{y:.2f}<extra></extra>",
+        # Add mean line
+        fig.add_trace(
+            go.Scatter(
+                x=t,
+                y=avg_metric_loc,
+                mode="lines",
+                name=text_avg,
+                hovertemplate="Index: %{x}<br>Deviation: %{y:.2f}<extra></extra>",
+            )
         )
-    )
+
+        fig.add_trace(
+            go.Scatter(
+                x=t,
+                y=min_row,
+                mode="lines",
+                name=text_std,
+                hovertemplate="Index: %{x}<br>Min: %{y:.2f}<extra></extra>",
+            )
+        )
 
     # Update layout
     fig.update_layout(
@@ -508,6 +538,7 @@ def plot_ball_behavior(df, metric="dev", fig=None, label=None):
     )
 
     return fig
+
 
 
 def plot_all_trajectories(df, start_frame=0, metric="dev"):
@@ -545,3 +576,26 @@ def plot_all_trajectories(df, start_frame=0, metric="dev"):
     fig.update_layout(xaxis=dict(rangeslider=dict(visible=True), type="linear"))
 
     fig.show()
+
+
+def db_init(model, run_id, use_class_df=True, class_df="classification_metrics.json"):
+    """
+    Returns a df and the output directory
+    """
+    load_dotenv()
+    data_dir = os.getenv("DATA_DIR")
+    output_dir = os.getenv("OUT_DIR")
+    output_dir = os.path.join(output_dir, model, run_id)
+    
+    if not use_class_df:
+        os.makedirs(output_dir, exist_ok=True)
+        df = get_db(os.path.join(data_dir, model, run_id))
+    else:
+        db_file = os.path.join(output_dir, class_df)
+        df = pd.read_json(db_file, orient='records', lines=True)
+    
+    for _, row in df.iterrows():
+        if not os.path.isfile(row["filename"]):
+            raise FileNotFoundError(f"File {row['filename']} does not exist.")
+    
+    return df, output_dir

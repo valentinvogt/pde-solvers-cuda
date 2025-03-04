@@ -2,6 +2,7 @@ import netCDF4 as nc
 import numpy as np
 from numpy.linalg import norm
 
+import sys
 import os
 import pandas as pd
 import argparse
@@ -17,10 +18,17 @@ def compute_classification_metrics(
     """
     Compute classification metrics for a given range of frames
     """
-    if len(df) == 0:
-        return None
+    n = len(df)
+    if n == 0:
+        raise ValueError("Empty df provided!")
 
+    j = 0
     for i, row in df.iterrows():
+        if i == j:
+            print(int(np.round(100 * j / n)), "%")
+            j += int(np.round(0.1 * n))
+            sys.stdout.flush()
+            
         num_snapshots = row["n_snapshots"]
         data = get_data(row)
 
@@ -151,6 +159,6 @@ if __name__ == "__main__":
 
     df = df0.copy()
     df = df[df["run_id"] == run_id]
-
+    
     df_class = compute_classification_metrics(df, time_ratio=time_ratio)
-    df_class.to_csv(output_location)
+    df_class.to_json(output_location, orient='records', lines=True)
