@@ -23,27 +23,27 @@ DATAPATH="/cluster/scratch/vogtva/data"
 
 # ADAPT THESE
 model="gray_scott"
-run_id="new_ball"
+run_id="splitting"
 
 # step=15
 # count=0
 
 # rm -f "$DATAPATH/$model/$run_id/"*_output.nc
 
-for file in "$DATAPATH/$model/$run_id"/*.nc; do
-    build/run_from_netcdf $file 1
-    # ((count++))
-    # if ((count % step == 0)); then
-    #     wait
-    # fi
-done
-
-# for json_file in "$DATAPATH/$model/$run_id"/*.json; do
-#     base_name="${json_file%.json}"  # Remove .json extension
-#     nc_file="${base_name}_output.nc"
-
-#     if [[ ! -f "$nc_file" ]]; then
-#         echo "Running for: $base_name".nc
-#         build/run_from_netcdf "$base_name".nc 1
-#     fi
+# for file in "$DATAPATH/$model/$run_id"/*.nc; do
+#     build/run_from_netcdf $file 1
+#     # ((count++))
+#     # if ((count % step == 0)); then
+#     #     wait
+#     # fi
 # done
+
+for json_file in "$DATAPATH/$model/$run_id"/*.json; do
+    base_name="${json_file%.json}"  # Remove .json extension
+    nc_file="${base_name}_output.nc"
+
+    if [[ ! -f "$nc_file" ]]; then
+        echo "Running for: $base_name".nc
+        build/run_from_netcdf "$base_name".nc 1
+    fi
+done

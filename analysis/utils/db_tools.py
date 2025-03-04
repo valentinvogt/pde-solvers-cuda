@@ -339,6 +339,7 @@ def metrics_grid(
             values = metrics[2]
         elif metric == "std":
             values = metrics[3]
+            
         row_idx = i // B_count if B_count > 1 else i
         col_idx = i % B_count if B_count > 1 else 0
 
@@ -599,3 +600,12 @@ def db_init(model, run_id, use_class_df=True, class_df="classification_metrics.j
             raise FileNotFoundError(f"File {row['filename']} does not exist.")
     
     return df, output_dir
+
+def add_op_params_to_df(df):
+    assert "original_point" in df.columns
+    df["op_A"] = df["original_point"].apply(lambda x: x.get("A"))
+    df["op_B"] = df["original_point"].apply(lambda x: x.get("B"))
+    df["op_Du"] = df["original_point"].apply(lambda x: x.get("Du"))
+    df["op_Dv"] = df["original_point"].apply(lambda x: x.get("Dv"))
+    
+    return df

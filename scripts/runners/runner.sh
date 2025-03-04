@@ -70,6 +70,6 @@ for A in "${A_vals[@]}"; do
 done
 
 # # Sanitization
-# for file in ${DATAPATH}/*; do
-#         mv "$file" "$(echo "$file" | sed 's/\xA0//g')"
-# done
+for file in ${DATAPATH}/*; do
+        mv "$file" "$(echo "$file" | sed 's/\xA0//g')"
+done

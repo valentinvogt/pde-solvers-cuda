@@ -14,7 +14,7 @@ from initial_conditions import (
     ic_from_dict,
 )
 
-from config_gs import CONFIG
+from gs_single import CONFIG
 
 log_filenames = False
 
@@ -214,7 +214,11 @@ def main():
     data_dir = os.getenv("DATA_DIR")
     path = os.path.join(data_dir, model, run_id)
     os.makedirs(path, exist_ok=True)
-    
+    if "seed" in config.keys():
+        seed = config["seed"]
+    else:
+        seed = None
+
     with open(os.path.join(path, "_config.json"), "w") as f:
         f.write(str(config))
 
@@ -258,6 +262,7 @@ def main():
                     ic,
                     run_info,
                     filename=os.path.join(path, f"{uuid4()}.nc"),
+                    random_seed=seed
                 )
     else:
         raise ValueError(f"Invalid run type: {run_type}")
