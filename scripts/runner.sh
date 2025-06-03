@@ -18,16 +18,6 @@ module load openmpi/4.1.6
 module load netcdf-c/4.9.2
 module load python/3.11.6
 
-# A: float = 5
-# B: float = 9
-# Nx: int = 100
-# dx: float = 1.0
-# Nt: int = 1000
-# dt: float = 0.01
-# Du: float = 2.0
-# Dv: float = 22.0
-# n_snapshots: int = 100
-
 DATAPATH="/cluster/scratch/vogtva/data"
 
 Nx=128
@@ -59,7 +49,7 @@ for A in "${A_vals[@]}"; do
                                                 --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
                                                 --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id \
                                                 --random_seed $seed)
-                                        build/run_from_netcdf $FILE 1
+                                        # build/run_from_netcdf $FILE 1
                                         end=`date +%s`
                                         runtime=$((end-start))
                                         echo "Took $runtime seconds"

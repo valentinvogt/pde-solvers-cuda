@@ -1,8 +1,4 @@
-dummy
-out/*
-analysis/out/
-videos/
-data
+out
 *.err
 .vscode/
 __pycache__
