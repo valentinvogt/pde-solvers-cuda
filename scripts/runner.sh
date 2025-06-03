@@ -9,14 +9,14 @@
 #SBATCH --time=20:00:00
 #SBATCH --mail-type=END
 
-module load stack/2024-06
-module load gcc/12.2.0
-module load cmake/3.27.7
-module load cuda/12.1.1
-module load hdf5/1.14.3
-module load openmpi/4.1.6
-module load netcdf-c/4.9.2
-module load python/3.11.6
+# module load stack/2024-06
+# module load gcc/12.2.0
+# module load cmake/3.27.7
+# module load cuda/12.1.1
+# module load hdf5/1.14.3
+# module load openmpi/4.1.6
+# module load netcdf-c/4.9.2
+# module load python/3.11.6
 
 DATAPATH="/cluster/scratch/vogtva/data"
 
@@ -49,7 +49,7 @@ for A in "${A_vals[@]}"; do
                                                 --Nx $Nx --dx $dx --Nt $Nt --dt $dt --Du $Du --Dv $Dv \
                                                 --n_snapshots $n_snapshots --filename $FILENAME --run_id=$run_id \
                                                 --random_seed $seed)
-                                        # build/run_from_netcdf $FILE 1
+                                        build/run_from_netcdf $FILE 1
                                         end=`date +%s`
                                         runtime=$((end-start))
                                         echo "Took $runtime seconds"

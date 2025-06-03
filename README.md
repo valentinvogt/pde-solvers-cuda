@@ -1,6 +1,9 @@
 # pde-solvers-cuda
+## 2025-06-03: Changes in this fork
+- Added a class `PDErd` for reaction-diffusion systems with turing pattern formation
+- To this end, the function `create_input_file` in `scripts/create_netcdf_input.py` now accepts scalar parameters `Du` and `Dv`, which multiply the Laplacian term in each component of the equation.
 
-
+For a crude way of setting up the input files for the Brusselator, see `scripts/runner.sh` and `scripts/rd_runner.py`. A more sophisticated system using configuration files can be found at [github.com/valentinvogt/pde-data-gen](https://github.com/valentinvogt/pde-data-gen).
 ## Requirements
 Currently, only UNIX based operating systems are supported. Moreover, you need to have the following installed on your machine:
 * C++ compiler (e.g. gcc, clang)

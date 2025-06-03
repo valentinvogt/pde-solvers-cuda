@@ -1,5 +1,5 @@
 import numpy as np
-
+import json
 
 def zero_func(member, coupled_idx, x_position, y_position):
     return np.zeros(shape=x_position.shape)
@@ -56,3 +56,7 @@ def f_scalings_fhn(member, size, A, B):
 
     return f
 
+
+def create_json(dict, filename):
+    with open(filename, "w") as json_file:
+        json.dump(dict, json_file)
