@@ -56,7 +56,8 @@ The data of sigma values is arranged in following way:
 '''
 import netCDF4 as nc
 import numpy as np
-from helpers import f_scalings_brusselator
+from helpers import const_sigma, zero_func, f_scalings
+from initial_conditions import NormalIC, get_ic_function
 
 # function template for initial_values, bc_values and sigma_values
 # note that here the arguments are the member and the x and y-positions in the grid
@@ -169,9 +170,31 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
 
 if __name__ == "__main__":
     # Usage example:
-    create_input_file('data/example.nc', 'data/example_out.nc', type_of_equation=0, 
-                      x_size=160, x_length=2., y_size=160, y_length=2., boundary_value_type=1,
-                      scalar_type=0, n_coupled=2, 
-                      coupled_function_order=3, number_timesteps=20000,
-                      final_time=10., number_snapshots=5, n_members=1, initial_value_function=initial_noisy_function,
-                      sigma_function=const_sigma, bc_neumann_function=zero_func, f_value_function=f_scalings_gray_scott, Du=2, Dv=22)
+    A = 5
+    B = 9
+    ic = NormalIC(sigma_u=0.1, sigma_v=0.1)
+    ic_fn = get_ic_function("bruss", A, B, ic, 0)
+    fn_scalings = f_scalings("bruss", A, B)
+    create_input_file(
+        "data/example.nc",
+        "data/example_out.nc",
+        type_of_equation=0,
+        x_size=128,
+        x_length=2.0,
+        y_size=128,
+        y_length=2.0,
+        boundary_value_type=1,
+        scalar_type=0,
+        n_coupled=2,
+        coupled_function_order=3,
+        number_timesteps=60_000,
+        final_time=10.0,
+        number_snapshots=5,
+        n_members=1,
+        initial_value_function=ic_fn,
+        sigma_function=const_sigma,
+        bc_neumann_function=zero_func,
+        f_value_function=fn_scalings,
+        Du=2,
+        Dv=22,
+    )
