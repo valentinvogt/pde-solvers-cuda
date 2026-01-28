@@ -71,6 +71,7 @@ def steady_state_plus_noise(
     v = steady_state * np.ones(shape=x_position.shape)
 
     if isinstance(ic_params, NormalIC):
+        print("J")
         u += rng.normal(0.0, ic_params.sigma_u, size=x_position.shape)
         v += rng.normal(0.0, ic_params.sigma_v, size=x_position.shape)
     elif isinstance(ic_params, UniformIC):
